@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+
+# Файлы окружения
+.env
+.env.*
+*.secret
+.secrets/
+!.env.example
+!.env.enc
+
+# Кэш и временные файлы
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+logs/
+uploads/
+old/
+*/old/
+out/
+output/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# База данных
+*.db
+*.sqlite
+*.sqlite3
+
+# Тесты
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Сборка
+dist/
+build/
+*.egg-info/
+
+# временные рабочие моменты
+work_my/

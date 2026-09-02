@@ -1,0 +1,255 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Производители{% endblock %}
+
+{% block page_title %}
+<div class="page-title-row">
+    <div class="title-left">
+        <span>🏷️ Производители</span>
+        <span class="badge bg-secondary" id="recordCount">0 записей</span>
+    </div>
+    <div class="title-right">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">
+            <i class="bi bi-plus-circle me-1"></i>Добавить
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" id="editModeToggle" onclick="toggleEditMode()">
+            <i class="bi bi-pencil me-1"></i>Редактировать
+        </button>
+        <button class="btn btn-outline-secondary btn-sm btn-columns" id="btnColumns" onclick="openColumnSettings()" style="display:none;">
+            <i class="bi bi-layout-three-columns me-1"></i>Столбцы
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+<script src="{{ url_for('static', filename='js/table-config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/table-filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/table.js') }}"></script>
+
+<div class="table-page">
+    <div class="table-wrap" id="manufacturersTableContainer">
+        <table class="table table-hover table-sm table-custom" id="manufacturersTable">
+            <colgroup id="colgroup"></colgroup>
+            <thead id="tableHeader"></thead>
+            <tbody id="manufacturersBody">
+                <tr class="table-empty"><td colspan="6">Загрузка...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Затемнение -->
+<div class="edit-overlay" id="editOverlay"></div>
+
+<!-- Модальное окно редактирования -->
+<div class="modal fade edit-modal" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalTitle">Добавить запись</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="editModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="editSaveBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно настройки столбцов -->
+<div class="modal fade column-settings-modal" id="columnSettingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Настройка столбцов</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="columnSettingsBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" onclick="resetColumnSettings()">Сбросить</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //  ИНИЦИАЛИЗАЦИЯ
+    // ============================================================
+
+    let tableState = null;
+    let editModal = null;
+    let editOverlay = null;
+    let editMode = false;
+
+    function loadManufacturersData(page, search, filter, callback) {
+        const statusFilter = filter || 'all';
+        let url = `/api/v1/tables/manufacturers/data?page=${page}&per_page=50&status=${statusFilter}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        
+        if (tableState && tableState.columnSort && tableState.columnSort.key) {
+            url += `&sort=${tableState.columnSort.key}&order=${tableState.columnSort.direction || 'asc'}`;
+        }
+
+        if (tableState && tableState.columnFilters) {
+            Object.keys(tableState.columnFilters).forEach(key => {
+                const values = tableState.columnFilters[key];
+                if (values && values.length > 0) {
+                    url += `&filter_${key}=${encodeURIComponent(values.join(','))}`;
+                }
+            });
+        }
+
+        fetch(url, { credentials: 'include' })
+            .then(response => {
+                if (!response.ok) throw new Error('Ошибка загрузки');
+                return response.json();
+            })
+            .then(data => {
+                callback(data.data || []);
+                if (typeof updateRecordCount === 'function') {
+                    updateRecordCount(data.total || data.data?.length || 0);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки:', error);
+                callback([]);
+                if (typeof updateRecordCount === 'function') {
+                    updateRecordCount(0);
+                }
+            });
+    }
+
+    function openAddModal() {
+        if (!tableState) {
+            alert('Таблица не загружена');
+            return;
+        }
+        window.openEditModal(tableState, null);
+    }
+
+    function editManufacturer(id) {
+        fetch(`/api/v1/tables/manufacturers/${id}`, { credentials: 'include' })
+            .then(response => response.json())
+            .then(data => {
+                console.log('📝 Данные для редактирования:', data);
+                if (!tableState) {
+                    alert('Таблица не загружена');
+                    return;
+                }
+                window.openEditModal(tableState, data);
+            })
+            .catch(() => alert('Ошибка загрузки данных'));
+    }
+
+    function deleteManufacturer(id) {
+        if (!confirm('Пометить производителя на удаление?')) return;
+        fetch(`/api/v1/tables/manufacturers/${id}`, { method: 'DELETE', credentials: 'include' })
+            .then(response => {
+                if (response.ok) { alert('✅ Производитель удалён'); loadData(tableState, 1); }
+                else { alert('❌ Ошибка при удалении'); }
+            });
+    }
+
+    function restoreManufacturer(id) {
+        if (!confirm('Восстановить производителя?')) return;
+        fetch(`/api/v1/tables/manufacturers/${id}/restore`, { method: 'POST', credentials: 'include' })
+            .then(response => {
+                if (response.ok) { alert('✅ Производитель восстановлен'); loadData(tableState, 1); }
+                else { alert('❌ Ошибка при восстановлении'); }
+            });
+    }
+
+    function hardDeleteManufacturer(id) {
+        if (!confirm('Удалить производителя навсегда? Это действие необратимо!')) return;
+        fetch(`/api/v1/tables/manufacturers/${id}/hard`, { method: 'DELETE', credentials: 'include' })
+            .then(response => {
+                if (response.ok) { alert('✅ Производитель удалён навсегда'); loadData(tableState, 1); }
+                else { alert('❌ Ошибка при удалении'); }
+            });
+    }
+
+    function toggleEditMode() {
+        editMode = !editMode;
+        const btn = document.getElementById('editModeToggle');
+        const btnColumns = document.getElementById('btnColumns');
+        
+        if (editMode) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Готово';
+            btnColumns.style.display = 'inline-block';
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="bi bi-pencil me-1"></i>Редактировать';
+            btnColumns.style.display = 'none';
+        }
+        
+        if (tableState) {
+            tableState.editMode = editMode;
+            renderTableHeader(tableState);
+            loadData(tableState, tableState.currentPage);
+        }
+    }
+
+    window.editItem = editManufacturer;
+    window.deleteItem = deleteManufacturer;
+    window.restoreItem = restoreManufacturer;
+    window.hardDeleteItem = hardDeleteManufacturer;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        editOverlay = document.getElementById('editOverlay');
+
+        loadTableSchema('manufacturers').then(() => {
+            if (typeof createTable === 'undefined') {
+                console.error('table.js не загружен!');
+                return;
+            }
+
+            tableState = createTable('manufacturers', 'manufacturersTableContainer', loadManufacturersData, {
+                edit: editManufacturer,
+                delete: deleteManufacturer,
+                restore: restoreManufacturer,
+                hardDelete: hardDeleteManufacturer
+            });
+
+            if (tableState) {
+                tableState.currentFilter = 'all';
+                loadData(tableState, 1);
+            }
+
+            setTimeout(() => {
+                if (!tableState) return;
+                const ths = document.querySelectorAll('#tableHeader th');
+                const visibleCols = getVisibleColumns(tableState.tableKey, tableState.settings);
+                ths.forEach((th, index) => {
+                    const col = visibleCols[index];
+                    if (col && col.filterable !== false && col.key !== 'row' && col.key !== 'actions') {
+                        if (!th.querySelector('.col-filter-dropdown') && typeof createColumnFilter === 'function') {
+                            const label = tableState.settings.labels[col.key] || col.label;
+                            createColumnFilter(tableState, th, col.key, label);
+                        }
+                    }
+                });
+            }, 300);
+        });
+
+        document.getElementById('editSaveBtn').addEventListener('click', () => {
+            if (!tableState) {
+                alert('Таблица не загружена');
+                return;
+            }
+            window.saveEditForm(tableState);
+        });
+
+        document.getElementById('editModal').addEventListener('hidden.bs.modal', function() {
+            if (editOverlay) { editOverlay.classList.remove('active'); editOverlay.style.zIndex = '1040'; }
+        });
+    });
+</script>
+{% endblock %}

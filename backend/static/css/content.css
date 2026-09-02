@@ -1,0 +1,80 @@
+/* ============================================================
+   КОНТЕНТНАЯ ОБЛАСТЬ
+   ============================================================ */
+
+/* ===== ОСНОВНОЙ КОНТЕЙНЕР ===== */
+.main-content {
+    height: 100vh;
+    padding-top: var(--header-height);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
+.page-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--padding-md);
+    min-height: 0;
+}
+
+/* ===== СТРАНИЦА ЗАГЛУШКА ===== */
+.placeholder-page {
+    background: var(--card-bg);
+    border-radius: var(--card-radius);
+    padding: var(--card-padding);
+    box-shadow: var(--card-shadow);
+    text-align: center;
+    height: calc(100% - 4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder-page .icon {
+    font-size: 64px;
+    color: var(--color-primary);
+    margin-bottom: var(--padding-lg);
+}
+
+.placeholder-page h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--padding-sm);
+}
+
+.placeholder-page p {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.placeholder-page .version {
+    margin-top: var(--padding-lg);
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    .page-content {
+        padding: var(--padding-sm);
+    }
+
+    .placeholder-page {
+        padding: 30px 20px;
+        height: calc(100% - 4px);
+    }
+
+    .placeholder-page .icon {
+        font-size: 48px;
+    }
+
+    .placeholder-page h3 {
+        font-size: 20px;
+    }
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КАРКАС — Automation Construction System</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Стили проекта -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/content.css') }}">
+
+    <!-- Страницы-заглушки для тестирования -->
+    <style>
+        .page-placeholder {
+            display: none;
+        }
+        .page-placeholder.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    {% include 'components/sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Bar (Fixed) -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <!-- Кнопка меню (гамбургер) -->
+                <button class="menu-toggle" id="menuToggle" title="Показать меню">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <!-- Разделитель -->
+                <span class="top-bar-divider"></span>
+
+                <!-- Бренд -->
+                <span class="brand">
+                    <span class="brand-icon">🏗️</span>
+                    <span>КАРКАС</span>
+                    <span class="brand-sub">| Automation System</span>
+                </span>
+
+                <span class="page-title" id="pageTitle">🏠 Дашборд</span>
+            </div>
+            <div class="top-bar-right">
+                <div style="position: relative;">
+                    <button class="user-avatar-btn" id="userAvatarBtn" title="Профиль">
+                        <i class="bi bi-person-circle avatar-icon"></i>
+                        <span class="status-dot online" id="statusDot"></span>
+                    </button>
+
+                    <!-- Выпадающее меню -->
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-user-info">
+                            <div class="name" id="dropdownUserName">admin</div>
+                            <div class="role" id="dropdownUserRole">Администратор</div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" onclick="window.location.href='/app/profile'">
+                            <i class="bi bi-person"></i> Профиль
+                        </button>
+                        <button class="dropdown-item" onclick="window.location.href='/app/settings'">
+                            <i class="bi bi-gear"></i> Настройки
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" onclick="AUTH.logout()" style="color: var(--text-danger);">
+                            <i class="bi bi-box-arrow-right"></i> Выйти
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Страница: Дашборд -->
+            <div id="page-dashboard" class="placeholder-page page-placeholder active">
+                <div class="icon"><i class="bi bi-tools"></i></div>
+                <h3>🏠 Дашборд</h3>
+                <p>Главная страница. Здесь будет дашборд с аналитикой.</p>
+                <div class="version"><i class="bi bi-code-square me-1"></i>Версия 0.1.0 · Разработка</div>
+            </div>
+
+            <!-- Страница: Производители -->
+            <div id="page-manufacturers" class="placeholder-page page-placeholder">
+                <div class="icon"><i class="bi bi-tags"></i></div>
+                <h3>🏷️ Производители</h3>
+                <p>Управление производителями. Таблица со списком производителей.</p>
+                <div class="version"><i class="bi bi-code-square me-1"></i>Версия 0.1.0 · Разработка</div>
+            </div>
+
+            <!-- Страница: Поставщики -->
+            <div id="page-suppliers" class="placeholder-page page-placeholder">
+                <div class="icon"><i class="bi bi-building"></i></div>
+                <h3>🏢 Поставщики</h3>
+                <p>Управление поставщиками. Таблица со списком поставщиков.</p>
+                <div class="version"><i class="bi bi-code-square me-1"></i>Версия 0.1.0 · Разработка</div>
+            </div>
+
+            <!-- Страница: Товары -->
+            <div id="page-products" class="placeholder-page page-placeholder">
+                <div class="icon"><i class="bi bi-box"></i></div>
+                <h3>📦 Товары</h3>
+                <p>Каталог товаров. Таблица со списком товаров.</p>
+                <div class="version"><i class="bi bi-code-square me-1"></i>Версия 0.1.0 · Разработка</div>
+            </div>
+
+            <!-- Страница: Кубики -->
+            <div id="page-cubes" class="placeholder-page page-placeholder">
+                <div class="icon"><i class="bi bi-puzzle"></i></div>
+                <h3>🧩 Библиотека кубиков</h3>
+                <p>Библиотека кубиков для конструктора.</p>
+                <div class="version"><i class="bi bi-code-square me-1"></i>Версия 0.1.0 · Разработка</div>
+            </div>
+
+            <!-- Страница: Конструктор -->
+            <div id="page-constructor" class="placeholder-page page-placeholder">
+                <div class="icon"><i class="bi bi-tools"></i></div>
+                <h3>📐 Конструктор изделий</h3>
+                <p>Конструктор шкафов автоматики.</p>
+                <div class="version"><i class="bi bi-code-square me-1"></i>Версия 0.1.0 · Разработка</div>
+            </div>
+
+            <!-- Страница: Пользователи -->
+            <div id="page-users" class="placeholder-page page-placeholder">
+                <div class="icon"><i class="bi bi-people"></i></div>
+                <h3>👥 Пользователи</h3>
+                <p>Управление пользователями системы.</p>
+                <div class="version"><i class="bi bi-code-square me-1"></i>Версия 0.1.0 · Разработка</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    <script>
+        // ===== ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ ДЛЯ ТЕСТА =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Перехватываем клики по пунктам меню
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('.nav-link');
+                if (link) {
+                    const href = link.getAttribute('href');
+                    if (href && href.startsWith('/app/')) {
+                        e.preventDefault();
+                        const page = href.replace('/app/', '');
+                        showPage(page);
+                    }
+                    if (href === '/') {
+                        e.preventDefault();
+                        showPage('dashboard');
+                    }
+                }
+            });
+
+            function showPage(page) {
+                // Скрываем все страницы
+                document.querySelectorAll('.page-placeholder').forEach(el => {
+                    el.classList.remove('active');
+                });
+
+                // Показываем нужную
+                const target = document.getElementById('page-' + page);
+                if (target) {
+                    target.classList.add('active');
+                    // Обновляем заголовок
+                    const title = target.querySelector('h3');
+                    if (title) {
+                        document.getElementById('pageTitle').textContent = title.textContent;
+                    }
+                }
+
+                // Обновляем активную ссылку в меню
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    const href = link.getAttribute('href');
+                    if (href === '/' && page === 'dashboard') {
+                        link.classList.add('active');
+                    } else if (href === '/app/' + page) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

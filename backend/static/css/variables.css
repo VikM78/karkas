@@ -1,0 +1,138 @@
+/* ============================================================
+   ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+   ============================================================ */
+
+:root {
+    /* ===== РАЗМЕРЫ ===== */
+    --header-height: 60px;
+    --sidebar-width: 260px;
+    --sidebar-top: 60px;
+    --sidebar-z-index: 999;
+    --overlay-z-index: 998;
+    --header-z-index: 1000;
+
+    /* ===== ОТСТУПЫ ===== */
+    --padding-sm: 8px;
+    --padding-md: 16px;
+    --padding-lg: 20px;
+    --padding-xl: 24px;
+    --padding-2xl: 40px;
+
+    /* ===== СКОРОГЛЕНИЯ ===== */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+
+    /* ===== ЦВЕТА ===== */
+    /* Фоны */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0f2f5;
+    --bg-sidebar: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    --bg-overlay: rgba(0, 0, 0, 0.4);
+    --bg-hover: rgba(255, 255, 255, 0.06);
+    --bg-active: rgba(74, 108, 247, 0.2);
+
+    /* Текст */
+    --text-primary: #1a1a2e;
+    --text-secondary: #6c757d;
+    --text-muted: #adb5bd;
+    --text-light: rgba(255, 255, 255, 0.55);
+    --text-light-hover: #ffffff;
+    --text-light-active: #ffffff;
+    --text-danger: #dc2626;
+
+    /* Границы */
+    --border-color: #e8ecf1;
+    --border-sidebar: rgba(255, 255, 255, 0.06);
+    --border-active: rgba(74, 108, 247, 0.3);
+
+    /* Акценты */
+    --color-primary: #4a6cf7;
+    --color-primary-hover: #3b5de7;
+    --color-success: #10b981;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+
+    /* Статусы */
+    --status-online: #10b981;
+    --status-offline: #ef4444;
+
+    /* ===== ШРИФТЫ ===== */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-size-xs: 10px;
+    --font-size-sm: 12px;
+    --font-size-base: 14px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --font-size-2xl: 28px;
+    --font-size-3xl: 32px;
+
+    /* ===== АНИМАЦИИ ===== */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ===== ТЕНИ ===== */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+    /* ===== SIDEBAR ===== */
+    --sidebar-item-height: 40px;
+    --sidebar-icon-size: 20px;
+    --sidebar-font-size: 14px;
+    --sidebar-group-font-size: 10px;
+    --sidebar-scrollbar-width: 4px;
+    --sidebar-scrollbar-color: rgba(255, 255, 255, 0.15);
+    --sidebar-group-color: rgba(255, 255, 255, 0.25);
+    --sidebar-group-color-hover: rgba(255, 255, 255, 0.5);
+    --sidebar-text: rgba(255, 255, 255, 0.55);
+    --sidebar-text-hover: #ffffff;
+    --sidebar-text-active: #ffffff;
+
+    /* ===== HEADER ===== */
+    --header-bg: #ffffff;
+    --header-border: #e8ecf1;
+    --header-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    /* ===== КАРТОЧКА ===== */
+    --card-bg: #ffffff;
+    --card-radius: 12px;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --card-padding: 40px 32px;
+
+    /* ===== ТАБЛИЦА ===== */
+    --table-height: calc(100vh - 100px);
+    --table-min-height: 400px;
+    --table-header-bg: #f8f9fa;
+    --table-header-font-size: 13px;
+    --table-header-font-weight: 600;
+    --table-cell-padding: 6px 12px;
+    --table-border-color: #dee2e6;
+    --table-row-hover: #f8f9fa;
+    --table-deleted-bg: #e9ecef;
+    --table-deleted-opacity: 0.7;
+
+    /* ===== ФИЛЬТРЫ ===== */
+    --filter-bg: rgba(255, 255, 255, 0.15);
+    --filter-blur: 20px;
+    --filter-border: rgba(255, 255, 255, 0.1);
+    --filter-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --filter-item-hover: rgba(255, 255, 255, 0.1);
+    --filter-search-bg: rgba(255, 255, 255, 0.05);
+
+    /* ===== СТАТУСЫ ===== */
+    --status-active-color: #059669;
+    --status-active-bg: rgba(5, 150, 105, 0.12);
+    --status-hidden-color: #6b7280;
+    --status-hidden-bg: rgba(107, 114, 128, 0.12);
+    --status-deleted-color: #dc2626;
+    --status-deleted-bg: rgba(220, 38, 38, 0.12);
+    --status-archived-color: #d97706;
+    --status-archived-bg: rgba(217, 119, 6, 0.12);
+
+    /* ===== МЕДИА-ТОЧКИ ===== */
+    --breakpoint-mobile: 768px;
+    --breakpoint-small: 480px;
+}

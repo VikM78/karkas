@@ -1,0 +1,307 @@
+/* ============================================================
+   SIDEBAR (МЕНЮ) — финальная версия
+   ============================================================ */
+
+.sidebar {
+    position: fixed;
+    top: var(--sidebar-top);
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: rgba(26, 26, 46, 0.75);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    z-index: var(--sidebar-z-index);
+    overflow: hidden;
+    transition: transform var(--transition-base), width var(--transition-base);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    user-select: none;
+    transform: translateX(0);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== СКРЫТОЕ МЕНЮ ===== */
+.sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+/* ===== HOVER-ПОКАЗ ===== */
+.sidebar.hover-show {
+    transform: translateX(0) !important;
+}
+
+/* ===== КНОПКА СВОРАЧИВАНИЯ ===== */
+.sidebar-toggle {
+    position: absolute;
+    top: 12px;
+    right: -14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(26, 26, 46, 0.6);
+    color: var(--sidebar-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 20;
+    transition: all var(--transition-base);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--sidebar-text-hover);
+    transform: scale(1.05);
+}
+
+.sidebar-toggle .bi-chevron-left {
+    transition: transform var(--transition-base);
+}
+
+.sidebar.hidden .sidebar-toggle .bi-chevron-left {
+    transform: rotate(180deg);
+}
+
+/* ===== ТРИГГЕР ДЛЯ HOVER-ПОКАЗА ===== */
+.sidebar-trigger {
+    position: fixed;
+    top: var(--sidebar-top);
+    left: 0;
+    width: 10px;
+    height: calc(100vh - var(--sidebar-top));
+    z-index: calc(var(--sidebar-z-index) + 1);
+    cursor: pointer;
+    background: transparent;
+}
+
+.sidebar-trigger::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 2px;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    transition: all var(--transition-base);
+}
+
+.sidebar-trigger:hover::after {
+    background: rgba(255, 255, 255, 0.15);
+    height: 60px;
+}
+
+/* ===== НАВИГАЦИЯ ===== */
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+}
+
+/* ============================================================
+   ЕДИНЫЙ СТИЛЬ ДЛЯ ВСЕХ ЭЛЕМЕНТОВ МЕНЮ
+   ============================================================ */
+
+.nav-item {
+    margin-bottom: 1px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    min-height: 40px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--sidebar-text-hover);
+}
+
+.nav-link.active {
+    background: rgba(74, 108, 247, 0.15);
+    color: var(--sidebar-text-active);
+    border-right: 2px solid rgba(74, 108, 247, 0.4);
+}
+
+.nav-link i {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.nav-link .nav-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-link .nav-badge {
+    font-size: 10px;
+    background: rgba(74, 108, 247, 0.3);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+/* ===== ДАШБОРД (отдельный пункт) ===== */
+.nav-item-dashboard .nav-link {
+    padding: 8px 12px;
+}
+
+/* ===== ПУНКТЫ ВНУТРИ ГРУПП (с отступом) ===== */
+.nav-group-items .nav-link {
+    padding: 8px 12px 8px 44px;
+}
+
+/* ===== ГРУППЫ ===== */
+.nav-group {
+    margin-bottom: 2px;
+}
+
+.nav-group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+    white-space: nowrap;
+    border-radius: 8px;
+    min-height: 40px;
+}
+
+.nav-group-title:hover {
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.nav-group-title .group-arrow {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2);
+    transition: transform var(--transition-base);
+    flex-shrink: 0;
+}
+
+.nav-group-title .group-arrow.open {
+    transform: rotate(90deg);
+}
+
+.nav-group-title .group-icon {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.nav-group-title .group-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-group-items {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height var(--transition-base);
+}
+
+.nav-group-items.open {
+    max-height: 800px;
+}
+
+/* ===== РАЗДЕЛИТЕЛЬ ===== */
+.nav-divider {
+    height: 1px;
+    margin: 8px 12px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* ===== ОВЕРЛЕЙ ===== */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 998;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    :root {
+        --sidebar-top: 0;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        background: rgba(26, 26, 46, 0.85);
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    .sidebar-trigger {
+        display: none;
+    }
+
+    .sidebar-toggle {
+        right: 12px;
+        top: 12px;
+        z-index: 30;
+    }
+
+    .nav-group-items .nav-link {
+        padding: 8px 12px 8px 44px;
+    }
+}
