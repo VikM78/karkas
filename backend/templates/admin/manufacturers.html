@@ -27,16 +27,11 @@
 <script src="{{ url_for('static', filename='js/table-config.js') }}"></script>
 <script src="{{ url_for('static', filename='js/table-filters.js') }}"></script>
 <script src="{{ url_for('static', filename='js/table.js') }}"></script>
+<script src="{{ url_for('static', filename='js/TableRenderer.js') }}"></script>
 
 <div class="table-page">
     <div class="table-wrap" id="manufacturersTableContainer">
-        <table class="table table-hover table-sm table-custom" id="manufacturersTable">
-            <colgroup id="colgroup"></colgroup>
-            <thead id="tableHeader"></thead>
-            <tbody id="manufacturersBody">
-                <tr class="table-empty"><td colspan="6">Загрузка...</td></tr>
-            </tbody>
-        </table>
+        <!-- Рендерится через TableRenderer -->
     </div>
 </div>
 
@@ -79,12 +74,10 @@
 
 <script>
     // ============================================================
-    //  ИНИЦИАЛИЗАЦИЯ
+    //  ИНИЦИАЛИЗАЦИЯ ЧЕРЕЗ TableRenderer
     // ============================================================
 
     let tableState = null;
-    let editModal = null;
-    let editOverlay = null;
     let editMode = false;
 
     function loadManufacturersData(page, search, filter, callback) {
@@ -191,7 +184,6 @@
         
         if (tableState) {
             tableState.editMode = editMode;
-            renderTableHeader(tableState);
             loadData(tableState, tableState.currentPage);
         }
     }
@@ -202,41 +194,45 @@
     window.hardDeleteItem = hardDeleteManufacturer;
 
     document.addEventListener('DOMContentLoaded', function() {
-        editModal = new bootstrap.Modal(document.getElementById('editModal'));
-        editOverlay = document.getElementById('editOverlay');
-
-        loadTableSchema('manufacturers').then(() => {
-            if (typeof createTable === 'undefined') {
-                console.error('table.js не загружен!');
+        const renderer = new TableRenderer('manufacturersTableContainer');
+        
+        // Загружаем схему и настройки
+        loadTableSchema('manufacturers').then((schema) => {
+            if (!schema) {
+                console.error('❌ Схема не загружена');
                 return;
             }
-
-            tableState = createTable('manufacturers', 'manufacturersTableContainer', loadManufacturersData, {
-                edit: editManufacturer,
-                delete: deleteManufacturer,
-                restore: restoreManufacturer,
-                hardDelete: hardDeleteManufacturer
+            
+            console.log('✅ Схема загружена:', schema);
+            
+            // Создаём состояние таблицы
+            const settings = loadTableSettings('manufacturers');
+            tableState = {
+                tableKey: 'manufacturers',
+                settings: settings,
+                config: schema,
+                currentPage: 1,
+                currentFilter: 'all',
+                currentSearch: '',
+                columnFilters: {},
+                columnSort: { key: null, direction: null },
+                editMode: false,
+                rowHeights: settings.rowHeights || {},
+                _lastData: []
+            };
+            
+            window._tableState = tableState;
+            
+            // Загружаем данные и рендерим
+            loadManufacturersData(1, '', 'all', function(data) {
+                tableState._lastData = data || [];
+                renderer.schema = schema;
+                renderer.settings = settings;
+                renderer.data = data || [];
+                renderer.tableKey = 'manufacturers';
+                renderer.render();
+                updateRecordCount(data?.length || 0);
             });
-
-            if (tableState) {
-                tableState.currentFilter = 'all';
-                loadData(tableState, 1);
-            }
-
-            setTimeout(() => {
-                if (!tableState) return;
-                const ths = document.querySelectorAll('#tableHeader th');
-                const visibleCols = getVisibleColumns(tableState.tableKey, tableState.settings);
-                ths.forEach((th, index) => {
-                    const col = visibleCols[index];
-                    if (col && col.filterable !== false && col.key !== 'row' && col.key !== 'actions') {
-                        if (!th.querySelector('.col-filter-dropdown') && typeof createColumnFilter === 'function') {
-                            const label = tableState.settings.labels[col.key] || col.label;
-                            createColumnFilter(tableState, th, col.key, label);
-                        }
-                    }
-                });
-            }, 300);
         });
 
         document.getElementById('editSaveBtn').addEventListener('click', () => {
@@ -248,6 +244,7 @@
         });
 
         document.getElementById('editModal').addEventListener('hidden.bs.modal', function() {
+            const editOverlay = document.getElementById('editOverlay');
             if (editOverlay) { editOverlay.classList.remove('active'); editOverlay.style.zIndex = '1040'; }
         });
     });

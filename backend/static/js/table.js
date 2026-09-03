@@ -316,8 +316,7 @@ function renderTableBody(state, data) {
     tbody.innerHTML = html;
     
     // Проверяем обрезку для tooltip
-    if (typeof TableRenderer !== 'undefined') {
-        const tempRenderer = new TableRenderer('temp');
+    setTimeout(() => {
         tbody.querySelectorAll('.col-truncated[data-tooltip]').forEach(el => {
             const isTruncated = el.scrollWidth > el.clientWidth;
             if (!isTruncated) {
@@ -326,7 +325,7 @@ function renderTableBody(state, data) {
                 el.style.cursor = 'default';
             }
         });
-    }
+    }, 50);
 }
 
 // ============================================================

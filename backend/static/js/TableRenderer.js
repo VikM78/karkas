@@ -11,22 +11,69 @@ class TableRenderer {
         }
         this._resizeData = null;
         this._rowResizeData = null;
+        this._state = null;
     }
 
     /**
-     * Отрисовать таблицу
-     * @param {Object} schema — схема таблицы
-     * @param {Array} data — данные
-     * @param {Object} settings — настройки пользователя
+     * Инициализация и рендеринг таблицы
      */
-    render(schema, data, settings = {}) {
-        if (!schema || !schema.columns || !data) {
+    async init(tableKey) {
+        this.tableKey = tableKey;
+        
+        // Загружаем схему
+        await this._loadSchema();
+        
+        // Загружаем данные
+        await this._loadData();
+        
+        // Рендерим таблицу
+        this.render();
+    }
+
+    async _loadSchema() {
+        try {
+            const response = await fetch(`/api/v1/tables/${this.tableKey}/schema`, {
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error(`Ошибка загрузки схемы: ${response.status}`);
+            }
+            this.schema = await response.json();
+            this.settings = this.schema.settings || this.schema.default_settings || {};
+        } catch (error) {
+            console.error('Ошибка загрузки схемы:', error);
+            this._showError('Не удалось загрузить структуру таблицы');
+        }
+    }
+
+    async _loadData() {
+        if (!this.schema) {
+            await this._loadSchema();
+        }
+        
+        try {
+            let url = `/api/v1/tables/${this.tableKey}/data?page=1&per_page=50`;
+            const response = await fetch(url, { credentials: 'include' });
+            if (!response.ok) {
+                throw new Error(`Ошибка загрузки данных: ${response.status}`);
+            }
+            const result = await response.json();
+            this.data = result.data || [];
+            this.total = result.meta?.total || 0;
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+            this.data = [];
+        }
+    }
+
+    render() {
+        if (!this.schema || !this.data) {
             console.warn('Нет данных для отображения');
             return;
         }
 
-        const visibleColumns = this._getVisibleColumns(schema, settings);
-        const html = this._buildTable(visibleColumns, data, schema, settings);
+        const visibleColumns = this._getVisibleColumns();
+        const html = this._buildTable(visibleColumns, this.data);
         this.container.innerHTML = html;
         
         // После рендеринга — проверяем обрезку для tooltip
@@ -42,15 +89,20 @@ class TableRenderer {
         this._setupAutoWidth();
         
         // Восстанавливаем сохранённые высоты строк
-        this._restoreRowHeights(settings);
+        this._restoreRowHeights();
     }
 
-    _getVisibleColumns(schema, settings) {
-        const visibleKeys = settings.visible || schema.default_settings?.visible || [];
-        const order = settings.order || schema.default_settings?.order || [];
-        const widths = settings.widths || schema.default_settings?.widths || {};
+    _getVisibleColumns() {
+        if (!this.schema || !this.schema.columns) {
+            return [];
+        }
 
-        let filtered = schema.columns.filter(col => visibleKeys.includes(col.key) || col.fixed);
+        const visibleKeys = this.settings.visible || this.schema.default_settings?.visible || [];
+        const order = this.settings.order || this.schema.default_settings?.order || [];
+        const widths = this.settings.widths || this.schema.default_settings?.widths || {};
+        const columns = this.schema.columns || [];
+
+        let filtered = columns.filter(col => visibleKeys.includes(col.key) || col.fixed);
 
         filtered.sort((a, b) => {
             const ia = order.indexOf(a.key);
@@ -67,18 +119,14 @@ class TableRenderer {
         return filtered;
     }
 
-    _buildTable(columns, data, schema, settings) {
+    _buildTable(columns, data) {
         if (!data || data.length === 0) {
             return this._buildEmptyState(columns.length);
         }
 
-        const labels = settings.labels || schema.default_settings?.labels || {};
-        const order = settings.order || schema.default_settings?.order || [];
+        const labels = this.settings.labels || this.schema.default_settings?.labels || {};
+        const order = this.settings.order || this.schema.default_settings?.order || [];
         
-        // Определяем, есть ли столбец действий
-        const hasActions = columns.some(c => c.key === 'actions');
-        
-        // Сортируем столбцы для правильного порядка
         const sortedColumns = [...columns].sort((a, b) => {
             const ia = order.indexOf(a.key);
             const ib = order.indexOf(b.key);
@@ -116,9 +164,9 @@ class TableRenderer {
                     </thead>
                     <tbody>
                         ${data.map((item, index) => `
-                            <tr data-id="${item.id || index}" style="height: ${settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px;">
+                            <tr data-id="${item.id || index}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px;">
                                 ${sortedColumns.map(col => `
-                                    <td style="height: ${settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; max-height: ${settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; overflow: hidden; position: relative; vertical-align: middle; ${col.key === 'actions' ? 'text-align: center;' : ''} ${col.key === 'status' ? 'text-align: center;' : ''} ${col.key === 'row' ? 'text-align: right;' : ''}">
+                                    <td style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; max-height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; overflow: hidden; position: relative; vertical-align: middle; ${col.key === 'actions' ? 'text-align: center;' : ''} ${col.key === 'status' ? 'text-align: center;' : ''} ${col.key === 'row' ? 'text-align: right;' : ''}">
                                         ${this._renderCell(item, col, index)}
                                     </td>
                                 `).join('')}
@@ -286,10 +334,8 @@ class TableRenderer {
 
     _checkTruncatedCells() {
         this.container.querySelectorAll('.col-truncated[data-tooltip]').forEach(el => {
-            // Проверяем, обрезан ли текст
             const isTruncated = el.scrollWidth > el.clientWidth;
             if (!isTruncated) {
-                // Текст помещается — убираем tooltip
                 el.removeAttribute('data-tooltip');
                 el.classList.remove('col-truncated');
                 el.style.cursor = 'default';
@@ -336,7 +382,6 @@ class TableRenderer {
             let newWidth = Math.max(30, resizeData.startWidth + delta);
             let nextNewWidth = Math.max(30, resizeData.nextStartWidth - delta);
 
-            // Проверяем минимальную ширину
             const minWidth = 30;
             if (newWidth < minWidth) {
                 newWidth = minWidth;
@@ -357,15 +402,11 @@ class TableRenderer {
             resizeData.nextTh.style.width = nextNewWidth + 'px';
             resizeData.nextTh.style.minWidth = nextNewWidth + 'px';
 
-            // Обновляем данные в настройках
             const colKey = resizeData.th.dataset.col;
             const nextColKey = resizeData.nextTh.dataset.col;
-            if (colKey && nextColKey) {
-                const state = window._tableState;
-                if (state && state.settings && state.settings.widths) {
-                    state.settings.widths[colKey] = Math.round(newWidth);
-                    state.settings.widths[nextColKey] = Math.round(nextNewWidth);
-                }
+            if (colKey && nextColKey && this.settings.widths) {
+                this.settings.widths[colKey] = Math.round(newWidth);
+                this.settings.widths[nextColKey] = Math.round(nextNewWidth);
             }
         });
 
@@ -377,10 +418,10 @@ class TableRenderer {
                 document.body.style.cursor = '';
                 
                 // Сохраняем настройки
-                const state = window._tableState;
-                if (state && state.settings && state.settings.widths) {
+                if (this.settings.widths) {
                     try {
-                        saveTableSettings(state.tableKey, state.settings);
+                        const storageKey = `table_settings_${this.tableKey}`;
+                        localStorage.setItem(storageKey, JSON.stringify(this.settings));
                     } catch (e) {}
                 }
                 resizeData = null;
@@ -396,7 +437,6 @@ class TableRenderer {
 
         // Добавляем handle для каждой строки
         table.querySelectorAll('tbody tr').forEach(row => {
-            // Удаляем старый handle
             const oldHandle = row.querySelector('.row-resize-handle');
             if (oldHandle) oldHandle.remove();
 
@@ -417,7 +457,6 @@ class TableRenderer {
             row.style.position = 'relative';
             row.appendChild(handle);
 
-            // Hover-эффект
             handle.addEventListener('mouseenter', () => {
                 if (!resizeData) {
                     handle.style.background = 'var(--color-primary, #4a6cf7)';
@@ -432,7 +471,6 @@ class TableRenderer {
             });
         });
 
-        // Начинаем ресайз
         document.addEventListener('mousedown', (e) => {
             const handle = e.target.closest('.row-resize-handle');
             if (!handle) return;
@@ -469,14 +507,10 @@ class TableRenderer {
                 td.style.maxHeight = newHeight + 'px';
             });
 
-            // Сохраняем в state
             const rowId = resizeData.row.dataset.id;
             if (rowId) {
-                const state = window._tableState;
-                if (state) {
-                    if (!state.rowHeights) state.rowHeights = {};
-                    state.rowHeights[rowId] = newHeight;
-                }
+                if (!this.settings.rowHeights) this.settings.rowHeights = {};
+                this.settings.rowHeights[rowId] = newHeight;
             }
         });
 
@@ -488,19 +522,16 @@ class TableRenderer {
                 document.body.style.userSelect = '';
                 document.body.style.cursor = '';
                 
-                // Сохраняем высоты строк
-                const state = window._tableState;
-                if (state && state.rowHeights) {
+                if (this.settings.rowHeights) {
                     try {
-                        const storageKey = `row_heights_${state.tableKey}`;
-                        localStorage.setItem(storageKey, JSON.stringify(state.rowHeights));
+                        const storageKey = `row_heights_${this.tableKey}`;
+                        localStorage.setItem(storageKey, JSON.stringify(this.settings.rowHeights));
                     } catch (e) {}
                 }
                 resizeData = null;
             }
         });
 
-        // Двойной клик — автоподбор высоты
         table.addEventListener('dblclick', (e) => {
             const handle = e.target.closest('.row-resize-handle');
             if (!handle) return;
@@ -513,7 +544,6 @@ class TableRenderer {
     }
 
     _autoHeight(row) {
-        // Находим максимальную высоту содержимого
         let maxContentHeight = 0;
         const cells = row.querySelectorAll('td');
 
@@ -545,7 +575,6 @@ class TableRenderer {
             td.style.maxHeight = newHeight + 'px';
         });
 
-        // Если текст не помещается — включаем перенос
         if (maxContentHeight > newHeight) {
             row.querySelectorAll('td .col-ellipsis').forEach(el => {
                 el.classList.add('col-wrap');
@@ -557,23 +586,20 @@ class TableRenderer {
 
         const rowId = row.dataset.id;
         if (rowId) {
-            const state = window._tableState;
-            if (state) {
-                if (!state.rowHeights) state.rowHeights = {};
-                state.rowHeights[rowId] = newHeight;
-                try {
-                    const storageKey = `row_heights_${state.tableKey}`;
-                    localStorage.setItem(storageKey, JSON.stringify(state.rowHeights));
-                } catch (e) {}
-            }
+            if (!this.settings.rowHeights) this.settings.rowHeights = {};
+            this.settings.rowHeights[rowId] = newHeight;
+            try {
+                const storageKey = `row_heights_${this.tableKey}`;
+                localStorage.setItem(storageKey, JSON.stringify(this.settings.rowHeights));
+            } catch (e) {}
         }
     }
 
-    _restoreRowHeights(settings) {
+    _restoreRowHeights() {
         const table = this.container.querySelector('table');
         if (!table) return;
 
-        const rowHeights = settings.rowHeights || {};
+        const rowHeights = this.settings.rowHeights || {};
         table.querySelectorAll('tbody tr[data-id]').forEach(row => {
             const rowId = row.dataset.id;
             const height = rowHeights[rowId];
@@ -603,18 +629,15 @@ class TableRenderer {
             const colIndex = Array.from(th.parentElement.children).indexOf(th);
             const col = table.querySelector(`colgroup col:nth-child(${colIndex + 1})`);
 
-            // Находим максимальную ширину содержимого
             let maxWidth = 0;
             const padding = 16;
             const maxAllowed = 600;
             const minAllowed = 30;
 
-            // Заголовок
             const headerText = th.textContent || '';
             const headerWidth = this._getTextWidth(headerText) + padding;
             maxWidth = Math.max(maxWidth, headerWidth);
 
-            // Ячейки
             table.querySelectorAll('tbody tr').forEach(row => {
                 const cell = row.children[colIndex];
                 if (cell) {
@@ -625,7 +648,6 @@ class TableRenderer {
                 }
             });
 
-            // Применяем новую ширину
             const currentWidth = parseInt(th.style.width) || 150;
             let newWidth;
             if (maxWidth < currentWidth - 20) {
@@ -641,16 +663,14 @@ class TableRenderer {
             th.style.width = newWidth + 'px';
             th.style.minWidth = newWidth + 'px';
 
-            // Сохраняем
-            const state = window._tableState;
-            if (state && state.settings && state.settings.widths) {
-                state.settings.widths[colKey] = newWidth;
+            if (this.settings.widths) {
+                this.settings.widths[colKey] = newWidth;
                 try {
-                    saveTableSettings(state.tableKey, state.settings);
+                    const storageKey = `table_settings_${this.tableKey}`;
+                    localStorage.setItem(storageKey, JSON.stringify(this.settings));
                 } catch (e) {}
             }
 
-            // Анимация
             th.style.transition = 'background 0.3s ease';
             th.style.background = 'var(--color-primary, #4a6cf7)';
             th.style.opacity = '0.15';
@@ -685,9 +705,16 @@ class TableRenderer {
             </div>
         `;
     }
+
+    _showError(message) {
+        this.container.innerHTML = `
+            <div class="alert alert-danger m-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>${message}
+            </div>
+        `;
+    }
 }
 
-// Экспорт для использования
 if (typeof window !== 'undefined') {
     window.TableRenderer = TableRenderer;
 }

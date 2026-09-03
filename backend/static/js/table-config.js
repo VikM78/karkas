@@ -8,15 +8,8 @@ const TABLE_CONFIGS = {};
 
 async function loadTableSchema(tableKey) {
     try {
-        if (tableKey === 'manufacturers') {
-            const cacheKey = `table_settings_${tableKey}`;
-            localStorage.removeItem(cacheKey);
-            console.log('🗑️ Кеш настроек очищен для:', tableKey);
-        }
-        
         const response = await fetch(`/api/v1/tables/${tableKey}/schema`, {
-            credentials: 'include',
-            cache: 'no-cache'
+            credentials: 'include'
         });
         if (!response.ok) {
             throw new Error(`Ошибка загрузки схемы: ${response.status}`);
@@ -42,10 +35,11 @@ function getDefaultColumnSettings(tableKey) {
 }
 
 function loadTableSettings(tableKey) {
-    const storageKey = `table_settings_${tableKey}`;
     const defaults = getDefaultColumnSettings(tableKey);
-    if (!defaults) return null;
+    if (!defaults) return {};
+    
     try {
+        const storageKey = `table_settings_${tableKey}`;
         const saved = localStorage.getItem(storageKey);
         if (saved) {
             const parsed = JSON.parse(saved);
@@ -53,11 +47,23 @@ function loadTableSettings(tableKey) {
                 visible: parsed.visible || defaults.visible || [],
                 widths: { ...defaults.widths, ...parsed.widths },
                 labels: { ...defaults.labels, ...parsed.labels },
-                order: parsed.order || defaults.order || []
+                order: parsed.order || defaults.order || [],
+                rowHeights: parsed.rowHeights || {},
+                filters: parsed.filters || {},
+                sort: parsed.sort || { key: 'id', direction: 'asc' }
             };
         }
     } catch (e) {}
-    return defaults;
+    
+    return {
+        visible: defaults.visible || [],
+        widths: defaults.widths || {},
+        labels: defaults.labels || {},
+        order: defaults.order || [],
+        rowHeights: {},
+        filters: {},
+        sort: { key: 'id', direction: 'asc' }
+    };
 }
 
 function saveTableSettings(tableKey, settings) {

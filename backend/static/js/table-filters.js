@@ -37,15 +37,11 @@ function createColumnFilter(state, th, colKey, colLabel) {
         filterBtn.classList.add('active');
     }
 
-    // ============================================================
-    //  ВЫПАДАЮЩЕЕ МЕНЮ
-    // ============================================================
     const dropdown = document.createElement('div');
     dropdown.className = 'col-filter-dropdown';
     dropdown.id = `filter-${colKey}`;
     dropdown.dataset.col = colKey;
 
-    // --- Блок сортировки ---
     const sortGroup = document.createElement('div');
     sortGroup.className = 'sort-group';
     sortGroup.innerHTML = `
@@ -64,12 +60,10 @@ function createColumnFilter(state, th, colKey, colLabel) {
     `;
     dropdown.appendChild(sortGroup);
 
-    // --- Разделитель ---
     const divider1 = document.createElement('div');
     divider1.className = 'filter-divider';
     dropdown.appendChild(divider1);
 
-    // --- Очистить фильтр ---
     const clearFilter = document.createElement('div');
     clearFilter.className = 'clear-filter-item';
     clearFilter.innerHTML = `
@@ -82,7 +76,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
         }
         filterBtn.classList.remove('active');
         dropdown.classList.remove('show');
-        // Полностью пересоздаём фильтр для этого столбца
         const th = this.closest('th');
         if (th && state._filterDropdowns && state._filterDropdowns[colKey]) {
             const oldDropdown = th.querySelector('.col-filter-dropdown');
@@ -97,24 +90,20 @@ function createColumnFilter(state, th, colKey, colLabel) {
     });
     dropdown.appendChild(clearFilter);
 
-    // --- Разделитель ---
     const divider2 = document.createElement('div');
     divider2.className = 'filter-divider';
     dropdown.appendChild(divider2);
 
-    // --- Поле поиска ---
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.className = 'filter-search';
     searchInput.placeholder = 'Поиск';
     dropdown.appendChild(searchInput);
 
-    // --- Список значений ---
     const filterList = document.createElement('div');
     filterList.className = 'filter-list';
     dropdown.appendChild(filterList);
 
-    // --- Кнопки OK / Отмена ---
     const actions = document.createElement('div');
     actions.className = 'filter-actions';
     actions.innerHTML = `
@@ -124,10 +113,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
     dropdown.appendChild(actions);
 
     th.appendChild(dropdown);
-
-    // ============================================================
-    //  ОБРАБОТЧИКИ
-    // ============================================================
 
     const col = getColumnByKey(state.tableKey, colKey);
     const predefinedValues = col && col.filterValues ? col.filterValues : null;
@@ -158,11 +143,9 @@ function createColumnFilter(state, th, colKey, colLabel) {
         }
 
         const currentSelected = (state.columnFilters && state.columnFilters[colKey]) || [];
-        // Если фильтр не активен, все значения считаются выбранными
         const hasActiveFilter = currentSelected.length > 0 && currentSelected.length < values.length;
         const allSelected = !hasActiveFilter || values.every(v => currentSelected.includes(v));
 
-        // Пункт "(Выбрать все)"
         const allDiv = document.createElement('div');
         allDiv.className = 'filter-item filter-all';
         allDiv.innerHTML = `
@@ -177,7 +160,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
         });
         filterList.appendChild(allDiv);
 
-        // Список значений
         values.forEach(val => {
             const isChecked = currentSelected.includes(val) || allSelected;
             const div = document.createElement('div');
@@ -205,7 +187,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
             filterList.appendChild(div);
         });
 
-        // Синхронизация "(Выбрать все)"
         const allCheckbox = filterList.querySelector('.filter-all input[type="checkbox"]');
         const itemCheckboxes = filterList.querySelectorAll('.filter-item:not(.filter-all) input[type="checkbox"]');
         
@@ -217,7 +198,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
         });
     }
 
-    // Поиск в списке
     searchInput.addEventListener('input', function() {
         const search = this.value.toLowerCase();
         filterList.querySelectorAll('.filter-item:not(.filter-all)').forEach(item => {
@@ -228,7 +208,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
         if (allItem) allItem.style.display = 'flex';
     });
 
-    // Сортировка
     sortGroup.querySelectorAll('.sort-item').forEach(item => {
         item.addEventListener('click', function() {
             const action = this.dataset.sort;
@@ -246,7 +225,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
         });
     });
 
-    // OK — применить фильтр
     actions.querySelector('.apply-filter').addEventListener('click', function() {
         const selected = [];
         filterList.querySelectorAll('.filter-item:not(.filter-all) input[type="checkbox"]:checked').forEach(cb => {
@@ -269,7 +247,6 @@ function createColumnFilter(state, th, colKey, colLabel) {
         else loadData(state, 1);
     });
 
-    // Отмена — закрыть без применения
     actions.querySelector('.cancel-filter').addEventListener('click', function() {
         dropdown.classList.remove('show');
     });
