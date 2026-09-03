@@ -39,7 +39,7 @@ function createTable(tableKey, containerId, dataLoader, crudFunctions) {
         _filterBtn: {},
         _renderers: config?.cellRenderers || {},
         rowHeights: settings?.rowHeights || {},
-        selectedRows: new Set(),  // для мультивыбора
+        selectedRows: new Set(),
     };
 
     state.table = container.querySelector('table');
@@ -137,15 +137,17 @@ function renderTableHeader(state) {
 
     visibleCols.forEach((col, index) => {
         const isFixed = col.key === 'row' || col.key === 'actions' || col.fixed;
+        const isRow = col.key === 'row' || col.type === 'row_number';
+        const isIcon = col.type === 'status' || col.type === 'boolean' || col.type === 'icon';
         const width = state.settings.widths[col.key] || col.width || 150;
         const minWidth = col.minWidth || 30;
         const maxWidth = col.maxWidth || 600;
 
         const colEl = document.createElement('col');
-        if (col.key === 'row' || col.type === 'row_number') {
+        if (isRow) {
             colEl.style.width = 'auto';
             colEl.style.minWidth = 'var(--col-row-min-width, 25px)';
-        } else if (col.type === 'status' || col.type === 'boolean' || col.type === 'icon') {
+        } else if (isIcon) {
             colEl.style.width = 'auto';
             colEl.style.minWidth = '30px';
         } else {
@@ -159,11 +161,12 @@ function renderTableHeader(state) {
         const th = document.createElement('th');
         th.dataset.col = col.key;
         th.dataset.index = index;
-        if (col.key === 'row' || col.type === 'row_number') {
+        if (isRow) {
             th.style.width = 'auto';
             th.style.minWidth = 'var(--col-row-min-width, 25px)';
-            th.style.textAlign = 'center';
-        } else if (col.type === 'status' || col.type === 'boolean' || col.type === 'icon') {
+            th.style.textAlign = 'var(--col-row-align, center)';
+            th.classList.add('col-row-sticky');
+        } else if (isIcon) {
             th.style.width = 'auto';
             th.style.minWidth = '30px';
             th.style.textAlign = 'center';
@@ -178,6 +181,12 @@ function renderTableHeader(state) {
         
         if (isFixed) {
             th.classList.add('col-fixed');
+        }
+
+        // Определяем, активна ли сортировка для этого столбца
+        const isSortActive = state.columnSort && state.columnSort.key === col.key;
+        if (isSortActive) {
+            th.classList.add('sort-active');
         }
 
         if (col.filterable !== false && col.key !== 'row' && col.key !== 'actions') {
@@ -196,6 +205,19 @@ function renderTableHeader(state) {
             labelSpan.style.whiteSpace = 'nowrap';
             content.appendChild(labelSpan);
             
+            // Индикатор сортировки (показываем только если активна)
+            if (col.sortable !== false) {
+                const sortIndicator = document.createElement('span');
+                sortIndicator.className = 'sort-indicator';
+                sortIndicator.textContent = state.columnSort?.direction === 'asc' ? '↑' : '↓';
+                sortIndicator.style.display = isSortActive ? 'inline' : 'none';
+                sortIndicator.style.fontSize = '12px';
+                sortIndicator.style.color = 'var(--color-primary, #4a6cf7)';
+                sortIndicator.style.flexShrink = '0';
+                content.appendChild(sortIndicator);
+            }
+            
+            // Фильтр (всегда)
             const filterBtn = document.createElement('button');
             filterBtn.className = 'col-btn filter-btn';
             filterBtn.innerHTML = '▼';
@@ -206,6 +228,7 @@ function renderTableHeader(state) {
             filterBtn.style.color = '#adb5bd';
             filterBtn.style.cursor = 'pointer';
             filterBtn.style.fontSize = '12px';
+            filterBtn.style.flexShrink = '0';
             filterBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (!th.querySelector('.col-filter-dropdown')) {
@@ -217,33 +240,18 @@ function renderTableHeader(state) {
             });
             content.appendChild(filterBtn);
             
-            if (col.sortable !== false) {
-                const sortBtn = document.createElement('button');
-                sortBtn.className = 'col-btn sort-btn';
-                sortBtn.innerHTML = '⇅';
-                sortBtn.title = 'Сортировка';
-                sortBtn.style.background = 'none';
-                sortBtn.style.border = 'none';
-                sortBtn.style.padding = '0 3px';
-                sortBtn.style.color = '#adb5bd';
-                sortBtn.style.cursor = 'pointer';
-                sortBtn.style.fontSize = '12px';
-                sortBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    toggleSort(state, col.key);
-                });
-                content.appendChild(sortBtn);
-            }
-            
             th.appendChild(content);
         } else {
             th.textContent = label;
         }
 
-        // Resize handle — только для НЕ фиксированных столбцов и не последнего
-        if (!isFixed && index < visibleCols.length - 1) {
+        // Resize handle — для всех столбцов, включая последний
+        if (!isFixed) {
             const handle = document.createElement('div');
             handle.className = 'resize-handle';
+            if (index === visibleCols.length - 1) {
+                handle.classList.add('resize-last');
+            }
             handle.dataset.index = index;
             handle.style.position = 'absolute';
             handle.style.top = '0';
@@ -288,12 +296,35 @@ function startResize(e, index, state) {
 
     const visibleCols = getVisibleColumns(state.tableKey, state.settings);
     
-    // Проверяем, что столбец не фиксированный
     const col = visibleCols[index];
     if (col.key === 'row' || col.key === 'actions' || col.fixed) return;
     
-    // Проверяем, что есть правый сосед
-    if (index >= visibleCols.length - 1) return;
+    if (index >= visibleCols.length - 1) {
+        // Последний столбец — ресайз всей таблицы
+        const colElements = state.colgroup.querySelectorAll('col');
+        const thElements = state.thead.querySelectorAll('th');
+        const leftElement = colElements[index];
+        const leftTh = thElements[index];
+        if (!leftElement || !leftTh) return;
+        const leftWidth = parseInt(leftElement.style.width) || col.width || 150;
+        state.resizeData = {
+            mode: 'last',
+            index: index,
+            startX: e.clientX,
+            leftCol: col,
+            leftElement: leftElement,
+            leftTh: leftTh,
+            leftWidth: leftWidth,
+            table: state.table,
+            container: state.container
+        };
+        th.querySelector('.resize-handle')?.classList.add('active');
+        document.addEventListener('mousemove', onResize);
+        document.addEventListener('mouseup', stopResize);
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
 
     const colElements = state.colgroup.querySelectorAll('col');
     const thElements = state.thead.querySelectorAll('th');
@@ -310,6 +341,7 @@ function startResize(e, index, state) {
     const totalWidth = leftWidth + rightWidth;
 
     state.resizeData = {
+        mode: 'normal',
         index: index,
         startX: e.clientX,
         leftCol: col,
@@ -341,34 +373,37 @@ function onResize(e) {
     if (!state || !state.resizeData) return;
 
     const data = state.resizeData;
-    const delta = e.clientX - data.startX;
 
-    // Новая ширина левого столбца
-    let newLeftWidth = data.leftWidth + delta;
-    let newRightWidth = data.totalWidth - newLeftWidth;
+    if (data.mode === 'last') {
+        const delta = e.clientX - data.startX;
+        let newWidth = Math.max(30, data.leftWidth + delta);
+        data.leftElement.style.width = newWidth + 'px';
+        data.leftElement.style.minWidth = newWidth + 'px';
+        data.leftTh.style.width = newWidth + 'px';
+        data.leftTh.style.minWidth = newWidth + 'px';
+        data.leftCol._width = newWidth;
+        state.settings.widths[data.leftCol.key] = Math.round(newWidth);
+        return;
+    }
+
+    const delta = e.clientX - data.startX;
 
     // Если правый столбец фиксированный — он не меняется
     if (data.isRightFixed) {
-        newLeftWidth = data.totalWidth - data.rightWidth;
-        // Двигаем весь блок правее
-        // В Excel так: фиксированный столбец стоит на месте, левый меняется
-        // Но общая ширина пары меняется
-        // На самом деле при фиксированном правом — левый просто растягивается/сужается
-        // до границы фиксированного столбца
-        newLeftWidth = data.leftWidth + delta;
+        let newLeftWidth = data.leftWidth + delta;
         newLeftWidth = Math.max(data.leftMin, Math.min(data.leftMax, newLeftWidth));
-        // Обновляем только левый
         data.leftElement.style.width = newLeftWidth + 'px';
         data.leftElement.style.minWidth = newLeftWidth + 'px';
         data.leftTh.style.width = newLeftWidth + 'px';
         data.leftTh.style.minWidth = newLeftWidth + 'px';
-        
         data.leftCol._width = newLeftWidth;
         state.settings.widths[data.leftCol.key] = Math.round(newLeftWidth);
         return;
     }
 
-    // Ограничения
+    let newLeftWidth = data.leftWidth + delta;
+    let newRightWidth = data.totalWidth - newLeftWidth;
+
     if (newLeftWidth < data.leftMin) {
         newLeftWidth = data.leftMin;
         newRightWidth = data.totalWidth - newLeftWidth;
@@ -386,7 +421,6 @@ function onResize(e) {
         newLeftWidth = data.totalWidth - newRightWidth;
     }
 
-    // Применяем
     data.leftElement.style.width = newLeftWidth + 'px';
     data.leftElement.style.minWidth = newLeftWidth + 'px';
     data.leftTh.style.width = newLeftWidth + 'px';
@@ -412,92 +446,6 @@ function stopResize(e) {
     }
     document.removeEventListener('mousemove', onResize);
     document.removeEventListener('mouseup', stopResize);
-}
-
-// ============================================================
-//  АВТОПОДБОР ШИРИНЫ (ДВОЙНОЙ КЛИК)
-// ============================================================
-
-function setupAutoWidth(state) {
-    const table = state.table;
-    if (!table) return;
-
-    table.addEventListener('dblclick', function(e) {
-        const handle = e.target.closest('.resize-handle');
-        if (!handle) return;
-
-        const th = handle.closest('th');
-        if (!th) return;
-        const colKey = th.dataset.col;
-        if (!colKey) return;
-
-        // Проверяем, что столбец не фиксированный
-        const visibleCols = getVisibleColumns(state.tableKey, state.settings);
-        const col = visibleCols.find(c => c.key === colKey);
-        if (!col || col.key === 'row' || col.key === 'actions' || col.fixed) return;
-
-        const colIndex = Array.from(th.parentElement.children).indexOf(th);
-        const colEl = state.colgroup.querySelector(`col[data-col="${colKey}"]`);
-
-        // Находим максимальную ширину содержимого
-        let maxWidth = 0;
-        const padding = 16;
-        const maxAllowed = col.maxWidth || 600;
-        const minAllowed = col.minWidth || 30;
-
-        // Заголовок
-        const headerText = th.textContent || '';
-        const headerWidth = getTextWidth(headerText) + padding;
-        maxWidth = Math.max(maxWidth, headerWidth);
-
-        // Ячейки
-        state.tbody.querySelectorAll('tr').forEach(row => {
-            const cell = row.children[colIndex];
-            if (cell) {
-                const tooltipEl = cell.querySelector('[data-tooltip]');
-                const fullText = tooltipEl ? tooltipEl.dataset.tooltip : (cell.textContent || '');
-                const cellWidth = getTextWidth(fullText) + padding;
-                maxWidth = Math.max(maxWidth, cellWidth);
-            }
-        });
-
-        // Применяем новую ширину
-        const currentWidth = parseInt(th.style.width) || col.width || 150;
-        let newWidth;
-        if (maxWidth < currentWidth - 20) {
-            newWidth = Math.max(minAllowed, maxWidth + 10);
-        } else {
-            newWidth = Math.max(minAllowed, Math.min(maxAllowed, maxWidth + 20));
-        }
-
-        if (colEl) {
-            colEl.style.width = newWidth + 'px';
-            colEl.style.minWidth = newWidth + 'px';
-        }
-        th.style.width = newWidth + 'px';
-        th.style.minWidth = newWidth + 'px';
-
-        state.settings.widths[colKey] = newWidth;
-        saveTableSettings(state.tableKey, state.settings);
-
-        // Анимация
-        th.style.transition = 'background 0.3s ease';
-        th.style.background = 'var(--color-primary, #4a6cf7)';
-        th.style.opacity = '0.15';
-        setTimeout(() => {
-            th.style.background = '';
-            th.style.opacity = '';
-        }, 400);
-    });
-}
-
-function getTextWidth(text) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const fontSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--font-size-base')) || 14;
-    const fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--font-family') || 'Arial';
-    ctx.font = `${fontSize}px ${fontFamily}`;
-    return ctx.measureText(text).width;
 }
 
 // ============================================================
@@ -560,27 +508,28 @@ function renderTableBody(state, data) {
             } else {
                 cellContent = item[col.key] !== undefined && item[col.key] !== null ? item[col.key] : '';
             }
-            // Определяем класс для ячейки
+            const isRow = col.key === 'row' || col.type === 'row_number';
+            const isIcon = col.type === 'status' || col.type === 'boolean' || col.type === 'icon';
             let cellClass = '';
-            if (col.key === 'row' || col.type === 'row_number') {
+            if (isRow) {
                 cellClass = 'col-row';
-            } else if (col.type === 'status' || col.type === 'boolean' || col.type === 'icon') {
+                if (isRow) cellClass += ' col-row-sticky';
+            } else if (isIcon) {
                 cellClass = 'col-icon';
             } else {
                 cellClass = 'col-ellipsis';
             }
-            html += `<td class="${cellClass}" style="height: ${rowHeight}px; max-height: ${rowHeight}px; overflow: hidden; position: relative; vertical-align: middle;">${cellContent}</td>`;
+            html += `<td class="${cellClass}" style="height: ${rowHeight}px; max-height: ${rowHeight}px; overflow: hidden; position: relative; vertical-align: middle; text-align: ${isRow ? 'center' : isIcon ? 'center' : 'left'};">${cellContent}</td>`;
         });
         html += `</tr>`;
     });
     tbody.innerHTML = html;
     
-    // Добавляем иконки редактирования
+    // Иконки редактирования только если editMode включён
     if (state.editMode) {
         renderEditIcons(state);
     }
     
-    // Проверяем обрезку для tooltip
     setTimeout(() => {
         tbody.querySelectorAll('.col-truncated[data-tooltip]').forEach(el => {
             const isTruncated = el.scrollWidth > el.clientWidth;
@@ -601,7 +550,6 @@ function renderEditIcons(state) {
     const tableWrap = state.container.closest('.table-wrap') || state.container;
     if (!tableWrap) return;
 
-    // Удаляем старые иконки
     const oldOverlay = tableWrap.querySelector('.edit-icon-overlay');
     if (oldOverlay) oldOverlay.remove();
 
@@ -652,12 +600,10 @@ function renderEditIcons(state) {
             e.stopPropagation();
             const id = parseInt(this.dataset.rowId);
             if (state.selectedRows.size > 1) {
-                // Мультиредактирование
                 if (typeof openMultiEditModal === 'function') {
                     openMultiEditModal(state);
                 }
             } else {
-                // Обычное редактирование
                 if (typeof editItem === 'function') {
                     editItem(id);
                 }
@@ -710,11 +656,19 @@ function toggleSort(state, colKey) {
 function updateSortIndicators(state) {
     document.querySelectorAll('#tableHeader th').forEach(th => {
         th.classList.remove('sort-asc', 'sort-desc');
+        th.classList.remove('sort-active');
     });
     if (state.columnSort && state.columnSort.key) {
         const targetTh = document.querySelector(`#tableHeader th[data-col="${state.columnSort.key}"]`);
         if (targetTh) {
+            targetTh.classList.add('sort-active');
             targetTh.classList.add(state.columnSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+            // Обновляем индикатор
+            const indicator = targetTh.querySelector('.sort-indicator');
+            if (indicator) {
+                indicator.textContent = state.columnSort.direction === 'asc' ? '↑' : '↓';
+                indicator.style.display = 'inline';
+            }
         }
     }
 }
@@ -1198,13 +1152,11 @@ function toggleEditMode() {
         btn.classList.add('active');
         btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Готово';
         btnColumns.style.display = 'inline-block';
-        // Показываем иконки для выделенных строк
         renderEditIcons(state);
     } else {
         btn.classList.remove('active');
         btn.innerHTML = '<i class="bi bi-pencil me-1"></i>Редактировать';
         btnColumns.style.display = 'none';
-        // Удаляем иконки
         const overlay = state.container.closest('.table-wrap')?.querySelector('.edit-icon-overlay');
         if (overlay) overlay.remove();
         state.selectedRows.clear();
@@ -1221,23 +1173,20 @@ function selectRow(state, rowId, ctrlKey, shiftKey) {
     if (!state) return;
     
     if (ctrlKey) {
-        // Ctrl+клик — переключение
         if (state.selectedRows.has(rowId)) {
             state.selectedRows.delete(rowId);
         } else {
             state.selectedRows.add(rowId);
         }
     } else if (shiftKey) {
-        // Shift+клик — диапазон
         // TODO: реализовать диапазон
     } else {
-        // Обычный клик — очищаем и выделяем одну
         state.selectedRows.clear();
         state.selectedRows.add(rowId);
     }
     
-    // Обновляем отображение
-    renderEditIcons(state);
+    // Обновляем отображение (перерисовываем строки)
+    renderTableBody(state, state._lastData);
 }
 
 // ============================================================
@@ -1260,6 +1209,5 @@ window.resetColumnSettings = resetColumnSettings;
 window.formatDateTime = formatDateTime;
 window.toggleEditMode = toggleEditMode;
 window.selectRow = selectRow;
-window.setupAutoWidth = setupAutoWidth;
 
 console.log('✅ table.js загружен!');

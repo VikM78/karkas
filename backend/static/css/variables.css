@@ -70,7 +70,7 @@
     --text-light-active: #ffffff;
     --text-danger: #dc2626;
 
-    --border-color: #dee2e6;
+    --border-color: #e8ecf1;
     --border-sidebar: rgba(255, 255, 255, 0.06);
     --border-active: rgba(74, 108, 247, 0.3);
 
@@ -88,6 +88,7 @@
     --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
     --filter-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --sticky-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
 
     /* ===== ТАБЛИЦА — ШАПКА ===== */
     --table-header-bg: #f8f9fa;
@@ -103,6 +104,7 @@
 
     /* ===== ВЫСОТА СТРОК ===== */
     --row-height: 40px;
+    --header-row-height: 44px;
     --row-height-min: 32px;
     --row-height-max: 300px;
 
@@ -199,11 +201,55 @@
     --edit-icon-size: 20px;
     --edit-icon-color: var(--color-primary);
     --edit-icon-hover-color: var(--color-primary-hover);
-    --edit-icon-offset: 8px;  /* отступ от правого края */
+    --edit-icon-offset: 8px;
     --edit-icon-z-index: 20;
 
     /* ===== ГЛУБИНА ОТМЕНЫ ===== */
     --undo-depth: 10;
+
+    /* ===== СТАТУСЫ (полное форматирование) ===== */
+    --status-active-color: #059669;
+    --status-active-bg: rgba(5, 150, 105, 0.10);
+    --status-active-font-weight: 500;
+    --status-active-font-style: normal;
+    --status-active-text-decoration: none;
+
+    --status-hidden-color: #6b7280;
+    --status-hidden-bg: rgba(107, 114, 128, 0.10);
+    --status-hidden-font-weight: 400;
+    --status-hidden-font-style: normal;
+    --status-hidden-text-decoration: none;
+
+    --status-deleted-color: #dc2626;
+    --status-deleted-bg: rgba(220, 38, 38, 0.10);
+    --status-deleted-font-weight: 400;
+    --status-deleted-font-style: normal;
+    --status-deleted-text-decoration: line-through;
+
+    --status-archived-color: #d97706;
+    --status-archived-bg: rgba(217, 119, 6, 0.10);
+    --status-archived-font-weight: 400;
+    --status-archived-font-style: italic;
+    --status-archived-text-decoration: none;
+
+    /* ===== СОСТОЯНИЯ СТРОК ===== */
+    --row-hover-bg: #f8f9fa;
+    --row-selected-bg: #e0e7ff;
+    --row-selected-border-color: #4a6cf7;
+    --row-deleted-bg: #f3f4f6;
+    --row-deleted-color: #9ca3af;
+    --row-deleted-text-decoration: line-through;
+
+    /* ===== ЗАКРЕПЛЕНИЕ ===== */
+    --sticky-header-z-index: 10;
+    --sticky-row-z-index: 5;
+
+    /* ===== ПРОКРУТКА (поверх контента) ===== */
+    --scrollbar-width: 6px;
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.30);
+    --scrollbar-radius: 4px;
 
     /* ===== ФИЛЬТРЫ ===== */
     --filter-dropdown-bg: var(--bg-primary);

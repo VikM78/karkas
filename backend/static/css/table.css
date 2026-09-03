@@ -49,8 +49,26 @@
     border: 1px solid var(--border-color, #dee2e6);
     border-radius: var(--table-radius, 8px);
     min-height: 0;
-    scrollbar-gutter: stable;
     position: relative;
+    /* Прокрутка поверх контента */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* ===== ПРОКРУТКА (WebKit) ===== */
+.table-wrap::-webkit-scrollbar {
+    width: var(--scrollbar-width, 6px);
+    height: var(--scrollbar-width, 6px);
+}
+.table-wrap::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, transparent);
+}
+.table-wrap::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb, rgba(0,0,0,0.12));
+    border-radius: var(--scrollbar-radius, 4px);
+}
+.table-wrap::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover, rgba(0,0,0,0.30));
 }
 
 /* ===== ТАБЛИЦА ===== */
@@ -61,13 +79,17 @@
     border-collapse: collapse;
 }
 
-/* --- ШАПКА --- */
-.table-custom thead th {
+/* --- ШАПКА (закреплена) --- */
+.table-custom thead {
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: var(--sticky-header-z-index, 10);
+}
+
+.table-custom thead th {
     background: var(--table-header-bg, #f8f9fa);
     border-right: 1px solid var(--border-color, #dee2e6);
+    border-bottom: 2px solid var(--border-color, #dee2e6);
     padding: var(--table-header-padding, 8px 12px);
     font-weight: var(--table-header-font-weight, 600);
     font-size: var(--table-header-font-size, 14px);
@@ -75,6 +97,8 @@
     position: relative;
     text-align: left;
     color: var(--table-header-color, #1a1a2e);
+    height: var(--header-row-height, 44px);
+    white-space: nowrap;
 }
 .table-custom thead th:last-child {
     border-right: none;
@@ -102,6 +126,7 @@
     transition: all var(--transition-fast, 0.15s ease);
     border-radius: 3px;
     line-height: 1;
+    flex-shrink: 0;
 }
 .table-custom thead th .th-content .col-btn:hover {
     opacity: 1;
@@ -111,6 +136,15 @@
 .table-custom thead th .th-content .col-btn.active {
     opacity: 1;
     color: var(--color-primary, #4a6cf7);
+}
+.table-custom thead th .th-content .sort-indicator {
+    font-size: var(--font-size-sm, 12px);
+    color: var(--color-primary, #4a6cf7);
+    flex-shrink: 0;
+    display: none;
+}
+.table-custom thead th.sort-active .sort-indicator {
+    display: inline;
 }
 
 /* --- RESIZE HANDLE (граница столбца) --- */
@@ -129,8 +163,7 @@
     background: var(--color-primary, #4a6cf7);
     opacity: 0.4;
 }
-
-/* --- ЗАПРЕТ РЕСАЙЗА ДЛЯ ФИКСИРОВАННЫХ СТОЛБЦОВ --- */
+/* Запрет ресайза для фиксированных столбцов */
 .table-custom thead th.col-fixed .resize-handle {
     cursor: default;
     opacity: 0.3;
@@ -141,8 +174,27 @@
 }
 
 /* --- СОРТИРОВКА --- */
-.sort-asc .col-label::after { content: ' ↑'; color: var(--color-primary, #4a6cf7); }
-.sort-desc .col-label::after { content: ' ↓'; color: var(--color-primary, #4a6cf7); }
+.sort-asc .col-label::after {
+    content: ' ↑';
+    color: var(--color-primary, #4a6cf7);
+}
+.sort-desc .col-label::after {
+    content: ' ↓';
+    color: var(--color-primary, #4a6cf7);
+}
+
+/* --- ЗАКРЕПЛЁННЫЙ СТОЛБЕЦ # --- */
+.table-custom .col-row-sticky {
+    position: sticky;
+    left: 0;
+    z-index: var(--sticky-row-z-index, 5);
+    background: var(--bg-primary, #ffffff);
+    box-shadow: var(--sticky-shadow, 2px 0 12px rgba(0,0,0,0.08));
+}
+.table-custom thead .col-row-sticky {
+    background: var(--table-header-bg, #f8f9fa);
+    z-index: calc(var(--sticky-header-z-index, 10) + 1);
+}
 
 /* --- ТЕЛО ТАБЛИЦЫ --- */
 .table-custom tbody td {
@@ -160,16 +212,27 @@
 .table-custom tbody td:last-child {
     border-right: none;
 }
-.table-custom tbody tr.table-deleted {
-    background-color: var(--table-deleted-bg, #e9ecef);
-    text-decoration: line-through;
-    opacity: var(--table-deleted-opacity, 0.7);
-}
-.table-custom tbody tr.table-deleted td {
-    text-decoration: line-through;
+
+/* --- СТРОКИ: состояния --- */
+.table-custom tbody tr {
+    transition: background 0.15s ease;
 }
 .table-custom tbody tr:hover {
-    background: var(--table-row-hover, #f8f9fa);
+    background: var(--row-hover-bg, #f8f9fa);
+}
+.table-custom tbody tr.row-selected {
+    background: var(--row-selected-bg, #e0e7ff);
+}
+.table-custom tbody tr.row-selected td:first-child {
+    border-left: 3px solid var(--row-selected-border-color, #4a6cf7);
+}
+.table-custom tbody tr.table-deleted {
+    background: var(--row-deleted-bg, #f3f4f6);
+    color: var(--row-deleted-color, #9ca3af);
+    text-decoration: var(--row-deleted-text-decoration, line-through);
+}
+.table-custom tbody tr.table-deleted td {
+    text-decoration: var(--row-deleted-text-decoration, line-through);
 }
 
 /* ===== СТОЛБЕЦ № (row) ===== */
@@ -189,7 +252,6 @@
     width: auto;
     white-space: nowrap;
 }
-
 .col-icon .icon {
     display: inline-flex;
     align-items: center;
@@ -198,11 +260,9 @@
     font-size: var(--font-size-lg, 16px);
     line-height: 1;
 }
-
 .col-icon .icon-text {
     display: none;
 }
-
 /* Tooltip для иконок */
 .col-icon .icon[data-tooltip]:hover::after {
     content: attr(data-tooltip);
@@ -220,6 +280,36 @@
     pointer-events: none;
 }
 
+/* ===== СТАТУСЫ (полное форматирование) ===== */
+.status-active {
+    color: var(--status-active-color, #059669);
+    background: var(--status-active-bg, rgba(5,150,105,0.10));
+    font-weight: var(--status-active-font-weight, 500);
+    font-style: var(--status-active-font-style, normal);
+    text-decoration: var(--status-active-text-decoration, none);
+}
+.status-hidden {
+    color: var(--status-hidden-color, #6b7280);
+    background: var(--status-hidden-bg, rgba(107,114,128,0.10));
+    font-weight: var(--status-hidden-font-weight, 400);
+    font-style: var(--status-hidden-font-style, normal);
+    text-decoration: var(--status-hidden-text-decoration, none);
+}
+.status-deleted {
+    color: var(--status-deleted-color, #dc2626);
+    background: var(--status-deleted-bg, rgba(220,38,38,0.10));
+    font-weight: var(--status-deleted-font-weight, 400);
+    font-style: var(--status-deleted-font-style, normal);
+    text-decoration: var(--status-deleted-text-decoration, line-through);
+}
+.status-archived {
+    color: var(--status-archived-color, #d97706);
+    background: var(--status-archived-bg, rgba(217,119,6,0.10));
+    font-weight: var(--status-archived-font-weight, 400);
+    font-style: var(--status-archived-font-style, italic);
+    text-decoration: var(--status-archived-text-decoration, none);
+}
+
 /* ===== ПОВЕДЕНИЕ ЯЧЕЕК ===== */
 .col-ellipsis {
     overflow: hidden;
@@ -228,15 +318,13 @@
     max-width: 100%;
     display: block;
 }
-
 .col-wrap {
     white-space: normal;
     word-wrap: break-word;
     word-break: break-word;
     overflow: visible;
 }
-
-/* --- Tooltip для обрезанных --- */
+/* Tooltip для обрезанных */
 .col-truncated {
     position: relative;
     cursor: help;
@@ -301,27 +389,13 @@
 .col-align-center { text-align: center; }
 .col-align-right { text-align: right; }
 
-/* ===== СТАТУС (иконка) ===== */
-.status-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--font-size-lg, 16px);
-    line-height: 1;
-    cursor: default;
-    transition: transform var(--transition-fast, 0.15s ease);
-}
-.status-icon:hover {
-    transform: scale(1.15);
-}
-
-/* ===== RESIZE СТРОКИ ===== */
+/* ===== RESIZE СТРОКИ (активация в зоне #) ===== */
 .row-resize-handle {
     position: absolute;
     bottom: -4px;
     left: 0;
     right: 0;
-    height: 8px;
+    height: 6px;
     cursor: row-resize;
     z-index: 10;
     background: transparent;
@@ -329,7 +403,11 @@
 }
 .row-resize-handle:hover {
     background: var(--color-primary, #4a6cf7);
-    opacity: 0.3;
+    opacity: 0.25;
+}
+.row-resize-handle.active {
+    background: var(--color-primary, #4a6cf7);
+    opacity: 0.4;
 }
 
 /* ===== ИКОНКА РЕДАКТИРОВАНИЯ (справа от таблицы) ===== */
@@ -341,7 +419,6 @@
     pointer-events: none;
     z-index: var(--edit-icon-z-index, 20);
 }
-
 .edit-icon-overlay .edit-icon {
     position: absolute;
     right: 0;
@@ -358,12 +435,10 @@
     transition: opacity 0.2s ease, transform 0.15s ease;
     transform: translateY(calc(50% - 50%));
 }
-
 .edit-icon-overlay .edit-icon:hover {
     color: var(--edit-icon-hover-color, #3b5de7);
     transform: translateY(calc(50% - 50%)) scale(1.1);
 }
-
 .edit-icon-overlay .edit-icon.visible {
     opacity: 1;
 }
@@ -374,7 +449,9 @@
     color: #fff;
     border-color: var(--color-primary, #4a6cf7);
 }
-#editModeToggle.active:hover { background: var(--color-primary-hover, #3b5de7); }
+#editModeToggle.active:hover {
+    background: var(--color-primary-hover, #3b5de7);
+}
 
 /* ===== КНОПКА СТОЛБЦЫ ===== */
 .btn-columns { display: none; }
