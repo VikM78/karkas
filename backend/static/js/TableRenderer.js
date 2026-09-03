@@ -1,6 +1,7 @@
 /**
  * TableRenderer — рендеринг таблицы на основе схемы
  * С поддержкой обрезки, tooltip, автоподбора ширины и ресайза строк
+ * Обновлён: иконки для статусов и boolean, столбец № с автошириной
  */
 
 class TableRenderer {
@@ -20,13 +21,8 @@ class TableRenderer {
     async init(tableKey) {
         this.tableKey = tableKey;
         
-        // Загружаем схему
         await this._loadSchema();
-        
-        // Загружаем данные
         await this._loadData();
-        
-        // Рендерим таблицу
         this.render();
     }
 
@@ -76,19 +72,10 @@ class TableRenderer {
         const html = this._buildTable(visibleColumns, this.data);
         this.container.innerHTML = html;
         
-        // После рендеринга — проверяем обрезку для tooltip
         this._checkTruncatedCells();
-        
-        // Настраиваем ресайз столбцов
         this._setupColumnResize();
-        
-        // Настраиваем ресайз строк
         this._setupRowResize();
-        
-        // Настраиваем автоподбор ширины (двойной клик)
         this._setupAutoWidth();
-        
-        // Восстанавливаем сохранённые высоты строк
         this._restoreRowHeights();
     }
 
@@ -136,40 +123,64 @@ class TableRenderer {
         });
 
         let html = `
-            <div class="table-wrapper" style="overflow-x: auto; overflow-y: auto;">
+            <div class="table-wrapper" style="overflow-x: auto; overflow-y: auto; position: relative;">
                 <table class="table table-hover table-sm table-custom" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
                     <colgroup>
-                        ${sortedColumns.map(col => `
-                            <col data-col="${col.key}" style="width: ${col._width || 150}px; min-width: ${col.min_width || 30}px; max-width: ${col.max_width || 600}px;">
-                        `).join('')}
+                        ${sortedColumns.map(col => {
+                            if (col.key === 'row' || col.type === 'row_number') {
+                                return `<col data-col="${col.key}" style="width: auto; min-width: var(--col-row-min-width, 25px);">`;
+                            } else if (col.type === 'status' || col.type === 'boolean' || col.type === 'icon') {
+                                return `<col data-col="${col.key}" style="width: auto; min-width: 30px;">`;
+                            } else {
+                                return `<col data-col="${col.key}" style="width: ${col._width || 150}px; min-width: ${col.min_width || 30}px; max-width: ${col.max_width || 600}px;">`;
+                            }
+                        }).join('')}
                     </colgroup>
                     <thead>
                         <tr>
-                            ${sortedColumns.map((col, index) => `
-                                <th data-col="${col.key}" data-index="${index}"
-                                    style="width: ${col._width || 150}px; min-width: ${col.min_width || 30}px; max-width: ${col.max_width || 600}px;
-                                           ${col.key === 'actions' ? 'text-align: center;' : ''}
-                                           ${col.key === 'status' ? 'text-align: center;' : ''}
-                                           ${col.key === 'row' ? 'text-align: right;' : ''}"
-                                    class="${col.sortable ? 'sortable' : ''} ${col.key === 'actions' ? 'col-actions' : ''}">
-                                    <div class="th-content">
-                                        <span class="col-label">${labels[col.key] || col.label || ''}</span>
-                                        ${col.sortable ? `<span class="sort-indicator" style="font-size: 12px; color: #adb5bd;">⇅</span>` : ''}
-                                        ${col.filterable ? `<button class="col-btn filter-btn" data-key="${col.key}" style="background: none; border: none; padding: 0 3px; color: #adb5bd; cursor: pointer; font-size: 12px;">▼</button>` : ''}
-                                    </div>
-                                    ${index < sortedColumns.length - 1 ? `<div class="resize-handle" data-index="${index}" style="position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; background: transparent; z-index: 5;"></div>` : ''}
-                                </th>
-                            `).join('')}
+                            ${sortedColumns.map((col, index) => {
+                                const isFixed = col.key === 'row' || col.key === 'actions' || col.fixed;
+                                let style = '';
+                                if (col.key === 'row' || col.type === 'row_number') {
+                                    style = 'width: auto; min-width: var(--col-row-min-width, 25px); text-align: center;';
+                                } else if (col.type === 'status' || col.type === 'boolean' || col.type === 'icon') {
+                                    style = 'width: auto; min-width: 30px; text-align: center;';
+                                } else {
+                                    style = `width: ${col._width || 150}px; min-width: ${col.min_width || 30}px; max-width: ${col.max_width || 600}px;`;
+                                }
+                                return `
+                                    <th data-col="${col.key}" data-index="${index}"
+                                        style="${style} position: relative; ${isFixed ? 'cursor: default;' : ''}"
+                                        class="${col.sortable ? 'sortable' : ''} ${col.key === 'actions' ? 'col-actions' : ''} ${isFixed ? 'col-fixed' : ''}">
+                                        <div class="th-content" style="display: flex; align-items: center; gap: 4px;">
+                                            <span class="col-label" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${labels[col.key] || col.label || ''}</span>
+                                            ${col.sortable ? `<span class="sort-indicator" style="font-size: 12px; color: #adb5bd;">⇅</span>` : ''}
+                                            ${col.filterable ? `<button class="col-btn filter-btn" data-key="${col.key}" style="background: none; border: none; padding: 0 3px; color: #adb5bd; cursor: pointer; font-size: 12px;">▼</button>` : ''}
+                                        </div>
+                                        ${!isFixed && index < sortedColumns.length - 1 ? `<div class="resize-handle" data-index="${index}" style="position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; background: transparent; z-index: 5;"></div>` : ''}
+                                    </th>
+                                `;
+                            }).join('')}
                         </tr>
                     </thead>
                     <tbody>
                         ${data.map((item, index) => `
                             <tr data-id="${item.id || index}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px;">
-                                ${sortedColumns.map(col => `
-                                    <td style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; max-height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; overflow: hidden; position: relative; vertical-align: middle; ${col.key === 'actions' ? 'text-align: center;' : ''} ${col.key === 'status' ? 'text-align: center;' : ''} ${col.key === 'row' ? 'text-align: right;' : ''}">
-                                        ${this._renderCell(item, col, index)}
-                                    </td>
-                                `).join('')}
+                                ${sortedColumns.map(col => {
+                                    let cellClass = '';
+                                    if (col.key === 'row' || col.type === 'row_number') {
+                                        cellClass = 'col-row';
+                                    } else if (col.type === 'status' || col.type === 'boolean' || col.type === 'icon') {
+                                        cellClass = 'col-icon';
+                                    } else {
+                                        cellClass = 'col-ellipsis';
+                                    }
+                                    return `
+                                        <td class="${cellClass}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; max-height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; overflow: hidden; position: relative; vertical-align: middle; text-align: ${col.key === 'row' || col.type === 'row_number' ? 'center' : col.type === 'status' || col.type === 'boolean' || col.type === 'icon' ? 'center' : 'left'};">
+                                            ${this._renderCell(item, col, index)}
+                                        </td>
+                                    `;
+                                }).join('')}
                             </tr>
                         `).join('')}
                     </tbody>
@@ -185,46 +196,39 @@ class TableRenderer {
         const type = column.type || 'string';
         const displayValue = value !== undefined && value !== null ? String(value) : '';
 
-        // --- Номер строки ---
+        // --- Номер строки (автоширина) ---
         if (type === 'row_number' || column.key === 'row') {
-            return `<span class="col-ellipsis col-align-right" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${index + 1}</span>`;
+            return `<span class="col-row" style="display: inline-block; text-align: center; font-variant-numeric: tabular-nums;">${index + 1}</span>`;
         }
 
-        // --- Действия ---
-        if (type === 'actions' || column.key === 'actions') {
-            return `
-                <span class="col-ellipsis col-align-center" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;">
-                    <button class="btn btn-sm btn-outline-primary btn-edit-inline" 
-                            onclick="window.editItem && window.editItem(${item.id})" 
-                            title="Редактировать"
-                            style="padding: 2px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #4a6cf7; background: transparent; color: #4a6cf7; cursor: pointer;">
-                        <i class="bi bi-pencil" style="font-size: 14px;"></i>
-                    </button>
-                </span>
-            `;
-        }
-
-        // --- Статус ---
+        // --- Статус (только иконка) ---
         if (type === 'status' && column.values) {
             const val = column.values.find(v => v.key === value);
             if (val) {
+                const iconMap = {
+                    'active': '✅',
+                    'hidden': '👁️‍🗨️',
+                    'deleted': '🗑️',
+                    'archived': '📦'
+                };
+                const icon = iconMap[val.key] || '❓';
                 return `
-                    <span class="col-ellipsis col-align-center" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;">
-                        <span class="status-badge" style="background: ${val.color}20; color: ${val.color}; display: inline-flex; align-items: center; justify-content: center; padding: 0 10px; height: 28px; border-radius: 9999px; font-size: 12px;">
-                            ${val.icon ? `<i class="bi ${val.icon}" style="margin-right: 4px;"></i>` : ''}
-                            ${val.label}
-                        </span>
+                    <span class="icon" data-tooltip="${val.label}" style="display: inline-flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; cursor: default; transition: transform 0.15s ease;">
+                        ${icon}
                     </span>
                 `;
             }
-            return `<span class="col-ellipsis col-align-center" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;">${displayValue}</span>`;
+            return `<span class="icon">${displayValue}</span>`;
         }
 
-        // --- Булево ---
+        // --- Boolean (только иконка) ---
         if (type === 'boolean') {
+            const icon = value ? '✓' : '✗';
+            const label = value ? 'Да' : 'Нет';
+            const color = value ? 'var(--color-success)' : 'var(--text-muted)';
             return `
-                <span class="col-ellipsis col-align-center" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;">
-                    ${value ? '<span class="badge bg-success" style="font-size: 14px;"><i class="bi bi-check-lg"></i></span>' : '<span class="badge bg-secondary" style="font-size: 14px;"><i class="bi bi-x-lg"></i></span>'}
+                <span class="icon" data-tooltip="${label}" style="display: inline-flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; color: ${color}; cursor: default;">
+                    ${icon}
                 </span>
             `;
         }
@@ -232,7 +236,7 @@ class TableRenderer {
         // --- URL ---
         if (type === 'url' && value) {
             return `
-                <span class="col-ellipsis col-truncated col-align-left" data-tooltip="${displayValue}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
+                <span class="col-truncated" data-tooltip="${displayValue}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
                     <a href="${value}" target="_blank" style="color: #4a6cf7; text-decoration: none;">${displayValue}</a>
                 </span>
             `;
@@ -241,7 +245,7 @@ class TableRenderer {
         // --- Email ---
         if (type === 'email' && value) {
             return `
-                <span class="col-ellipsis col-truncated col-align-left" data-tooltip="${displayValue}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
+                <span class="col-truncated" data-tooltip="${displayValue}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
                     <a href="mailto:${value}" style="color: #4a6cf7; text-decoration: none;">${displayValue}</a>
                 </span>
             `;
@@ -251,7 +255,7 @@ class TableRenderer {
         if ((type === 'int' || type === 'numeric') && value !== null && value !== undefined) {
             const formatted = new Intl.NumberFormat('ru-RU').format(value);
             return `
-                <span class="col-ellipsis col-truncated col-align-right" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; position: relative; cursor: help;">
+                <span class="col-truncated" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; position: relative; cursor: help;">
                     ${formatted}
                 </span>
             `;
@@ -266,7 +270,7 @@ class TableRenderer {
                 maximumFractionDigits: 2
             }).format(value);
             return `
-                <span class="col-ellipsis col-truncated col-align-right" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; position: relative; cursor: help;">
+                <span class="col-truncated" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; position: relative; cursor: help;">
                     ${formatted}
                 </span>
             `;
@@ -276,7 +280,7 @@ class TableRenderer {
         if (type === 'percent' && value !== null && value !== undefined) {
             const formatted = Number(value).toFixed(2) + '%';
             return `
-                <span class="col-ellipsis col-truncated col-align-right" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; position: relative; cursor: help;">
+                <span class="col-truncated" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; position: relative; cursor: help;">
                     ${formatted}
                 </span>
             `;
@@ -288,12 +292,12 @@ class TableRenderer {
                 const d = new Date(value);
                 const formatted = d.toLocaleString('ru-RU');
                 return `
-                    <span class="col-ellipsis col-truncated col-align-left" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
+                    <span class="col-truncated" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
                         ${formatted}
                     </span>
                 `;
             } catch {
-                return `<span class="col-ellipsis col-align-left" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayValue}</span>`;
+                return `<span style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayValue}</span>`;
             }
         }
 
@@ -302,19 +306,19 @@ class TableRenderer {
                 const d = new Date(value);
                 const formatted = d.toLocaleDateString('ru-RU');
                 return `
-                    <span class="col-ellipsis col-truncated col-align-left" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
+                    <span class="col-truncated" data-tooltip="${formatted}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
                         ${formatted}
                     </span>
                 `;
             } catch {
-                return `<span class="col-ellipsis col-align-left" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayValue}</span>`;
+                return `<span style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayValue}</span>`;
             }
         }
 
         // --- Текстовые поля (с возможностью разворачивания) ---
         if (type === 'text' || type === 'textarea') {
             return `
-                <span class="col-ellipsis col-truncated col-expandable col-align-left" 
+                <span class="col-truncated col-expandable" 
                       data-tooltip="${displayValue}"
                       data-expanded="false"
                       style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;"
@@ -324,9 +328,9 @@ class TableRenderer {
             `;
         }
 
-        // --- По умолчанию: строка с обрезкой и tooltip ---
+        // --- По умолчанию ---
         return `
-            <span class="col-ellipsis col-truncated col-align-left" data-tooltip="${displayValue}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
+            <span class="col-truncated" data-tooltip="${displayValue}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;">
                 ${displayValue}
             </span>
         `;
@@ -355,6 +359,10 @@ class TableRenderer {
 
             const th = handle.closest('th');
             if (!th) return;
+            
+            // Проверяем, что столбец не фиксированный
+            if (th.classList.contains('col-fixed')) return;
+            
             const colIndex = parseInt(handle.dataset.index);
             const col = th.closest('table').querySelector(`colgroup col:nth-child(${colIndex + 1})`);
             const nextCol = th.closest('table').querySelector(`colgroup col:nth-child(${colIndex + 2})`);
@@ -362,11 +370,31 @@ class TableRenderer {
 
             if (!col || !nextCol || !nextTh) return;
 
-            const startX = e.clientX;
-            const startWidth = parseInt(col.style.width) || parseInt(th.style.width) || 150;
-            const nextStartWidth = parseInt(nextCol.style.width) || parseInt(nextTh.style.width) || 150;
+            // Проверяем, что правый столбец не фиксированный
+            if (nextTh.classList.contains('col-fixed')) {
+                // Ресайз только левого столбца, правый не двигается
+                const startX = e.clientX;
+                const startWidth = parseInt(col.style.width) || parseInt(th.style.width) || 150;
+                const rightWidth = parseInt(nextCol.style.width) || parseInt(nextTh.style.width) || 150;
+                
+                resizeData = { 
+                    col, th, startX, startWidth, 
+                    mode: 'left_only',
+                    rightWidth: rightWidth,
+                    totalWidth: startWidth + rightWidth,
+                    minWidth: 30,
+                    maxWidth: 600
+                };
+            } else {
+                const startX = e.clientX;
+                const startWidth = parseInt(col.style.width) || parseInt(th.style.width) || 150;
+                const nextStartWidth = parseInt(nextCol.style.width) || parseInt(nextTh.style.width) || 150;
 
-            resizeData = { col, nextCol, th, nextTh, startX, startWidth, nextStartWidth };
+                resizeData = { 
+                    col, nextCol, th, nextTh, startX, startWidth, nextStartWidth,
+                    mode: 'both'
+                };
+            }
 
             handle.classList.add('active');
             document.body.style.userSelect = 'none';
@@ -378,46 +406,61 @@ class TableRenderer {
         document.addEventListener('mousemove', (e) => {
             if (!resizeData) return;
 
-            const delta = e.clientX - resizeData.startX;
-            let newWidth = Math.max(30, resizeData.startWidth + delta);
-            let nextNewWidth = Math.max(30, resizeData.nextStartWidth - delta);
+            if (resizeData.mode === 'left_only') {
+                const delta = e.clientX - resizeData.startX;
+                let newWidth = Math.max(30, resizeData.startWidth + delta);
+                newWidth = Math.min(resizeData.maxWidth, newWidth);
+                
+                resizeData.col.style.width = newWidth + 'px';
+                resizeData.col.style.minWidth = newWidth + 'px';
+                resizeData.th.style.width = newWidth + 'px';
+                resizeData.th.style.minWidth = newWidth + 'px';
+                
+                const colKey = resizeData.th.dataset.col;
+                if (colKey && this.settings.widths) {
+                    this.settings.widths[colKey] = Math.round(newWidth);
+                }
+            } else {
+                const delta = e.clientX - resizeData.startX;
+                let newWidth = Math.max(30, resizeData.startWidth + delta);
+                let nextNewWidth = Math.max(30, resizeData.nextStartWidth - delta);
 
-            const minWidth = 30;
-            if (newWidth < minWidth) {
-                newWidth = minWidth;
-                nextNewWidth = resizeData.nextStartWidth + resizeData.startWidth - minWidth;
-            }
-            if (nextNewWidth < minWidth) {
-                nextNewWidth = minWidth;
-                newWidth = resizeData.startWidth + resizeData.nextStartWidth - minWidth;
-            }
+                const minWidth = 30;
+                if (newWidth < minWidth) {
+                    newWidth = minWidth;
+                    nextNewWidth = resizeData.nextStartWidth + resizeData.startWidth - minWidth;
+                }
+                if (nextNewWidth < minWidth) {
+                    nextNewWidth = minWidth;
+                    newWidth = resizeData.startWidth + resizeData.nextStartWidth - minWidth;
+                }
 
-            resizeData.col.style.width = newWidth + 'px';
-            resizeData.col.style.minWidth = newWidth + 'px';
-            resizeData.th.style.width = newWidth + 'px';
-            resizeData.th.style.minWidth = newWidth + 'px';
+                resizeData.col.style.width = newWidth + 'px';
+                resizeData.col.style.minWidth = newWidth + 'px';
+                resizeData.th.style.width = newWidth + 'px';
+                resizeData.th.style.minWidth = newWidth + 'px';
 
-            resizeData.nextCol.style.width = nextNewWidth + 'px';
-            resizeData.nextCol.style.minWidth = nextNewWidth + 'px';
-            resizeData.nextTh.style.width = nextNewWidth + 'px';
-            resizeData.nextTh.style.minWidth = nextNewWidth + 'px';
+                resizeData.nextCol.style.width = nextNewWidth + 'px';
+                resizeData.nextCol.style.minWidth = nextNewWidth + 'px';
+                resizeData.nextTh.style.width = nextNewWidth + 'px';
+                resizeData.nextTh.style.minWidth = nextNewWidth + 'px';
 
-            const colKey = resizeData.th.dataset.col;
-            const nextColKey = resizeData.nextTh.dataset.col;
-            if (colKey && nextColKey && this.settings.widths) {
-                this.settings.widths[colKey] = Math.round(newWidth);
-                this.settings.widths[nextColKey] = Math.round(nextNewWidth);
+                const colKey = resizeData.th.dataset.col;
+                const nextColKey = resizeData.nextTh.dataset.col;
+                if (colKey && nextColKey && this.settings.widths) {
+                    this.settings.widths[colKey] = Math.round(newWidth);
+                    this.settings.widths[nextColKey] = Math.round(nextNewWidth);
+                }
             }
         });
 
         document.addEventListener('mouseup', () => {
             if (resizeData) {
-                const handle = resizeData.th.querySelector('.resize-handle');
+                const handle = resizeData.th?.querySelector('.resize-handle');
                 if (handle) handle.classList.remove('active');
                 document.body.style.userSelect = '';
                 document.body.style.cursor = '';
                 
-                // Сохраняем настройки
                 if (this.settings.widths) {
                     try {
                         const storageKey = `table_settings_${this.tableKey}`;
@@ -435,7 +478,6 @@ class TableRenderer {
 
         let resizeData = null;
 
-        // Добавляем handle для каждой строки
         table.querySelectorAll('tbody tr').forEach(row => {
             const oldHandle = row.querySelector('.row-resize-handle');
             if (oldHandle) oldHandle.remove();
@@ -623,12 +665,17 @@ class TableRenderer {
 
             const th = handle.closest('th');
             if (!th) return;
+            
+            // Проверяем, что столбец не фиксированный
+            if (th.classList.contains('col-fixed')) return;
+            
             const colKey = th.dataset.col;
             if (!colKey) return;
 
             const colIndex = Array.from(th.parentElement.children).indexOf(th);
             const col = table.querySelector(`colgroup col:nth-child(${colIndex + 1})`);
 
+            // Находим ширину содержимого
             let maxWidth = 0;
             const padding = 16;
             const maxAllowed = 600;

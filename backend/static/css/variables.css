@@ -118,8 +118,8 @@
     --auto-width-padding: 16px;
 
     /* ===== ТАБЛИЦА — ВЫРАВНИВАНИЕ ПО ТИПАМ ===== */
-    --col-row-number-align: var(--text-right);
-    --col-row-number-width: 45px;
+    --col-row-number-align: var(--text-center);
+    --col-row-number-min-width: 25px;
 
     --col-int-align: var(--text-right);
     --col-numeric-align: var(--text-right);
@@ -136,9 +136,10 @@
     --col-phone-align: var(--text-left);
     --col-url-align: var(--text-left);
     --col-foreign-key-align: var(--text-left);
+    --col-icon-align: var(--text-center);
 
     /* ===== ТАБЛИЦА — ШИРИНА ПО ТИПАМ ===== */
-    --col-width-row: 45px;
+    --col-width-row: auto;
     --col-width-id: 60px;
     --col-width-actions: 50px;
 
@@ -159,41 +160,50 @@
     --col-width-date: 110px;
     --col-width-datetime: 150px;
 
-    --col-width-status: 100px;
-    --col-width-boolean: 60px;
+    --col-width-status: auto;
+    --col-width-boolean: auto;
+    --col-width-icon: auto;
 
     --col-width-created-at: 150px;
     --col-width-updated-at: 150px;
     --col-width-updated-by: 120px;
 
-    /* ===== ТАБЛИЦА — КОНКРЕТНЫЕ СТОЛБЦЫ ===== */
-    --col-row-width: 45px;
-    --col-row-align: var(--text-right);
+    /* ===== ИКОНКИ ДЛЯ СТАТУСОВ ===== */
+    --icon-status-active: "✅";
+    --icon-status-hidden: "👁️‍🗨️";
+    --icon-status-deleted: "🗑️";
+    --icon-status-archived: "📦";
 
-    --col-id-width: 60px;
-    --col-id-align: var(--text-left);
+    /* ===== ИКОНКИ ДЛЯ BOOLEAN ===== */
+    --icon-boolean-true: "✓";
+    --icon-boolean-false: "✗";
 
-    --col-name-width: 250px;
-    --col-name-align: var(--text-left);
+    /* ===== ОТСТУПЫ ДЛЯ ИКОНОК ===== */
+    --icon-padding: 4px 8px;
+    --icon-gap: 4px;
 
-    --col-status-width: 100px;
+    /* ===== СТОЛБЕЦ № ===== */
+    --col-row-min-width: 25px;
+    --col-row-align: var(--text-center);
+    --col-row-padding: 4px 8px;
+
+    /* ===== СТОЛБЕЦ СТАТУС ===== */
     --col-status-align: var(--text-center);
+    --col-status-padding: 4px 8px;
 
-    --col-comment-width: 150px;
-    --col-comment-align: var(--text-left);
+    /* ===== СТОЛБЕЦ BOOLEAN ===== */
+    --col-boolean-align: var(--text-center);
+    --col-boolean-padding: 4px 8px;
 
-    --col-created-at-width: 150px;
-    --col-created-at-align: var(--text-left);
+    /* ===== ИКОНКА РЕДАКТИРОВАНИЯ ===== */
+    --edit-icon-size: 20px;
+    --edit-icon-color: var(--color-primary);
+    --edit-icon-hover-color: var(--color-primary-hover);
+    --edit-icon-offset: 8px;  /* отступ от правого края */
+    --edit-icon-z-index: 20;
 
-    --col-updated-at-width: 150px;
-    --col-updated-at-align: var(--text-left);
-
-    --col-updated-by-width: 120px;
-    --col-updated-by-align: var(--text-left);
-
-    /* ===== СТАТУСЫ ===== */
-    --status-size: 32px;
-    --status-font-size: var(--font-size-lg);
+    /* ===== ГЛУБИНА ОТМЕНЫ ===== */
+    --undo-depth: 10;
 
     /* ===== ФИЛЬТРЫ ===== */
     --filter-dropdown-bg: var(--bg-primary);

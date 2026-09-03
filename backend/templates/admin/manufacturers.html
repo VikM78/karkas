@@ -167,36 +167,24 @@
             });
     }
 
-    function toggleEditMode() {
-        editMode = !editMode;
-        const btn = document.getElementById('editModeToggle');
-        const btnColumns = document.getElementById('btnColumns');
-        
-        if (editMode) {
-            btn.classList.add('active');
-            btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Готово';
-            btnColumns.style.display = 'inline-block';
-        } else {
-            btn.classList.remove('active');
-            btn.innerHTML = '<i class="bi bi-pencil me-1"></i>Редактировать';
-            btnColumns.style.display = 'none';
-        }
-        
-        if (tableState) {
-            tableState.editMode = editMode;
-            loadData(tableState, tableState.currentPage);
-        }
-    }
-
     window.editItem = editManufacturer;
     window.deleteItem = deleteManufacturer;
     window.restoreItem = restoreManufacturer;
     window.hardDeleteItem = hardDeleteManufacturer;
 
+    // Выделение строки для мультиредактирования
+    document.addEventListener('click', function(e) {
+        const row = e.target.closest('tr[data-id]');
+        if (!row || !tableState) return;
+        const rowId = parseInt(row.dataset.id);
+        const ctrlKey = e.ctrlKey || e.metaKey;
+        const shiftKey = e.shiftKey;
+        selectRow(tableState, rowId, ctrlKey, shiftKey);
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         const renderer = new TableRenderer('manufacturersTableContainer');
         
-        // Загружаем схему и настройки
         loadTableSchema('manufacturers').then((schema) => {
             if (!schema) {
                 console.error('❌ Схема не загружена');
@@ -205,7 +193,6 @@
             
             console.log('✅ Схема загружена:', schema);
             
-            // Создаём состояние таблицы
             const settings = loadTableSettings('manufacturers');
             tableState = {
                 tableKey: 'manufacturers',
@@ -218,12 +205,17 @@
                 columnSort: { key: null, direction: null },
                 editMode: false,
                 rowHeights: settings.rowHeights || {},
-                _lastData: []
+                _lastData: [],
+                selectedRows: new Set(),
+                container: document.getElementById('manufacturersTableContainer'),
+                table: null,
+                colgroup: null,
+                thead: null,
+                tbody: null,
             };
             
             window._tableState = tableState;
             
-            // Загружаем данные и рендерим
             loadManufacturersData(1, '', 'all', function(data) {
                 tableState._lastData = data || [];
                 renderer.schema = schema;
@@ -232,6 +224,16 @@
                 renderer.tableKey = 'manufacturers';
                 renderer.render();
                 updateRecordCount(data?.length || 0);
+                
+                // Сохраняем ссылки на элементы
+                const container = document.getElementById('manufacturersTableContainer');
+                tableState.table = container.querySelector('table');
+                tableState.colgroup = container.querySelector('colgroup');
+                tableState.thead = container.querySelector('thead');
+                tableState.tbody = container.querySelector('tbody');
+                
+                // Настраиваем автоподбор ширины
+                setupAutoWidth(tableState);
             });
         });
 

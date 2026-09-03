@@ -50,6 +50,7 @@
     border-radius: var(--table-radius, 8px);
     min-height: 0;
     scrollbar-gutter: stable;
+    position: relative;
 }
 
 /* ===== ТАБЛИЦА ===== */
@@ -129,6 +130,16 @@
     opacity: 0.4;
 }
 
+/* --- ЗАПРЕТ РЕСАЙЗА ДЛЯ ФИКСИРОВАННЫХ СТОЛБЦОВ --- */
+.table-custom thead th.col-fixed .resize-handle {
+    cursor: default;
+    opacity: 0.3;
+}
+.table-custom thead th.col-fixed .resize-handle:hover {
+    background: transparent;
+    opacity: 0.3;
+}
+
 /* --- СОРТИРОВКА --- */
 .sort-asc .col-label::after { content: ' ↑'; color: var(--color-primary, #4a6cf7); }
 .sort-desc .col-label::after { content: ' ↓'; color: var(--color-primary, #4a6cf7); }
@@ -161,7 +172,55 @@
     background: var(--table-row-hover, #f8f9fa);
 }
 
-/* --- ПОВЕДЕНИЕ ЯЧЕЕК --- */
+/* ===== СТОЛБЕЦ № (row) ===== */
+.col-row {
+    text-align: var(--col-row-align, center);
+    padding: var(--col-row-padding, 4px 8px);
+    min-width: var(--col-row-min-width, 25px);
+    width: auto;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===== СТОЛБЦЫ С ИКОНКАМИ ===== */
+.col-icon {
+    text-align: var(--col-icon-align, center);
+    padding: var(--icon-padding, 4px 8px);
+    width: auto;
+    white-space: nowrap;
+}
+
+.col-icon .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--icon-gap, 4px);
+    font-size: var(--font-size-lg, 16px);
+    line-height: 1;
+}
+
+.col-icon .icon-text {
+    display: none;
+}
+
+/* Tooltip для иконок */
+.col-icon .icon[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: var(--font-size-sm, 12px);
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* ===== ПОВЕДЕНИЕ ЯЧЕЕК ===== */
 .col-ellipsis {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -242,19 +301,19 @@
 .col-align-center { text-align: center; }
 .col-align-right { text-align: right; }
 
-/* ===== СТАТУС ===== */
-.status-badge {
+/* ===== СТАТУС (иконка) ===== */
+.status-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 10px;
-    height: 28px;
-    border-radius: var(--radius-full, 9999px);
-    font-size: var(--font-size-sm, 12px);
+    font-size: var(--font-size-lg, 16px);
+    line-height: 1;
     cursor: default;
     transition: transform var(--transition-fast, 0.15s ease);
 }
-.status-badge:hover { transform: scale(1.05); }
+.status-icon:hover {
+    transform: scale(1.15);
+}
 
 /* ===== RESIZE СТРОКИ ===== */
 .row-resize-handle {
@@ -271,6 +330,42 @@
 .row-resize-handle:hover {
     background: var(--color-primary, #4a6cf7);
     opacity: 0.3;
+}
+
+/* ===== ИКОНКА РЕДАКТИРОВАНИЯ (справа от таблицы) ===== */
+.edit-icon-overlay {
+    position: absolute;
+    right: var(--edit-icon-offset, 8px);
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: var(--edit-icon-z-index, 20);
+}
+
+.edit-icon-overlay .edit-icon {
+    position: absolute;
+    right: 0;
+    width: var(--edit-icon-size, 20px);
+    height: var(--edit-icon-size, 20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--edit-icon-size, 20px);
+    color: var(--edit-icon-color, #4a6cf7);
+    cursor: pointer;
+    pointer-events: all;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    transform: translateY(calc(50% - 50%));
+}
+
+.edit-icon-overlay .edit-icon:hover {
+    color: var(--edit-icon-hover-color, #3b5de7);
+    transform: translateY(calc(50% - 50%)) scale(1.1);
+}
+
+.edit-icon-overlay .edit-icon.visible {
+    opacity: 1;
 }
 
 /* ===== КНОПКА РЕДАКТИРОВАНИЯ ===== */
