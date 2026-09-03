@@ -21,7 +21,7 @@ function createTable(tableKey, containerId, dataLoader, crudFunctions) {
 
     const state = {
         tableKey: tableKey,
-        settings: settings,
+        settings: settings || {},
         config: config,
         currentPage: 1,
         currentFilter: 'all',
@@ -37,7 +37,8 @@ function createTable(tableKey, containerId, dataLoader, crudFunctions) {
         _lastData: [],
         _filterDropdowns: {},
         _filterBtn: {},
-        _renderers: config.cellRenderers || {},
+        _renderers: config?.cellRenderers || {},
+        rowHeights: settings?.rowHeights || {},
     };
 
     state.table = container.querySelector('table');
@@ -59,7 +60,6 @@ function createTable(tableKey, containerId, dataLoader, crudFunctions) {
                 state.currentFilter || 'all',
                 function(data) {
                     let filtered = data || [];
-                    // Применяем фильтры только если они есть
                     const columnFilters = state.columnFilters || {};
                     const hasFilters = Object.keys(columnFilters).some(k => columnFilters[k] && columnFilters[k].length > 0);
                     
@@ -83,7 +83,6 @@ function createTable(tableKey, containerId, dataLoader, crudFunctions) {
                         });
                     }
                     
-                    // Сортировка
                     const sort = state.columnSort;
                     if (sort && sort.key) {
                         filtered.sort((a, b) => {
@@ -138,7 +137,7 @@ function renderTableHeader(state) {
     visibleCols.forEach((col, index) => {
         const width = state.settings.widths[col.key] || col.width || 150;
         const minWidth = col.minWidth || 30;
-        const maxWidth = col.maxWidth || 800;
+        const maxWidth = col.maxWidth || 600;
 
         const colEl = document.createElement('col');
         colEl.style.width = width + 'px';
@@ -153,22 +152,36 @@ function renderTableHeader(state) {
         th.style.width = width + 'px';
         th.style.minWidth = minWidth + 'px';
         th.style.maxWidth = maxWidth + 'px';
+        th.style.position = 'relative';
 
         const label = state.settings.labels[col.key] || col.label;
         
         if (col.filterable !== false && col.key !== 'row' && col.key !== 'actions') {
             const content = document.createElement('div');
             content.className = 'th-content';
+            content.style.display = 'flex';
+            content.style.alignItems = 'center';
+            content.style.gap = '4px';
             
             const labelSpan = document.createElement('span');
             labelSpan.className = 'col-label';
             labelSpan.textContent = label;
+            labelSpan.style.flex = '1';
+            labelSpan.style.overflow = 'hidden';
+            labelSpan.style.textOverflow = 'ellipsis';
+            labelSpan.style.whiteSpace = 'nowrap';
             content.appendChild(labelSpan);
             
             const filterBtn = document.createElement('button');
             filterBtn.className = 'col-btn filter-btn';
             filterBtn.innerHTML = '▼';
             filterBtn.title = 'Фильтр';
+            filterBtn.style.background = 'none';
+            filterBtn.style.border = 'none';
+            filterBtn.style.padding = '0 3px';
+            filterBtn.style.color = '#adb5bd';
+            filterBtn.style.cursor = 'pointer';
+            filterBtn.style.fontSize = '12px';
             filterBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (!th.querySelector('.col-filter-dropdown')) {
@@ -185,6 +198,12 @@ function renderTableHeader(state) {
                 sortBtn.className = 'col-btn sort-btn';
                 sortBtn.innerHTML = '⇅';
                 sortBtn.title = 'Сортировка';
+                sortBtn.style.background = 'none';
+                sortBtn.style.border = 'none';
+                sortBtn.style.padding = '0 3px';
+                sortBtn.style.color = '#adb5bd';
+                sortBtn.style.cursor = 'pointer';
+                sortBtn.style.fontSize = '12px';
                 sortBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     toggleSort(state, col.key);
@@ -201,6 +220,14 @@ function renderTableHeader(state) {
             const handle = document.createElement('div');
             handle.className = 'resize-handle';
             handle.dataset.index = index;
+            handle.style.position = 'absolute';
+            handle.style.top = '0';
+            handle.style.right = '-3px';
+            handle.style.width = '6px';
+            handle.style.height = '100%';
+            handle.style.cursor = 'col-resize';
+            handle.style.background = 'transparent';
+            handle.style.zIndex = '5';
             handle.addEventListener('mousedown', function(e) {
                 startResize(e, index, state);
             });
@@ -260,7 +287,7 @@ function renderTableBody(state, data) {
     state._lastData = data || [];
 
     if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr class="table-empty"><td colspan="${visibleCols.length}">Нет данных</td></tr>`;
+        tbody.innerHTML = `<tr class="table-empty"><td colspan="${visibleCols.length}" style="text-align: center; padding: 30px 0; color: #adb5bd;">Нет данных</td></tr>`;
         return;
     }
 
@@ -269,8 +296,10 @@ function renderTableBody(state, data) {
         const isDeleted = item.is_deleted || false;
         const rowClass = isDeleted ? 'table-deleted' : '';
         const rowNum = (state.currentPage - 1) * 50 + index + 1;
+        const rowId = item.id || index;
+        const rowHeight = state.rowHeights?.[rowId] || 40;
 
-        html += `<tr class="${rowClass}" data-id="${item.id}">`;
+        html += `<tr class="${rowClass}" data-id="${rowId}" style="height: ${rowHeight}px; position: relative;">`;
         visibleCols.forEach(col => {
             let cellContent = '';
             if (col.key === 'row') {
@@ -280,17 +309,24 @@ function renderTableBody(state, data) {
             } else {
                 cellContent = item[col.key] !== undefined && item[col.key] !== null ? item[col.key] : '';
             }
-            // Кнопка редактирования в столбце статуса
-            if (col.key === 'status' && state.editMode && !isDeleted) {
-                cellContent += ` <button class="btn btn-sm btn-outline-primary btn-edit-inline" onclick="window.editItem(${item.id})" title="Редактировать">
-                    <i class="bi bi-pencil"></i>
-                </button>`;
-            }
-            html += `<td>${cellContent}</td>`;
+            html += `<td style="height: ${rowHeight}px; max-height: ${rowHeight}px; overflow: hidden; position: relative; vertical-align: middle; ${col.key === 'actions' ? 'text-align: center;' : ''} ${col.key === 'status' ? 'text-align: center;' : ''} ${col.key === 'row' ? 'text-align: right;' : ''}">${cellContent}</td>`;
         });
         html += `</tr>`;
     });
     tbody.innerHTML = html;
+    
+    // Проверяем обрезку для tooltip
+    if (typeof TableRenderer !== 'undefined') {
+        const tempRenderer = new TableRenderer('temp');
+        tbody.querySelectorAll('.col-truncated[data-tooltip]').forEach(el => {
+            const isTruncated = el.scrollWidth > el.clientWidth;
+            if (!isTruncated) {
+                el.removeAttribute('data-tooltip');
+                el.classList.remove('col-truncated');
+                el.style.cursor = 'default';
+            }
+        });
+    }
 }
 
 // ============================================================
@@ -317,7 +353,7 @@ function startResize(e, index, state) {
             key: col.key,
             width: width,
             minWidth: col.minWidth || 30,
-            maxWidth: col.maxWidth || 800,
+            maxWidth: col.maxWidth || 600,
             element: colElements[i],
             thElement: thElements[i]
         });
@@ -439,6 +475,44 @@ function toggleSort(state, colKey) {
     else loadData(state, 1);
 }
 
+function updateSortIndicators(state) {
+    document.querySelectorAll('#tableHeader th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+    });
+    if (state.columnSort && state.columnSort.key) {
+        const targetTh = document.querySelector(`#tableHeader th[data-col="${state.columnSort.key}"]`);
+        if (targetTh) {
+            targetTh.classList.add(state.columnSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
+    }
+}
+
+function toggleFilterDropdown(th, colKey, state) {
+    const dropdown = th.querySelector('.col-filter-dropdown');
+    if (!dropdown) return;
+
+    document.querySelectorAll('.col-filter-dropdown.show').forEach(el => {
+        if (el !== dropdown) el.classList.remove('show');
+    });
+
+    if (state._filterPopulate) {
+        state._filterPopulate(state._lastData || []);
+    }
+
+    dropdown.classList.toggle('show');
+    if (dropdown.classList.contains('show')) {
+        const rect = th.getBoundingClientRect();
+        const dropdownRect = dropdown.getBoundingClientRect();
+        if (rect.right + dropdownRect.width > window.innerWidth) {
+            dropdown.style.left = 'auto';
+            dropdown.style.right = '0';
+        } else {
+            dropdown.style.left = '0';
+            dropdown.style.right = 'auto';
+        }
+    }
+}
+
 // ============================================================
 //  УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО
 // ============================================================
@@ -521,7 +595,6 @@ function openEditModal(tableState, data) {
     bsModal.show();
     setTimeout(() => { if (editOverlay) editOverlay.style.zIndex = '1030'; }, 100);
     
-    // Делаем модальное окно перемещаемым
     makeDraggable(editModal);
 }
 
@@ -579,10 +652,6 @@ function saveEditForm(tableState) {
     .catch(error => { alert('Ошибка при сохранении: ' + error.message); });
 }
 
-// ============================================================
-//  ФОРМАТИРОВАНИЕ ДАТЫ
-// ============================================================
-
 function formatDateTime(value) {
     if (!value) return '';
     try {
@@ -595,10 +664,6 @@ function formatDateTime(value) {
         return value;
     }
 }
-
-// ============================================================
-//  ПЕРЕМЕЩЕНИЕ МОДАЛЬНОГО ОКНА (DRAG & DROP)
-// ============================================================
 
 function makeDraggable(modalElement) {
     const header = modalElement.querySelector('.modal-header');
@@ -687,7 +752,6 @@ function openColumnSettings() {
     const labels = settings.labels || {};
     const order = settings.order || [];
     
-    // Сортируем столбцы по порядку
     const sorted = [...allColumns].sort((a, b) => {
         const ia = order.indexOf(a.key);
         const ib = order.indexOf(b.key);
@@ -728,7 +792,6 @@ function openColumnSettings() {
     
     body.innerHTML = html;
     
-    // Drag-and-drop
     let dragItem = null;
     const list = body.querySelector('.column-settings-grid');
     list.addEventListener('mousedown', (e) => {
@@ -773,14 +836,11 @@ function openColumnSettings() {
         });
     }
     
-    // Кнопки
     const footer = modal.querySelector('.modal-footer');
     
-    // Удаляем старую кнопку "Применить"
     const oldApplyBtn = footer.querySelector('.btn-apply-settings');
     if (oldApplyBtn) oldApplyBtn.remove();
     
-    // Создаём кнопку "Применить"
     const applyBtn = document.createElement('button');
     applyBtn.className = 'btn btn-primary btn-apply-settings';
     applyBtn.textContent = '💾 Применить';
@@ -829,10 +889,8 @@ function openColumnSettings() {
         }
         
         console.log('✅ Настройки столбцов сохранены');
-        // Не закрываем окно!
     };
     
-    // Сброс
     const resetBtn = footer.querySelector('.btn-outline-secondary');
     if (resetBtn) {
         resetBtn.onclick = function() {
@@ -852,12 +910,10 @@ function openColumnSettings() {
                     renderTableHeader(window._tableState);
                     loadData(window._tableState, 1);
                 }
-                // Не закрываем окно!
             }
         };
     }
     
-    // Закрыть
     const closeBtn = footer.querySelector('.btn-secondary');
     if (closeBtn) {
         closeBtn.onclick = function() {
@@ -869,7 +925,6 @@ function openColumnSettings() {
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
     
-    // Делаем модальное окно перемещаемым
     makeDraggable(modal);
 }
 

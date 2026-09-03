@@ -1,5 +1,5 @@
 /* ============================================================
-   ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+   ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ — КАРКАС
    ============================================================ */
 
 :root {
@@ -12,6 +12,7 @@
     --header-z-index: 1000;
 
     /* ===== ОТСТУПЫ ===== */
+    --padding-xs: 4px;
     --padding-sm: 8px;
     --padding-md: 16px;
     --padding-lg: 20px;
@@ -24,8 +25,36 @@
     --radius-lg: 16px;
     --radius-full: 9999px;
 
+    --btn-radius: 6px;
+    --badge-radius: 6px;
+    --input-radius: 6px;
+    --search-radius: 6px;
+    --filter-radius: 4px;
+    --table-radius: 8px;
+    --modal-radius: 12px;
+
+    /* ===== ШРИФТЫ (аллиасы) ===== */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    --font-size-xs: 10px;
+    --font-size-sm: 12px;
+    --font-size-base: 14px;
+    --font-size-lg: 16px;
+    --font-size-xl: 18px;
+    --font-size-2xl: 20px;
+    --font-size-3xl: 24px;
+
+    /* ===== ВЫРАВНИВАНИЕ ===== */
+    --text-left: left;
+    --text-center: center;
+    --text-right: right;
+    --text-justify: justify;
+
     /* ===== ЦВЕТА ===== */
-    /* Фоны */
     --bg-primary: #ffffff;
     --bg-secondary: #f0f2f5;
     --bg-sidebar: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
@@ -33,7 +62,6 @@
     --bg-hover: rgba(255, 255, 255, 0.06);
     --bg-active: rgba(74, 108, 247, 0.2);
 
-    /* Текст */
     --text-primary: #1a1a2e;
     --text-secondary: #6c757d;
     --text-muted: #adb5bd;
@@ -42,95 +70,143 @@
     --text-light-active: #ffffff;
     --text-danger: #dc2626;
 
-    /* Границы */
-    --border-color: #e8ecf1;
+    --border-color: #dee2e6;
     --border-sidebar: rgba(255, 255, 255, 0.06);
     --border-active: rgba(74, 108, 247, 0.3);
 
-    /* Акценты */
     --color-primary: #4a6cf7;
     --color-primary-hover: #3b5de7;
     --color-success: #10b981;
     --color-danger: #ef4444;
     --color-warning: #f59e0b;
 
-    /* Статусы */
     --status-online: #10b981;
     --status-offline: #ef4444;
-
-    /* ===== ШРИФТЫ ===== */
-    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    --font-size-xs: 10px;
-    --font-size-sm: 12px;
-    --font-size-base: 14px;
-    --font-size-lg: 18px;
-    --font-size-xl: 24px;
-    --font-size-2xl: 28px;
-    --font-size-3xl: 32px;
-
-    /* ===== АНИМАЦИИ ===== */
-    --transition-fast: 0.15s ease;
-    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* ===== ТЕНИ ===== */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
-
-    /* ===== SIDEBAR ===== */
-    --sidebar-item-height: 40px;
-    --sidebar-icon-size: 20px;
-    --sidebar-font-size: 14px;
-    --sidebar-group-font-size: 10px;
-    --sidebar-scrollbar-width: 4px;
-    --sidebar-scrollbar-color: rgba(255, 255, 255, 0.15);
-    --sidebar-group-color: rgba(255, 255, 255, 0.25);
-    --sidebar-group-color-hover: rgba(255, 255, 255, 0.5);
-    --sidebar-text: rgba(255, 255, 255, 0.55);
-    --sidebar-text-hover: #ffffff;
-    --sidebar-text-active: #ffffff;
-
-    /* ===== HEADER ===== */
-    --header-bg: #ffffff;
-    --header-border: #e8ecf1;
-    --header-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-
-    /* ===== КАРТОЧКА ===== */
-    --card-bg: #ffffff;
-    --card-radius: 12px;
-    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    --card-padding: 40px 32px;
-
-    /* ===== ТАБЛИЦА ===== */
-    --table-height: calc(100vh - 100px);
-    --table-min-height: 400px;
-    --table-header-bg: #f8f9fa;
-    --table-header-font-size: 13px;
-    --table-header-font-weight: 600;
-    --table-cell-padding: 6px 12px;
-    --table-border-color: #dee2e6;
-    --table-row-hover: #f8f9fa;
-    --table-deleted-bg: #e9ecef;
-    --table-deleted-opacity: 0.7;
-
-    /* ===== ФИЛЬТРЫ ===== */
-    --filter-bg: rgba(255, 255, 255, 0.15);
-    --filter-blur: 20px;
-    --filter-border: rgba(255, 255, 255, 0.1);
     --filter-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    --filter-item-hover: rgba(255, 255, 255, 0.1);
-    --filter-search-bg: rgba(255, 255, 255, 0.05);
+
+    /* ===== ТАБЛИЦА — ШАПКА ===== */
+    --table-header-bg: #f8f9fa;
+    --table-header-color: var(--text-primary);
+    --table-header-font-size: var(--font-size-base);
+    --table-header-font-weight: var(--font-weight-semibold);
+    --table-header-padding: var(--padding-sm) var(--padding-sm);
+
+    /* ===== ТАБЛИЦА — ТЕЛО ===== */
+    --table-body-font-size: var(--font-size-base);
+    --table-body-color: var(--text-primary);
+    --table-body-padding: var(--padding-xs) var(--padding-sm);
+
+    /* ===== ВЫСОТА СТРОК ===== */
+    --row-height: 40px;
+    --row-height-min: 32px;
+    --row-height-max: 300px;
+
+    /* ===== ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ ===== */
+    --vertical-align-top: top;
+    --vertical-align-middle: middle;
+    --vertical-align-bottom: bottom;
+    --cell-vertical-align: var(--vertical-align-middle);
+
+    /* ===== АВТОПОДБОР ШИРИНЫ ===== */
+    --auto-width-max: 600px;
+    --auto-width-min: 30px;
+    --auto-width-padding: 16px;
+
+    /* ===== ТАБЛИЦА — ВЫРАВНИВАНИЕ ПО ТИПАМ ===== */
+    --col-row-number-align: var(--text-right);
+    --col-row-number-width: 45px;
+
+    --col-int-align: var(--text-right);
+    --col-numeric-align: var(--text-right);
+    --col-currency-align: var(--text-right);
+    --col-percent-align: var(--text-right);
+
+    --col-string-align: var(--text-left);
+    --col-text-align: var(--text-left);
+    --col-datetime-align: var(--text-left);
+    --col-date-align: var(--text-left);
+    --col-status-align: var(--text-center);
+    --col-boolean-align: var(--text-center);
+    --col-email-align: var(--text-left);
+    --col-phone-align: var(--text-left);
+    --col-url-align: var(--text-left);
+    --col-foreign-key-align: var(--text-left);
+
+    /* ===== ТАБЛИЦА — ШИРИНА ПО ТИПАМ ===== */
+    --col-width-row: 45px;
+    --col-width-id: 60px;
+    --col-width-actions: 50px;
+
+    --col-width-string-short: 120px;
+    --col-width-string-medium: 180px;
+    --col-width-string-long: 250px;
+    --col-width-text: 150px;
+    --col-width-email: 180px;
+    --col-width-phone: 140px;
+    --col-width-url: 250px;
+    --col-width-foreign-key: 120px;
+
+    --col-width-int: 80px;
+    --col-width-numeric: 100px;
+    --col-width-currency: 110px;
+    --col-width-percent: 70px;
+
+    --col-width-date: 110px;
+    --col-width-datetime: 150px;
+
+    --col-width-status: 100px;
+    --col-width-boolean: 60px;
+
+    --col-width-created-at: 150px;
+    --col-width-updated-at: 150px;
+    --col-width-updated-by: 120px;
+
+    /* ===== ТАБЛИЦА — КОНКРЕТНЫЕ СТОЛБЦЫ ===== */
+    --col-row-width: 45px;
+    --col-row-align: var(--text-right);
+
+    --col-id-width: 60px;
+    --col-id-align: var(--text-left);
+
+    --col-name-width: 250px;
+    --col-name-align: var(--text-left);
+
+    --col-status-width: 100px;
+    --col-status-align: var(--text-center);
+
+    --col-comment-width: 150px;
+    --col-comment-align: var(--text-left);
+
+    --col-created-at-width: 150px;
+    --col-created-at-align: var(--text-left);
+
+    --col-updated-at-width: 150px;
+    --col-updated-at-align: var(--text-left);
+
+    --col-updated-by-width: 120px;
+    --col-updated-by-align: var(--text-left);
 
     /* ===== СТАТУСЫ ===== */
-    --status-active-color: #059669;
-    --status-active-bg: rgba(5, 150, 105, 0.12);
-    --status-hidden-color: #6b7280;
-    --status-hidden-bg: rgba(107, 114, 128, 0.12);
-    --status-deleted-color: #dc2626;
-    --status-deleted-bg: rgba(220, 38, 38, 0.12);
-    --status-archived-color: #d97706;
-    --status-archived-bg: rgba(217, 119, 6, 0.12);
+    --status-size: 32px;
+    --status-font-size: var(--font-size-lg);
+
+    /* ===== ФИЛЬТРЫ ===== */
+    --filter-dropdown-bg: var(--bg-primary);
+    --filter-dropdown-border: #d0d0d0;
+    --filter-item-hover: #e8ecf1;
+
+    /* ===== МОДАЛЬНЫЕ ОКНА ===== */
+    --modal-max-width: 700px;
+    --modal-body-max-height: 70vh;
+
+    /* ===== ПОЛЯ ВВОДА ===== */
+    --input-padding: 6px 12px;
+    --input-font-size: var(--font-size-base);
 
     /* ===== МЕДИА-ТОЧКИ ===== */
     --breakpoint-mobile: 768px;

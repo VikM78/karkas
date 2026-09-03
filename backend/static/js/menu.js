@@ -50,7 +50,8 @@ const MENU = {
             const cachedVersion = localStorage.getItem(this.VERSION_KEY);
             const cachedMenu = localStorage.getItem(this.CACHE_KEY);
 
-            const response = await fetch('/api/v1/menu', { credentials: 'include' });
+            // ИСПРАВЛЕНО: добавлен / в конце
+            const response = await fetch('/api/v1/menu/', { credentials: 'include' });
             if (!response.ok) throw new Error('Ошибка загрузки меню');
             const data = await response.json();
 
@@ -137,28 +138,23 @@ const MENU = {
         return items.map(item => this._renderItem(item)).join('');
     },
 
-    // ===== АКТИВНАЯ ССЫЛКА =====
     _updateActiveLink() {
         const currentPath = window.location.pathname;
         document.querySelectorAll('.nav-link').forEach(link => {
             link.classList.remove('active');
             const href = link.getAttribute('href');
-            // Сравниваем пути
             if (href && href === currentPath) {
                 link.classList.add('active');
             }
-            // Для корневого пути
             if (href === '/' && currentPath === '/') {
                 link.classList.add('active');
             }
-            // Для страниц /app/*
             if (href && href.startsWith('/app/') && currentPath === href) {
                 link.classList.add('active');
             }
         });
     },
 
-    // ===== УПРАВЛЕНИЕ ГРУППАМИ =====
     toggleGroup(groupKey) {
         const state = this.loadState();
         const index = state.expandedGroups.indexOf(groupKey);
@@ -191,7 +187,6 @@ const MENU = {
         });
     },
 
-    // ===== УПРАВЛЕНИЕ ВИДИМОСТЬЮ САЙДБАРА =====
     toggleSidebar() {
         const state = this.loadState();
         state.sidebarOpen = !state.sidebarOpen;
@@ -214,7 +209,6 @@ const MENU = {
         }
     },
 
-    // ===== HOVER-ПОКАЗ МЕНЮ =====
     _clearTimeouts() {
         if (this.showTimeout) { clearTimeout(this.showTimeout); this.showTimeout = null; }
         if (this.hideTimeout) { clearTimeout(this.hideTimeout); this.hideTimeout = null; }
@@ -242,14 +236,12 @@ const MENU = {
         }, this.HOVER_DELAY);
     },
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     async init() {
         const items = await this.loadData();
         const state = this.loadState();
         this.render(items, state);
         this.applyState(state);
 
-        // Кнопка сворачивания
         const toggleBtn = document.getElementById('sidebarToggle');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', (e) => {
@@ -258,14 +250,12 @@ const MENU = {
             });
         }
 
-        // HOVER-триггер
         const trigger = document.getElementById('sidebarTrigger');
         if (trigger) {
             trigger.addEventListener('mouseenter', () => this.showOnHover());
             trigger.addEventListener('mouseleave', () => this.hideOnHoverLeave());
         }
 
-        // HOVER на самом меню
         const sidebar = document.getElementById('sidebar');
         if (sidebar) {
             sidebar.addEventListener('mouseenter', () => {
@@ -277,7 +267,6 @@ const MENU = {
             });
         }
 
-        // Клик по пункту меню — закрываем hover-режим
         document.addEventListener('click', (e) => {
             const link = e.target.closest('.nav-link');
             if (link) {
@@ -291,7 +280,6 @@ const MENU = {
             }
         });
 
-        // Клик вне меню — закрываем hover-режим
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('sidebar');
             const state = this.loadState();

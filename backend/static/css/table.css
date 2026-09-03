@@ -1,5 +1,5 @@
 /* ============================================================
-   УНИВЕРСАЛЬНАЯ ТАБЛИЦА — СТИЛИ
+   УНИВЕРСАЛЬНАЯ ТАБЛИЦА — СТИЛИ (с переменными)
    ============================================================ */
 
 /* ===== КАРТОЧКА ТАБЛИЦЫ ===== */
@@ -10,7 +10,7 @@
     flex-direction: column;
     margin: 0;
     padding: var(--padding-md, 16px);
-    border-radius: var(--radius-sm, 8px);
+    border-radius: var(--table-radius, 8px);
     background: var(--bg-primary, #ffffff);
     border: 1px solid var(--border-color, #dee2e6);
     box-shadow: var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06));
@@ -45,9 +45,9 @@
 .table-wrap {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--radius-sm, 8px);
+    border-radius: var(--table-radius, 8px);
     min-height: 0;
     scrollbar-gutter: stable;
 }
@@ -59,6 +59,8 @@
     width: 100%;
     border-collapse: collapse;
 }
+
+/* --- ШАПКА --- */
 .table-custom thead th {
     position: sticky;
     top: 0;
@@ -109,6 +111,8 @@
     opacity: 1;
     color: var(--color-primary, #4a6cf7);
 }
+
+/* --- RESIZE HANDLE (граница столбца) --- */
 .table-custom thead th .resize-handle {
     position: absolute;
     top: 0;
@@ -124,15 +128,23 @@
     background: var(--color-primary, #4a6cf7);
     opacity: 0.4;
 }
+
+/* --- СОРТИРОВКА --- */
 .sort-asc .col-label::after { content: ' ↑'; color: var(--color-primary, #4a6cf7); }
 .sort-desc .col-label::after { content: ' ↓'; color: var(--color-primary, #4a6cf7); }
 
+/* --- ТЕЛО ТАБЛИЦЫ --- */
 .table-custom tbody td {
     padding: var(--table-body-padding, 6px 12px);
     border-right: 1px solid var(--border-color, #dee2e6);
-    vertical-align: middle;
+    vertical-align: var(--cell-vertical-align, middle);
     font-size: var(--table-body-font-size, 14px);
     color: var(--table-body-color, #1a1a2e);
+    height: var(--row-height, 40px);
+    max-height: var(--row-height, 40px);
+    overflow: hidden;
+    position: relative;
+    transition: height 0.15s ease, max-height 0.15s ease;
 }
 .table-custom tbody td:last-child {
     border-right: none;
@@ -149,19 +161,117 @@
     background: var(--table-row-hover, #f8f9fa);
 }
 
+/* --- ПОВЕДЕНИЕ ЯЧЕЕК --- */
+.col-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    display: block;
+}
+
+.col-wrap {
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow: visible;
+}
+
+/* --- Tooltip для обрезанных --- */
+.col-truncated {
+    position: relative;
+    cursor: help;
+}
+.col-truncated[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 400;
+    white-space: nowrap;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+.col-truncated[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1a1a2e;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* --- Расширяемые текстовые поля --- */
+.col-expandable {
+    position: relative;
+}
+.col-expandable::after {
+    content: '↕';
+    position: absolute;
+    right: 4px;
+    bottom: 2px;
+    font-size: 10px;
+    color: var(--text-muted, #adb5bd);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.col-expandable:hover::after {
+    opacity: 0.6;
+}
+
+/* --- Выравнивание по вертикали --- */
+.col-align-top { vertical-align: var(--vertical-align-top); }
+.col-align-middle { vertical-align: var(--vertical-align-middle); }
+.col-align-bottom { vertical-align: var(--vertical-align-bottom); }
+
+/* --- Выравнивание по горизонтали --- */
+.col-align-left { text-align: left; }
+.col-align-center { text-align: center; }
+.col-align-right { text-align: right; }
+
 /* ===== СТАТУС ===== */
 .status-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    font-size: var(--font-size-lg, 16px);
+    padding: 0 10px;
+    height: 28px;
+    border-radius: var(--radius-full, 9999px);
+    font-size: var(--font-size-sm, 12px);
     cursor: default;
     transition: transform var(--transition-fast, 0.15s ease);
 }
-.status-badge:hover { transform: scale(1.1); }
+.status-badge:hover { transform: scale(1.05); }
+
+/* ===== RESIZE СТРОКИ ===== */
+.row-resize-handle {
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    cursor: row-resize;
+    z-index: 10;
+    background: transparent;
+    transition: background 0.15s ease;
+}
+.row-resize-handle:hover {
+    background: var(--color-primary, #4a6cf7);
+    opacity: 0.3;
+}
 
 /* ===== КНОПКА РЕДАКТИРОВАНИЯ ===== */
 #editModeToggle.active {
@@ -188,7 +298,7 @@
 }
 .edit-overlay.active { display: block; }
 
-/* ===== ФИЛЬТРЫ В СТОЛБЦАХ ===== */
+/* ===== ФИЛЬТРЫ ===== */
 .col-filter-dropdown {
     display: none;
     position: absolute;
@@ -198,9 +308,9 @@
     max-height: 420px;
     background: var(--filter-dropdown-bg, #ffffff);
     border: 1px solid var(--filter-dropdown-border, #d0d0d0);
-    border-radius: var(--radius-sm, 4px);
+    border-radius: var(--filter-radius, 4px);
     padding: var(--padding-sm, 8px) 0;
-    box-shadow: var(--shadow-lg, 0 4px 16px rgba(0,0,0,0.15));
+    box-shadow: var(--filter-shadow, 0 4px 16px rgba(0,0,0,0.15));
     z-index: 1000;
     margin-top: 2px;
     overflow: hidden;
@@ -223,33 +333,13 @@
 .sort-item .sort-icon { font-size: var(--font-size-base, 14px); color: var(--text-muted, #6c757d); }
 .sort-item.sort-clear { color: var(--text-muted, #6c757d); }
 .sort-item.sort-clear:hover { background: var(--bg-secondary, #f0f0f0); }
-.sort-item.sort-clear .sort-icon { color: var(--text-muted, #6c757d); }
-
-.clear-filter-item {
-    display: flex;
-    align-items: center;
-    gap: var(--padding-sm, 8px);
-    padding: 4px var(--padding-sm, 8px);
-    cursor: pointer;
-    border-radius: var(--radius-sm, 4px);
-    font-size: var(--font-size-base, 13px);
-    color: var(--color-danger, #dc2626);
-}
-.clear-filter-item:hover { background: rgba(220, 38, 38, 0.1); }
-.clear-filter-item .clear-icon { font-size: var(--font-size-base, 14px); }
-
-.filter-divider {
-    height: 1px;
-    background: #e0e0e0;
-    margin: 4px var(--padding-sm, 8px);
-}
 
 .filter-search {
     width: calc(100% - 16px);
     margin: 0 var(--padding-sm, 8px) 6px var(--padding-sm, 8px);
     padding: 4px var(--padding-sm, 8px);
-    border: 1px solid #d0d0d0;
-    border-radius: var(--radius-sm, 4px);
+    border: 1px solid var(--filter-dropdown-border, #d0d0d0);
+    border-radius: var(--input-radius, 4px);
     font-size: var(--font-size-base, 13px);
     box-sizing: border-box;
 }
@@ -272,7 +362,7 @@
     border-radius: var(--radius-sm, 4px);
     font-size: var(--font-size-base, 13px);
 }
-.filter-item:hover { background: var(--bg-secondary, #e8ecf1); }
+.filter-item:hover { background: var(--filter-item-hover, #e8ecf1); }
 .filter-item input[type="checkbox"] {
     margin: 0;
     cursor: pointer;
@@ -306,7 +396,7 @@
 .filter-actions {
     display: flex;
     gap: var(--padding-sm, 8px);
-    padding: var(--padding-sm, 8px) var(--padding-sm, 8px);
+    padding: var(--padding-sm, 8px);
     border-top: 1px solid #e0e0e0;
     justify-content: flex-end;
 }
@@ -318,35 +408,33 @@
     background: var(--color-primary, #4a6cf7);
     color: #fff;
     border: none;
-    border-radius: var(--radius-sm, 4px);
+    border-radius: var(--btn-radius, 4px);
     cursor: pointer;
 }
 .filter-actions .btn-primary:hover { background: var(--color-primary-hover, #3b5de7); }
 .filter-actions .btn-outline-secondary {
     background: transparent;
     color: var(--text-primary, #333);
-    border: 1px solid #d0d0d0;
-    border-radius: var(--radius-sm, 4px);
+    border: 1px solid var(--filter-dropdown-border, #d0d0d0);
+    border-radius: var(--btn-radius, 4px);
     cursor: pointer;
 }
 .filter-actions .btn-outline-secondary:hover { background: var(--bg-secondary, #f0f0f0); }
 
-/* ============================================================
-   МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ
-   ============================================================ */
+/* ===== МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ ===== */
 .edit-modal .modal-dialog {
-    max-width: 700px;
+    max-width: var(--modal-max-width, 700px);
     position: relative !important;
     margin: 30px auto !important;
     transform: none !important;
 }
 .edit-modal .modal-content {
-    border-radius: var(--radius-md, 12px);
+    border-radius: var(--modal-radius, 12px);
     overflow: hidden;
 }
 .edit-modal .modal-header {
     cursor: move;
-    background: var(--bg-secondary, #f8f9fa);
+    background: var(--table-header-bg, #f8f9fa);
     padding: var(--padding-md, 16px) var(--padding-lg, 20px);
     user-select: none;
 }
@@ -354,7 +442,7 @@
     font-weight: 600;
 }
 .edit-modal .modal-body {
-    max-height: 70vh;
+    max-height: var(--modal-body-max-height, 70vh);
     overflow-y: auto;
     padding: var(--padding-lg, 20px);
 }
@@ -384,9 +472,9 @@
 .edit-modal .field-value .form-select {
     width: 100%;
     max-width: 100%;
-    border-radius: var(--radius-sm, 6px);
-    padding: 6px 12px;
-    font-size: var(--font-size-base, 14px);
+    border-radius: var(--input-radius, 6px);
+    padding: var(--input-padding, 6px 12px);
+    font-size: var(--input-font-size, 14px);
 }
 .edit-modal .field-value .form-control:disabled {
     background: var(--bg-secondary, #f8f9fa);
@@ -401,22 +489,20 @@
     border-top: 1px solid var(--border-color, #f0f0f0);
 }
 
-/* ============================================================
-   МОДАЛЬНОЕ ОКНО НАСТРОЙКИ СТОЛБЦОВ
-   ============================================================ */
+/* ===== МОДАЛЬНОЕ ОКНО НАСТРОЙКИ СТОЛБЦОВ ===== */
 .column-settings-modal .modal-dialog {
-    max-width: 700px;
+    max-width: var(--modal-max-width, 700px);
     position: relative !important;
     margin: 30px auto !important;
     transform: none !important;
 }
 .column-settings-modal .modal-content {
-    border-radius: var(--radius-md, 12px);
+    border-radius: var(--modal-radius, 12px);
     overflow: hidden;
 }
 .column-settings-modal .modal-header {
     cursor: move;
-    background: var(--bg-secondary, #f8f9fa);
+    background: var(--table-header-bg, #f8f9fa);
     padding: var(--padding-md, 16px) var(--padding-lg, 20px);
     user-select: none;
 }
@@ -426,7 +512,6 @@
     padding: var(--padding-lg, 20px);
 }
 
-/* Табличная вёрстка для настроек столбцов */
 .column-settings-grid {
     display: grid;
     grid-template-columns: 30px 30px 1fr 140px 70px 50px 30px;
@@ -434,17 +519,6 @@
     align-items: center;
     padding: 0;
 }
-.column-settings-grid .col-item {
-    display: contents;
-}
-.column-settings-grid .col-item > * {
-    padding: 6px 4px;
-    border-bottom: 1px solid var(--border-color, #f0f0f0);
-}
-.column-settings-grid .col-item:last-child > * {
-    border-bottom: none;
-}
-
 .column-settings-header {
     display: grid;
     grid-template-columns: 30px 30px 1fr 140px 70px 50px 30px;
@@ -459,57 +533,6 @@
     top: 0;
     z-index: 5;
 }
-.column-settings-header span {
-    padding: 6px 4px;
-}
-
-.col-item .col-order {
-    font-size: var(--font-size-sm, 12px);
-    color: var(--text-muted, #888);
-    text-align: center;
-}
-.col-item .col-visibility {
-    width: 16px;
-    height: 16px;
-    margin: 0 auto;
-}
-.col-item .col-label {
-    font-size: var(--font-size-base, 13px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.col-item .col-label-input {
-    width: 100%;
-    padding: 2px 6px;
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--radius-sm, 4px);
-    font-size: var(--font-size-sm, 12px);
-}
-.col-item .col-label-input:focus {
-    outline: none;
-    border-color: var(--color-primary, #4a6cf7);
-}
-.col-item .col-width-input {
-    width: 100%;
-    padding: 2px 4px;
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--radius-sm, 4px);
-    font-size: var(--font-size-sm, 12px);
-    text-align: center;
-}
-.col-item .col-width-input:focus {
-    outline: none;
-    border-color: var(--color-primary, #4a6cf7);
-}
-.col-item .px {
-    font-size: var(--font-size-xs, 11px);
-    color: var(--text-muted, #888);
-}
-.col-item .badge {
-    font-size: var(--font-size-xs, 10px);
-    padding: 2px 8px;
-}
 .col-item .col-drag {
     cursor: grab;
     color: var(--text-muted, #adb5bd);
@@ -523,13 +546,9 @@
     background: var(--bg-secondary, #f0f2f5);
 }
 
-.btn-apply-settings {
-    margin-right: var(--padding-sm, 8px);
-}
-
 /* ===== ПОИСК ===== */
 .table-search-input {
-    border-radius: 6px !important;
+    border-radius: var(--search-radius, 6px) !important;
     padding: 4px 10px !important;
     font-size: var(--font-size-base, 13px) !important;
 }
@@ -555,7 +574,7 @@
 .page-title-row .title-left .badge {
     font-size: 14px;
     padding: 6px 12px;
-    border-radius: 20px;
+    border-radius: var(--badge-radius, 20px);
     height: 34px;
     display: flex;
     align-items: center;
@@ -568,7 +587,7 @@
 .page-title-row .title-right .btn {
     font-size: 14px;
     padding: 6px 14px;
-    border-radius: 6px;
+    border-radius: var(--btn-radius, 6px);
     height: 34px;
     display: flex;
     align-items: center;
