@@ -146,34 +146,22 @@
     display: inline;
 }
 
-/* --- ШИРИНА СТОЛБЦОВ --- */
-.table-custom .col-row {
-    width: var(--col-width-row, auto);
-    min-width: var(--col-row-min-width, 25px);
+/* --- УНИВЕРСАЛЬНАЯ ШИРИНА СТОЛБЦОВ --- */
+/* auto — занимает остаток */
+.table-custom col.col-auto {
+    width: var(--col-width-auto, auto);
+    min-width: 100px;
 }
-.table-custom .col-name {
-    width: var(--col-width-name, auto);
+
+/* null или отсутствует — по содержимому */
+.table-custom col.col-content {
+    width: auto;
+    min-width: 30px;
 }
-.table-custom .col-comment {
-    width: var(--col-width-comment, 150px);
-    min-width: var(--col-width-comment, 150px);
-}
-.table-custom .col-status {
-    width: var(--col-width-status, 40px);
-    min-width: var(--col-width-status, 40px);
-    max-width: var(--col-width-status, 40px);
-}
-.table-custom .col-created-at {
-    width: var(--col-width-created-at, 150px);
-    min-width: var(--col-width-created-at, 150px);
-}
-.table-custom .col-updated-at {
-    width: var(--col-width-updated-at, 150px);
-    min-width: var(--col-width-updated-at, 150px);
-}
-.table-custom .col-updated-by {
-    width: var(--col-width-updated-by, 120px);
-    min-width: var(--col-width-updated-by, 120px);
+
+/* fixed — фиксированная ширина */
+.table-custom col.col-fixed-width {
+    /* ширина задаётся через style */
 }
 
 /* --- RESIZE HANDLE --- */
@@ -241,17 +229,13 @@
     border-right: none;
 }
 
-/* --- СТРОКИ: состояния (вся строка) --- */
+/* --- СТРОКИ: состояния --- */
 .table-custom tbody tr {
     transition: background 0.15s ease, color 0.15s ease;
 }
-
-/* Hover */
 .table-custom tbody tr:hover {
     background: var(--row-hover-bg, #f8f9fa);
 }
-
-/* Selected */
 .table-custom tbody tr.row-selected {
     background: var(--row-selected-bg, #e0e7ff);
 }
@@ -291,8 +275,6 @@
     font-style: var(--status-archived-font-style, italic);
     text-decoration: var(--status-archived-text-decoration, none);
 }
-
-/* Удалённые (пов Поведение ячеековерх status-deleted) */
 .table-custom tbody tr.table-deleted {
     background: var(--row-deleted-bg, #f3f4f6);
     color: var(--row-deleted-color, #9ca3af);
@@ -316,7 +298,6 @@
     word-break: break-word;
     overflow: visible;
 }
-/* Tooltip для обрезанных */
 .col-truncated {
     position: relative;
     cursor: help;
@@ -352,8 +333,6 @@
     z-index: 1000;
     pointer-events: none;
 }
-
-/* --- Расширяемые текстовые поля --- */
 .col-expandable {
     position: relative;
 }
@@ -371,12 +350,10 @@
     opacity: 0.6;
 }
 
-/* --- Выравнивание по вертикали --- */
+/* --- Выравнивание --- */
 .col-align-top { vertical-align: var(--vertical-align-top); }
 .col-align-middle { vertical-align: var(--vertical-align-middle); }
 .col-align-bottom { vertical-align: var(--vertical-align-bottom); }
-
-/* --- Выравнивание по горизонтали --- */
 .col-align-left { text-align: left; }
 .col-align-center { text-align: center; }
 .col-align-right { text-align: right; }
@@ -386,7 +363,7 @@
     text-align: var(--col-row-align, center);
     padding: var(--col-row-padding, 4px 8px);
     min-width: var(--col-row-min-width, 25px);
-    width: var(--col-width-row, auto);
+    width: auto;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
@@ -409,7 +386,6 @@
 .col-icon .icon-text {
     display: none;
 }
-/* Tooltip для иконок */
 .col-icon .icon[data-tooltip]:hover::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -780,7 +756,7 @@
     box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15) !important;
 }
 
-/* ===== TITLE (высота) ===== */
+/* ===== TITLE ===== */
 .page-title-row {
     display: flex;
     justify-content: space-between;

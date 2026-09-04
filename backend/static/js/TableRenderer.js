@@ -1,6 +1,11 @@
 /**
  * TableRenderer — рендеринг таблицы на основе схемы
- * Исправления: ширина столбцов из переменных
+ * Архитектурное исправление: ширина столбцов из метаданных
+ * 
+ * Логика ширины:
+ * - default_width = 'auto' → занимает остаток (первый в списке)
+ * - default_width = null → авто по содержимому
+ * - default_width = число → фиксированная ширина
  */
 
 class TableRenderer {
@@ -12,6 +17,8 @@ class TableRenderer {
         this._resizeData = null;
         this._rowResizeData = null;
         this._state = null;
+        this._autoColumnKey = null;  // ключ столбца, который занимает остаток
+        this._autoColumnProcessed = false;  // флаг, что авто-столбец уже определён
     }
 
     async init(tableKey) {
@@ -86,15 +93,46 @@ class TableRenderer {
             return ia - ib;
         });
         filtered.forEach(col => {
-            col._width = widths[col.key] || col.width || 150;
+            // Ширина из настроек пользователя или из метаданных
+            col._width = widths[col.key] || col.default_width || null;
         });
         return filtered;
+    }
+
+    /**
+     * Определяет, какой столбец будет занимать остаток ('auto')
+     * Правило: первый столбец с default_width = 'auto' в порядке отображения
+     * При смене порядка — не пересчитываем (если уже определён)
+     */
+    _determineAutoColumn(columns) {
+        // Если уже определён — не пересчитываем
+        if (this._autoColumnProcessed) {
+            return;
+        }
+
+        // Ищем первый столбец с default_width = 'auto'
+        for (const col of columns) {
+            if (col.default_width === 'auto') {
+                this._autoColumnKey = col.key;
+                this._autoColumnProcessed = true;
+                console.log(`[TableRenderer] Auto-column: ${col.key}`);
+                return;
+            }
+        }
+
+        // Если нет 'auto' — ничего не делаем
+        this._autoColumnProcessed = true;
+        console.log('[TableRenderer] No auto-column found');
     }
 
     _buildTable(columns, data) {
         if (!data || data.length === 0) {
             return this._buildEmptyState(columns.length);
         }
+
+        // Определяем авто-столбец
+        this._determineAutoColumn(columns);
+
         const labels = this.settings.labels || this.schema.default_settings?.labels || {};
         const order = this.settings.order || this.schema.default_settings?.order || [];
         const sortedColumns = [...columns].sort((a, b) => {
@@ -113,58 +151,75 @@ class TableRenderer {
                     <colgroup>
                         ${sortedColumns.map((col, idx) => {
                             const key = col.key;
-                            if (key === 'row' || col.type === 'row_number') {
-                                return `<col data-col="${key}" class="col-row" style="width: var(--col-width-row, auto); min-width: var(--col-row-min-width, 25px);">`;
-                            } else if (key === 'name') {
-                                return `<col data-col="${key}" class="col-name" style="width: var(--col-width-name, auto);">`;
-                            } else if (key === 'comment') {
-                                return `<col data-col="${key}" class="col-comment" style="width: var(--col-width-comment, 150px); min-width: var(--col-width-comment, 150px);">`;
-                            } else if (key === 'status' || col.type === 'status') {
-                                return `<col data-col="${key}" class="col-status" style="width: var(--col-width-status, 40px); min-width: var(--col-width-status, 40px); max-width: var(--col-width-status, 40px);">`;
-                            } else if (key === 'created_at') {
-                                return `<col data-col="${key}" class="col-created-at" style="width: var(--col-width-created-at, 150px); min-width: var(--col-width-created-at, 150px);">`;
-                            } else if (key === 'updated_at') {
-                                return `<col data-col="${key}" class="col-updated-at" style="width: var(--col-width-updated-at, 150px); min-width: var(--col-width-updated-at, 150px);">`;
-                            } else if (key === 'updated_by') {
-                                return `<col data-col="${key}" class="col-updated-by" style="width: var(--col-width-updated-by, 120px); min-width: var(--col-width-updated-by, 120px);">`;
+                            const isRow = key === 'row' || col.type === 'row_number';
+                            const isAuto = key === this._autoColumnKey;
+                            const defaultWidth = col.default_width;
+                            
+                            let widthStyle = '';
+                            let colClass = '';
+                            
+                            if (isRow) {
+                                // Номер строки — авто по содержимому
+                                widthStyle = 'width: auto; min-width: var(--col-row-min-width, 25px);';
+                                colClass = 'col-content';
+                            } else if (isAuto) {
+                                // Авто-столбец — занимает остаток
+                                widthStyle = 'width: var(--col-width-auto, auto); min-width: 100px;';
+                                colClass = 'col-auto';
+                            } else if (defaultWidth === null || defaultWidth === undefined) {
+                                // null — авто по содержимому
+                                widthStyle = 'width: auto; min-width: 30px;';
+                                colClass = 'col-content';
+                            } else if (typeof defaultWidth === 'number' || !isNaN(parseFloat(defaultWidth))) {
+                                // число — фиксированная ширина
+                                const w = parseFloat(defaultWidth);
+                                widthStyle = `width: ${w}px; min-width: ${w}px;`;
+                                colClass = 'col-fixed-width';
                             } else {
-                                return `<col data-col="${key}" style="width: ${col._width || 150}px; min-width: ${col.min_width || 30}px; max-width: ${col.max_width || 600}px;">`;
+                                // fallback
+                                widthStyle = 'width: auto; min-width: 30px;';
+                                colClass = 'col-content';
                             }
+                            
+                            return `<col data-col="${key}" class="${colClass}" style="${widthStyle}">`;
                         }).join('')}
                     </colgroup>
                     <thead>
                         <tr>
                             ${sortedColumns.map((col, idx) => {
-                                const isFixed = col.key === 'row' || col.key === 'actions' || col.fixed;
                                 const isRow = col.key === 'row' || col.type === 'row_number';
+                                const isFixed = col.key === 'row' || col.key === 'actions' || col.fixed;
+                                const isAuto = col.key === this._autoColumnKey;
+                                
                                 let style = '';
                                 let colClass = '';
+                                
                                 if (isRow) {
-                                    style = 'width: var(--col-width-row, auto); min-width: var(--col-row-min-width, 25px); text-align: var(--col-row-align, center);';
+                                    style = 'width: auto; min-width: var(--col-row-min-width, 25px); text-align: var(--col-row-align, center);';
                                     colClass = 'col-row';
-                                } else if (col.key === 'name') {
-                                    style = 'width: var(--col-width-name, auto);';
-                                    colClass = 'col-name';
-                                } else if (col.key === 'comment') {
-                                    style = 'width: var(--col-width-comment, 150px); min-width: var(--col-width-comment, 150px);';
-                                    colClass = 'col-comment';
-                                } else if (col.key === 'status' || col.type === 'status') {
-                                    style = 'width: var(--col-width-status, 40px); min-width: var(--col-width-status, 40px); max-width: var(--col-width-status, 40px); text-align: center;';
-                                    colClass = 'col-status';
-                                } else if (col.key === 'created_at') {
-                                    style = 'width: var(--col-width-created-at, 150px); min-width: var(--col-width-created-at, 150px);';
-                                    colClass = 'col-created-at';
-                                } else if (col.key === 'updated_at') {
-                                    style = 'width: var(--col-width-updated-at, 150px); min-width: var(--col-width-updated-at, 150px);';
-                                    colClass = 'col-updated-at';
-                                } else if (col.key === 'updated_by') {
-                                    style = 'width: var(--col-width-updated-by, 120px); min-width: var(--col-width-updated-by, 120px);';
-                                    colClass = 'col-updated-by';
+                                } else if (isAuto) {
+                                    style = 'width: var(--col-width-auto, auto); min-width: 100px;';
+                                    colClass = 'col-auto';
+                                } else if (col.default_width === null || col.default_width === undefined) {
+                                    style = 'width: auto; min-width: 30px;';
+                                    colClass = 'col-content';
+                                } else if (typeof col.default_width === 'number' || !isNaN(parseFloat(col.default_width))) {
+                                    const w = parseFloat(col.default_width);
+                                    style = `width: ${w}px; min-width: ${w}px;`;
+                                    colClass = 'col-fixed-width';
                                 } else {
-                                    style = `width: ${col._width || 150}px; min-width: ${col.min_width || 30}px; max-width: ${col.max_width || 600}px;`;
+                                    style = 'width: auto; min-width: 30px;';
+                                    colClass = 'col-content';
                                 }
+                                
+                                // Дополнительное выравнивание для статуса
+                                if (col.type === 'status' || col.type === 'boolean') {
+                                    style += ' text-align: center;';
+                                }
+                                
                                 const stickyClass = isRow ? 'col-row-sticky' : '';
                                 const fixedClass = isFixed ? 'col-fixed' : '';
+                                
                                 return `
                                     <th data-col="${col.key}" data-index="${idx}"
                                         style="${style} position: relative; ${isFixed ? 'cursor: default;' : ''}"
@@ -201,13 +256,6 @@ class TableRenderer {
                                         if (isRow) {
                                             cellClass += ' col-row-sticky';
                                         }
-                                        // Добавляем класс для ширины
-                                        if (col.key === 'name') cellClass += ' col-name';
-                                        if (col.key === 'comment') cellClass += ' col-comment';
-                                        if (col.key === 'status' || col.type === 'status') cellClass += ' col-status';
-                                        if (col.key === 'created_at') cellClass += ' col-created-at';
-                                        if (col.key === 'updated_at') cellClass += ' col-updated-at';
-                                        if (col.key === 'updated_by') cellClass += ' col-updated-by';
                                         return `
                                             <td class="${cellClass}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; max-height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 40px)'}px; overflow: hidden; position: relative; vertical-align: middle; text-align: ${isRow ? 'center' : isIcon ? 'center' : 'left'};">
                                                 ${this._renderCell(item, col, index)}
@@ -315,7 +363,6 @@ class TableRenderer {
             `;
         }
 
-        // ДАТА — ТОЛЬКО ДАТА, БЕЗ COMMENT
         if (type === 'datetime' && value) {
             try {
                 const d = new Date(value);

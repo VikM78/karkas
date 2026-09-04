@@ -119,16 +119,13 @@
     --auto-width-min: 30px;
     --auto-width-padding: 16px;
 
-    /* ===== ТАБЛИЦА — ШИРИНА СТОЛБЦОВ ===== */
-    --col-width-row: auto;              /* авто (по содержимому) */
-    --col-width-name: auto;             /* авто (оставшаяся ширина) */
-    --col-width-comment: 150px;         /* фикс */
-    --col-width-status: 40px;           /* фикс (иконка + padding) */
-    --col-width-created-at: 150px;      /* фикс */
-    --col-width-updated-at: 150px;      /* фикс */
-    --col-width-updated-by: 120px;      /* фикс */
-    --col-width-id: 60px;               /* фикс */
-    --col-width-actions: 50px;          /* фикс */
+    /* ===== ШИРИНА СТОЛБЦОВ (универсальные) ===== */
+    --col-width-auto: auto;              /* для столбцов с default_width = 'auto' */
+    --col-width-fixed: 40px;             /* для иконок (status, boolean) */
+    --col-width-date: 150px;             /* для дат */
+    --col-width-text: 150px;             /* для текста */
+    --col-width-id: 60px;
+    --col-width-actions: 50px;
 
     /* ===== ВЫРАВНИВАНИЕ ПО ТИПАМ ===== */
     --col-row-number-align: var(--text-center);
