@@ -119,7 +119,18 @@
     --auto-width-min: 30px;
     --auto-width-padding: 16px;
 
-    /* ===== ТАБЛИЦА — ВЫРАВНИВАНИЕ ПО ТИПАМ ===== */
+    /* ===== ТАБЛИЦА — ШИРИНА СТОЛБЦОВ ===== */
+    --col-width-row: auto;              /* авто (по содержимому) */
+    --col-width-name: auto;             /* авто (оставшаяся ширина) */
+    --col-width-comment: 150px;         /* фикс */
+    --col-width-status: 40px;           /* фикс (иконка + padding) */
+    --col-width-created-at: 150px;      /* фикс */
+    --col-width-updated-at: 150px;      /* фикс */
+    --col-width-updated-by: 120px;      /* фикс */
+    --col-width-id: 60px;               /* фикс */
+    --col-width-actions: 50px;          /* фикс */
+
+    /* ===== ВЫРАВНИВАНИЕ ПО ТИПАМ ===== */
     --col-row-number-align: var(--text-center);
     --col-row-number-min-width: 25px;
 
@@ -139,36 +150,6 @@
     --col-url-align: var(--text-left);
     --col-foreign-key-align: var(--text-left);
     --col-icon-align: var(--text-center);
-
-    /* ===== ТАБЛИЦА — ШИРИНА ПО ТИПАМ ===== */
-    --col-width-row: auto;
-    --col-width-id: 60px;
-    --col-width-actions: 50px;
-
-    --col-width-string-short: 120px;
-    --col-width-string-medium: 180px;
-    --col-width-string-long: 250px;
-    --col-width-text: 150px;
-    --col-width-email: 180px;
-    --col-width-phone: 140px;
-    --col-width-url: 250px;
-    --col-width-foreign-key: 120px;
-
-    --col-width-int: 80px;
-    --col-width-numeric: 100px;
-    --col-width-currency: 110px;
-    --col-width-percent: 70px;
-
-    --col-width-date: 110px;
-    --col-width-datetime: 150px;
-
-    --col-width-status: auto;
-    --col-width-boolean: auto;
-    --col-width-icon: auto;
-
-    --col-width-created-at: 150px;
-    --col-width-updated-at: 150px;
-    --col-width-updated-by: 120px;
 
     /* ===== ИКОНКИ ДЛЯ СТАТУСОВ ===== */
     --icon-status-active: "✅";
@@ -207,27 +188,27 @@
     /* ===== ГЛУБИНА ОТМЕНЫ ===== */
     --undo-depth: 10;
 
-    /* ===== СТАТУСЫ (полное форматирование) ===== */
+    /* ===== СТАТУСЫ (полное форматирование строки) ===== */
     --status-active-color: #059669;
-    --status-active-bg: rgba(5, 150, 105, 0.10);
+    --status-active-bg: rgba(5, 150, 105, 0.08);
     --status-active-font-weight: 500;
     --status-active-font-style: normal;
     --status-active-text-decoration: none;
 
     --status-hidden-color: #6b7280;
-    --status-hidden-bg: rgba(107, 114, 128, 0.10);
+    --status-hidden-bg: rgba(107, 114, 128, 0.08);
     --status-hidden-font-weight: 400;
     --status-hidden-font-style: normal;
     --status-hidden-text-decoration: none;
 
     --status-deleted-color: #dc2626;
-    --status-deleted-bg: rgba(220, 38, 38, 0.10);
+    --status-deleted-bg: rgba(220, 38, 38, 0.06);
     --status-deleted-font-weight: 400;
     --status-deleted-font-style: normal;
     --status-deleted-text-decoration: line-through;
 
     --status-archived-color: #d97706;
-    --status-archived-bg: rgba(217, 119, 6, 0.10);
+    --status-archived-bg: rgba(217, 119, 6, 0.08);
     --status-archived-font-weight: 400;
     --status-archived-font-style: italic;
     --status-archived-text-decoration: none;
