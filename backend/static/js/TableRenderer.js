@@ -1,11 +1,10 @@
 /**
  * TableRenderer — рендеринг таблицы на основе схемы
- * Адаптирован под базовый шрифт и переменные
  * 
- * Логика ширины:
- * - default_width = 'auto' → занимает остаток (первый в списке)
- * - default_width = null → авто по содержимому
- * - default_width = число → фиксированная ширина
+ * Ширина столбцов читается из метаданных:
+ * - width: '1%', '99%', 'auto'
+ * - min_width: '4.5rem', '12ch', '30px'
+ * - max_width: '5.5rem', '16ch', '600px'
  */
 
 class TableRenderer {
@@ -17,8 +16,6 @@ class TableRenderer {
         this._resizeData = null;
         this._rowResizeData = null;
         this._state = null;
-        this._autoColumnKey = null;
-        this._autoColumnProcessed = false;
     }
 
     async init(tableKey) {
@@ -82,7 +79,6 @@ class TableRenderer {
         if (!this.schema || !this.schema.columns) return [];
         const visibleKeys = this.settings.visible || this.schema.default_settings?.visible || [];
         const order = this.settings.order || this.schema.default_settings?.order || [];
-        const widths = this.settings.widths || this.schema.default_settings?.widths || {};
         const columns = this.schema.columns || [];
         let filtered = columns.filter(col => visibleKeys.includes(col.key) || col.fixed);
         filtered.sort((a, b) => {
@@ -92,24 +88,7 @@ class TableRenderer {
             if (ib === -1) return -1;
             return ia - ib;
         });
-        filtered.forEach(col => {
-            col._width = widths[col.key] || col.width || null;
-        });
         return filtered;
-    }
-
-    _determineAutoColumn(columns) {
-        if (this._autoColumnProcessed) return;
-        for (const col of columns) {
-            if (col.default_width === 'auto') {
-                this._autoColumnKey = col.key;
-                this._autoColumnProcessed = true;
-                console.log(`[TableRenderer] Auto-column: ${col.key}`);
-                return;
-            }
-        }
-        this._autoColumnProcessed = true;
-        console.log('[TableRenderer] No auto-column found');
     }
 
     _buildTable(columns, data) {
@@ -117,10 +96,10 @@ class TableRenderer {
             return this._buildEmptyState(columns.length);
         }
 
-        this._determineAutoColumn(columns);
-
         const labels = this.settings.labels || this.schema.default_settings?.labels || {};
         const order = this.settings.order || this.schema.default_settings?.order || [];
+        
+        // Определяем порядок: row всегда первый, status второй (если есть)
         const sortedColumns = [...columns].sort((a, b) => {
             const ia = order.indexOf(a.key);
             const ib = order.indexOf(b.key);
@@ -129,100 +108,95 @@ class TableRenderer {
             return ia - ib;
         });
 
-        // Определяем, какой столбец будет закреплён (первый не-фикс)
-        const firstCol = sortedColumns[0];
-        const isFirstColSticky = firstCol && !firstCol.fixed && firstCol.key !== 'actions';
+        // Жёсткий порядок: row всегда первый, status второй (из метаданных)
+        const fixedOrder = ['row', 'status'];
+        const restColumns = sortedColumns.filter(c => !fixedOrder.includes(c.key));
+        const rowCol = sortedColumns.find(c => c.key === 'row' || c.type === 'row_number');
+        const statusCol = sortedColumns.find(c => c.key === 'status' || c.type === 'status');
+        const finalColumns = [];
+        if (rowCol) finalColumns.push(rowCol);
+        if (statusCol) finalColumns.push(statusCol);
+        finalColumns.push(...restColumns);
 
         let html = `
             <div class="table-wrap">
                 <table class="table table-hover table-sm table-custom" style="width: 100%; border-collapse: separate; border-spacing: 0;">
                     <colgroup>
-                        ${sortedColumns.map((col, idx) => {
+                        ${finalColumns.map((col, idx) => {
                             const key = col.key;
                             const isRow = key === 'row' || col.type === 'row_number';
-                            const isAuto = key === this._autoColumnKey;
-                            const defaultWidth = col._width || col.width;
+                            const isStatus = key === 'status' || col.type === 'status';
                             const isFirst = idx === 0;
                             
-                            let widthStyle = '';
+                            // Читаем ширину из метаданных
+                            const width = col.width || 'auto';
+                            const minWidth = col.min_width || null;
+                            const maxWidth = col.max_width || null;
+                            
+                            let style = `width: ${width};`;
+                            if (minWidth) style += ` min-width: ${minWidth};`;
+                            if (maxWidth) style += ` max-width: ${maxWidth};`;
+                            
                             let colClass = '';
+                            if (isRow) colClass = 'col-row';
+                            else if (isStatus) colClass = 'col-status';
+                            else if (key === 'created_at' || key === 'updated_at') colClass = 'col-created-at';
+                            else if (key === 'comment' || col.type === 'text') colClass = 'col-comment';
                             
-                            if (isRow) {
-                                widthStyle = 'width: 1%; max-width: var(--col-row-max, 5.5rem);';
-                                colClass = 'col-row';
-                            } else if (isAuto) {
-                                widthStyle = 'width: 99%; min-width: var(--col-min-width-name, 12rem);';
-                                colClass = 'col-name';
-                            } else if (key === 'status' || col.type === 'status') {
-                                widthStyle = 'width: 1%; max-width: var(--col-status-max, 3.5rem); min-width: var(--col-status-min, 2.5rem);';
-                                colClass = 'col-status';
-                            } else if (key === 'created_at' || key === 'updated_at' || col.type === 'datetime' || col.type === 'date') {
-                                widthStyle = 'width: 1%; max-width: var(--col-date-max, 16ch); min-width: var(--col-date-min, 12ch);';
-                                colClass = 'col-created-at';
-                            } else if (key === 'comment' || col.type === 'text') {
-                                widthStyle = 'width: 99%; min-width: var(--col-min-width-comment, 8rem);';
-                                colClass = 'col-comment';
-                            } else if (defaultWidth && typeof defaultWidth === 'number') {
-                                const w = defaultWidth;
-                                widthStyle = `width: ${w}px; min-width: ${w}px;`;
-                                colClass = 'col-fixed-width';
-                            } else {
-                                widthStyle = 'width: auto; min-width: 30px;';
-                                colClass = 'col-content';
-                            }
-                            
-                            return `<col data-col="${key}" class="${colClass}" style="${widthStyle}">`;
+                            return `<col data-col="${key}" class="${colClass}" style="${style}">`;
                         }).join('')}
                     </colgroup>
                     <thead>
                         <tr>
-                            ${sortedColumns.map((col, idx) => {
+                            ${finalColumns.map((col, idx) => {
                                 const key = col.key;
                                 const isRow = key === 'row' || col.type === 'row_number';
+                                const isStatus = key === 'status' || col.type === 'status';
                                 const isFirst = idx === 0;
                                 const isFixed = col.fixed || false;
                                 
-                                let style = '';
+                                // Читаем ширину из метаданных
+                                const width = col.width || 'auto';
+                                const minWidth = col.min_width || null;
+                                const maxWidth = col.max_width || null;
+                                
+                                let style = `width: ${width};`;
+                                if (minWidth) style += ` min-width: ${minWidth};`;
+                                if (maxWidth) style += ` max-width: ${maxWidth};`;
+                                
+                                // Для статуса в шапке — специальный класс
+                                const statusThClass = isStatus ? 'col-status-th' : '';
+                                const statusTdClass = isStatus ? 'col-status-td' : '';
+                                
                                 let colClass = '';
                                 let stickyClass = '';
                                 let zIndex = '';
                                 
                                 if (isRow) {
-                                    style = 'width: 1%; max-width: var(--col-row-max, 5.5rem); text-align: var(--col-row-align, center);';
                                     colClass = 'col-row';
                                     if (isFirst) {
                                         stickyClass = 'col-row-sticky';
                                         zIndex = 'z-index: 11;';
                                     }
-                                } else if (key === 'status' || col.type === 'status') {
-                                    style = 'width: 1%; max-width: var(--col-status-max, 3.5rem); min-width: var(--col-status-min, 2.5rem); text-align: center;';
+                                } else if (isStatus) {
                                     colClass = 'col-status';
-                                } else if (key === 'created_at' || key === 'updated_at' || col.type === 'datetime' || col.type === 'date') {
-                                    style = 'width: 1%; max-width: var(--col-date-max, 16ch); min-width: var(--col-date-min, 12ch);';
+                                } else if (key === 'created_at' || key === 'updated_at') {
                                     colClass = 'col-created-at';
                                 } else if (key === 'comment' || col.type === 'text') {
-                                    style = 'width: 99%; min-width: var(--col-min-width-comment, 8rem);';
                                     colClass = 'col-comment';
-                                } else if (col._width && typeof col._width === 'number') {
-                                    const w = col._width;
-                                    style = `width: ${w}px; min-width: ${w}px;`;
-                                    colClass = 'col-fixed-width';
-                                } else {
-                                    style = 'width: auto; min-width: 30px;';
-                                    colClass = 'col-content';
                                 }
                                 
                                 return `
                                     <th data-col="${key}" data-index="${idx}"
                                         style="${style} position: relative; ${isFixed ? 'cursor: default;' : ''} ${zIndex}"
-                                        class="${col.sortable ? 'sortable' : ''} ${colClass} ${stickyClass}">
+                                        class="${col.sortable ? 'sortable' : ''} ${colClass} ${stickyClass} ${statusThClass}">
                                         <div class="th-content" style="display: flex; align-items: center; gap: 0.25rem;">
                                             <span class="col-label" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${labels[key] || col.label || ''}</span>
                                             ${col.sortable ? `<span class="sort-indicator" style="font-size: 0.75rem; color: var(--color-primary, #4a6cf7); flex-shrink: 0; display: none;">↑</span>` : ''}
                                             ${col.filterable ? `<button class="col-btn filter-btn" data-key="${key}" style="background: none; border: none; padding: 0 2px; color: #adb5bd; cursor: pointer; font-size: 0.75rem; flex-shrink: 0;">▼</button>` : ''}
                                         </div>
-                                        ${!isFixed && idx < sortedColumns.length - 1 ? `<div class="resize-handle" data-index="${idx}" style="position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; background: transparent; z-index: 5;"></div>` : ''}
-                                        ${idx === sortedColumns.length - 1 ? `<div class="resize-handle resize-last" data-index="${idx}" style="position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; background: transparent; z-index: 5;"></div>` : ''}
+                                        ${!isFixed && idx < finalColumns.length - 1 ? `<div class="resize-handle" data-index="${idx}" style="position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; background: transparent; z-index: 5;"></div>` : ''}
+                                        ${idx === finalColumns.length - 1 ? `<div class="resize-handle resize-last" data-index="${idx}" style="position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; background: transparent; z-index: 5;"></div>` : ''}
                                     </th>
                                 `;
                             }).join('')}
@@ -234,26 +208,35 @@ class TableRenderer {
                             const deletedClass = item.is_deleted ? 'table-deleted' : '';
                             return `
                                 <tr data-id="${item.id || index}" class="${statusClass} ${deletedClass}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 2.5rem)'}px;">
-                                    ${sortedColumns.map((col, idx) => {
-                                        const isRow = col.key === 'row' || col.type === 'row_number';
+                                    ${finalColumns.map((col, idx) => {
+                                        const key = col.key;
+                                        const isRow = key === 'row' || col.type === 'row_number';
+                                        const isStatus = key === 'status' || col.type === 'status';
                                         const isFirst = idx === 0;
+                                        const isDate = key === 'created_at' || key === 'updated_at' || col.type === 'datetime' || col.type === 'date';
+                                        const isComment = key === 'comment' || col.type === 'text';
+                                        
                                         let cellClass = '';
+                                        let statusTdClass = '';
+                                        
                                         if (isRow) {
                                             cellClass = 'col-row';
                                             if (isFirst) {
                                                 cellClass += ' col-row-sticky';
                                             }
-                                        } else if (col.type === 'status' || col.type === 'boolean') {
+                                        } else if (isStatus) {
                                             cellClass = 'col-status';
-                                        } else if (col.key === 'created_at' || col.key === 'updated_at') {
+                                            statusTdClass = 'col-status-td';
+                                        } else if (isDate) {
                                             cellClass = 'col-created-at';
-                                        } else if (col.key === 'comment' || col.type === 'text') {
+                                        } else if (isComment) {
                                             cellClass = 'col-comment';
                                         } else {
                                             cellClass = 'col-ellipsis';
                                         }
+                                        
                                         return `
-                                            <td class="${cellClass}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 2.5rem)'}px; overflow: hidden; position: relative; vertical-align: middle; text-align: ${isRow ? 'center' : 'left'};">
+                                            <td class="${cellClass} ${statusTdClass}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 2.5rem)'}px; overflow: hidden; position: relative; vertical-align: middle; text-align: ${isRow ? 'center' : isStatus ? 'center' : 'left'};">
                                                 ${this._renderCell(item, col, index)}
                                             </td>
                                         `;

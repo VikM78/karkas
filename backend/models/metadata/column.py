@@ -1,7 +1,6 @@
 from backend.models import db
 from backend.models.base import BaseModel
 
-
 class TableColumn(BaseModel):
     __tablename__ = 'table_columns'
 
@@ -13,8 +12,9 @@ class TableColumn(BaseModel):
     is_sortable = db.Column(db.Boolean, default=True)
     is_filterable = db.Column(db.Boolean, default=True)
     default_width = db.Column(db.Integer, default=150)
-    min_width = db.Column(db.Integer, default=50)
-    max_width = db.Column(db.Integer, default=500)
+    width = db.Column(db.String(20), default='auto')      # ← НОВОЕ: '1%', '99%', 'auto'
+    min_width = db.Column(db.String(20))                  # ← НОВОЕ: '4.5rem', '12ch', '30px'
+    max_width = db.Column(db.String(20))                  # ← НОВОЕ: '5.5rem', '16ch', '600px'
     sort_order = db.Column(db.Integer, default=0)
     is_fixed = db.Column(db.Boolean, default=False)
     is_row_number = db.Column(db.Boolean, default=False)
@@ -31,11 +31,9 @@ class TableColumn(BaseModel):
     )
 
     def get_value_mapping(self, value_key):
-        """Получить значение из справочника"""
         return self.values.filter_by(value_key=value_key).first()
 
     def get_label_for_value(self, value_key):
-        """Получить отображаемое значение из справочника"""
         mapping = self.get_value_mapping(value_key)
         return mapping.value_label if mapping else value_key
 
@@ -49,9 +47,10 @@ class TableColumn(BaseModel):
             'visible': self.is_visible,
             'sortable': self.is_sortable,
             'filterable': self.is_filterable,
-            'width': self.default_width,
-            'min_width': self.min_width,
-            'max_width': self.max_width,
+            'width': self.width or 'auto',                # ← НОВОЕ
+            'min_width': self.min_width,                  # ← НОВОЕ
+            'max_width': self.max_width,                  # ← НОВОЕ
+            'default_width': self.default_width,
             'sort_order': self.sort_order,
             'fixed': self.is_fixed,
             'row_number': self.is_row_number,
