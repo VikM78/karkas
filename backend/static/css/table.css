@@ -188,7 +188,7 @@
     text-decoration: var(--status-active-text-decoration, none);
 }
 .table-custom tbody tr.status-active .status-icon {
-    display: none;
+    display: none !important;
 }
 
 /* --- Скрыт --- */
@@ -411,6 +411,30 @@ nav.mt-3 {
     flex-shrink: 0;
     padding-top: var(--padding-md, 1rem);
     margin-top: 0 !important;
+}
+
+/* ===== МНОГОСТРОЧНЫЕ ТЕКСТОВЫЕ ЯЧЕЙКИ ===== */
+.col-multiline {
+    max-width: 50ch;
+    white-space: normal !important;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--multiline-max-lines, 5);
+    text-overflow: ellipsis;
+    height: calc(var(--row-height, 2.5rem) * var(--multiline-max-lines, 5));
+    line-height: var(--row-height, 2.5rem);
+}
+
+.col-multiline span {
+    display: block;
+    max-height: calc(var(--row-height, 2.5rem) * var(--multiline-max-lines, 5));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */

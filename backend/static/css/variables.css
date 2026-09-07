@@ -52,15 +52,21 @@
     /* ===== ЦВЕТА ===== */
     --bg-primary: #ffffff;
     --bg-secondary: #f0f2f5;
-    --bg-sidebar: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+	/* --bg-sidebar: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); */  /* старый вариант */
+	--bg-sidebar: rgba(30, 30, 50, 0.90);  /* новый — полупрозрачный */
     --bg-overlay: rgba(0, 0, 0, 0.4);
     --bg-hover: rgba(255, 255, 255, 0.06);
     --bg-active: rgba(74, 108, 247, 0.2);
 
+    --sidebar-text: rgba(255, 255, 255, 0.6);
+    --sidebar-text-hover: #ffffff;
+    --sidebar-text-active: #ffffff;
+    --sidebar-group-color: rgba(255, 255, 255, 0.60);
+
     --text-primary: #1a1a2e;
     --text-secondary: #6c757d;
     --text-muted: #9ca3af;
-    --text-light: rgba(255, 255, 255, 0.55);
+    --text-light: rgba(255, 255, 255, 0.85);
     --text-light-hover: #ffffff;
     --text-light-active: #ffffff;
     --text-danger: #dc2626;
@@ -157,7 +163,8 @@
     --col-icon-align: var(--text-center);
 
     /* ===== ИКОНКИ ДЛЯ СТАТУСОВ ===== */
-    --icon-status-active: "✅";
+    /*--icon-status-active: "✅";*/
+    --icon-status-active: "";
     --icon-status-hidden: "👁️‍🗨️";
     --icon-status-deleted: "🗑️";
     --icon-status-archived: "📦";
@@ -243,6 +250,9 @@
     --card-gap: 1rem;                /* 16px */
     --card-radius: 0.5rem;           /* 8px */
     --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    /* ===== МНОГОСТРОЧНЫЙ ТЕКСТ ===== */
+    --multiline-max-lines: 5;        /* ← НОВОЕ: максимум строк для многострочных текстов */
 
     /* ===== ФИЛЬТРЫ ===== */
     --filter-dropdown-bg: var(--bg-primary);

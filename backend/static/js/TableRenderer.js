@@ -99,7 +99,6 @@ class TableRenderer {
         const labels = this.settings.labels || this.schema.default_settings?.labels || {};
         const order = this.settings.order || this.schema.default_settings?.order || [];
         
-        // Определяем порядок: row всегда первый, status второй (если есть)
         const sortedColumns = [...columns].sort((a, b) => {
             const ia = order.indexOf(a.key);
             const ib = order.indexOf(b.key);
@@ -128,7 +127,6 @@ class TableRenderer {
                             const isStatus = key === 'status' || col.type === 'status';
                             const isFirst = idx === 0;
                             
-                            // Читаем ширину из метаданных
                             const width = col.width || 'auto';
                             const minWidth = col.min_width || null;
                             const maxWidth = col.max_width || null;
@@ -155,7 +153,6 @@ class TableRenderer {
                                 const isFirst = idx === 0;
                                 const isFixed = col.fixed || false;
                                 
-                                // Читаем ширину из метаданных
                                 const width = col.width || 'auto';
                                 const minWidth = col.min_width || null;
                                 const maxWidth = col.max_width || null;
@@ -164,7 +161,6 @@ class TableRenderer {
                                 if (minWidth) style += ` min-width: ${minWidth};`;
                                 if (maxWidth) style += ` max-width: ${maxWidth};`;
                                 
-                                // Для статуса в шапке — специальный класс
                                 const statusThClass = isStatus ? 'col-status-th' : '';
                                 const statusTdClass = isStatus ? 'col-status-td' : '';
                                 
@@ -215,6 +211,8 @@ class TableRenderer {
                                         const isFirst = idx === 0;
                                         const isDate = key === 'created_at' || key === 'updated_at' || col.type === 'datetime' || col.type === 'date';
                                         const isComment = key === 'comment' || col.type === 'text';
+                                        const isAuto = col.is_auto === true;
+                                        const isMultiline = col.is_multiline === true;
                                         
                                         let cellClass = '';
                                         let statusTdClass = '';
@@ -231,6 +229,12 @@ class TableRenderer {
                                             cellClass = 'col-created-at';
                                         } else if (isComment) {
                                             cellClass = 'col-comment';
+                                            if (isMultiline) cellClass += ' col-multiline';
+                                        } else if (isAuto) {
+                                            cellClass = 'col-name';
+                                            if (isMultiline) cellClass += ' col-multiline';
+                                        } else if (isMultiline) {
+                                            cellClass = 'col-multiline';
                                         } else {
                                             cellClass = 'col-ellipsis';
                                         }

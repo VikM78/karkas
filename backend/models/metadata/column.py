@@ -12,14 +12,15 @@ class TableColumn(BaseModel):
     is_sortable = db.Column(db.Boolean, default=True)
     is_filterable = db.Column(db.Boolean, default=True)
     default_width = db.Column(db.Integer, default=150)
-    width = db.Column(db.String(20), default='auto')      # ← НОВОЕ: '1%', '99%', 'auto'
-    min_width = db.Column(db.String(20))                  # ← НОВОЕ: '4.5rem', '12ch', '30px'
-    max_width = db.Column(db.String(20))                  # ← НОВОЕ: '5.5rem', '16ch', '600px'
+    width = db.Column(db.String(20), default='auto')
+    min_width = db.Column(db.String(20))
+    max_width = db.Column(db.String(20))
     sort_order = db.Column(db.Integer, default=0)
     is_fixed = db.Column(db.Boolean, default=False)
     is_row_number = db.Column(db.Boolean, default=False)
     is_editable = db.Column(db.Boolean, default=True)
     is_required = db.Column(db.Boolean, default=False)
+    is_multiline = db.Column(db.Boolean, default=False)  # ← НОВОЕ
 
     # Связи
     column_type = db.relationship('ColumnType', backref='columns')
@@ -47,15 +48,16 @@ class TableColumn(BaseModel):
             'visible': self.is_visible,
             'sortable': self.is_sortable,
             'filterable': self.is_filterable,
-            'width': self.width or 'auto',                # ← НОВОЕ
-            'min_width': self.min_width,                  # ← НОВОЕ
-            'max_width': self.max_width,                  # ← НОВОЕ
+            'width': self.width or 'auto',
+            'min_width': self.min_width,
+            'max_width': self.max_width,
             'default_width': self.default_width,
             'sort_order': self.sort_order,
             'fixed': self.is_fixed,
             'row_number': self.is_row_number,
             'editable': self.is_editable,
             'required': self.is_required,
+            'is_multiline': self.is_multiline,  # ← НОВОЕ
         }
         if include_values and self.column_type and self.column_type.type_key == 'status':
             data['values'] = [v.to_dict() for v in self.values.filter_by(is_active=True).all()]
