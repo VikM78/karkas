@@ -134,7 +134,8 @@
     vertical-align: var(--cell-vertical-align, middle);
     font-size: var(--table-body-font-size, 0.875rem);
     color: var(--table-body-color, #1a1a2e);
-    height: var(--row-height, 2.5rem);
+    min-height: var(--row-height, 2.5rem);
+    height: auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -424,13 +425,17 @@ nav.mt-3 {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: var(--multiline-max-lines, 5);
     text-overflow: ellipsis;
-    height: calc(var(--row-height, 2.5rem) * var(--multiline-max-lines, 5));
-    line-height: var(--row-height, 2.5rem);
+    line-height: var(--multiline-font-size, 0.875rem);
+    max-height: var(--multiline-block-height);
+    min-height: calc(
+        var(--multiline-font-size) +
+        var(--multiline-padding-vertical) * 2
+    );
 }
 
 .col-multiline span {
     display: block;
-    max-height: calc(var(--row-height, 2.5rem) * var(--multiline-max-lines, 5));
+    max-height: var(--multiline-block-height);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
@@ -446,7 +451,8 @@ nav.mt-3 {
     .table-custom thead th,
     .table-custom tbody td {
         padding: 0.25rem 0.375rem;
-        height: 2rem;
+        min-height: 2rem;
+        height: auto;
     }
     .status-icon {
         font-size: 1em;

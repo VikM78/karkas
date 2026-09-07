@@ -52,8 +52,8 @@
     /* ===== ЦВЕТА ===== */
     --bg-primary: #ffffff;
     --bg-secondary: #f0f2f5;
-	/* --bg-sidebar: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); */  /* старый вариант */
-	--bg-sidebar: rgba(30, 30, 50, 0.90);  /* новый — полупрозрачный */
+    /* --bg-sidebar: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); */  /* старый вариант */
+    --bg-sidebar: rgba(30, 30, 50, 0.90);  /* новый — полупрозрачный */
     --bg-overlay: rgba(0, 0, 0, 0.4);
     --bg-hover: rgba(255, 255, 255, 0.06);
     --bg-active: rgba(74, 108, 247, 0.2);
@@ -252,7 +252,16 @@
     --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
     /* ===== МНОГОСТРОЧНЫЙ ТЕКСТ ===== */
-    --multiline-max-lines: 5;        /* ← НОВОЕ: максимум строк для многострочных текстов */
+    --multiline-max-lines: 5;                           /* количество строк */
+    --multiline-font-size: var(--font-size-base);      /* 0.875rem */
+    --multiline-line-height: 0.5rem;                   /* межстрочный интервал (8px) */
+    --multiline-padding-vertical: var(--padding-xs);   /* 0.25rem */
+
+    --multiline-block-height: calc(
+        var(--multiline-font-size) * var(--multiline-max-lines) +
+        var(--multiline-line-height) * (var(--multiline-max-lines) - 1) +
+        var(--multiline-padding-vertical) * 2
+    );
 
     /* ===== ФИЛЬТРЫ ===== */
     --filter-dropdown-bg: var(--bg-primary);

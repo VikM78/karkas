@@ -108,12 +108,25 @@ class TableRenderer {
         });
 
         // Жёсткий порядок: row всегда первый, status второй (из метаданных)
-        const fixedOrder = ['row', 'status'];
+        const fixedOrder = ['status'];
         const restColumns = sortedColumns.filter(c => !fixedOrder.includes(c.key));
-        const rowCol = sortedColumns.find(c => c.key === 'row' || c.type === 'row_number');
         const statusCol = sortedColumns.find(c => c.key === 'status' || c.type === 'status');
-        const finalColumns = [];
-        if (rowCol) finalColumns.push(rowCol);
+
+		// СОЗДАЁМ ROW ИСКУССТВЕННО
+		const rowCol = {
+			key: 'row',
+			type: 'row_number',
+			label: '#',
+			width: '1%',
+			min_width: '4.5rem',
+			max_width: '5.5rem',
+			is_row_number: true,
+			fixed: true,
+			sortable: false,
+			filterable: false
+		};
+
+        const finalColumns = [rowCol];
         if (statusCol) finalColumns.push(statusCol);
         finalColumns.push(...restColumns);
 
