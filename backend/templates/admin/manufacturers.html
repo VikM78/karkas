@@ -184,7 +184,8 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const renderer = new TableRenderer('manufacturersTableContainer');
-        
+		window._tableState = window._tableState || {};
+		window._tableState.renderer = renderer;  // ← ДОБАВИТЬ        
         loadTableSchema('manufacturers').then((schema) => {
             if (!schema) {
                 console.error('❌ Схема не загружена');

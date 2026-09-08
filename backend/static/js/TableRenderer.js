@@ -1,10 +1,8 @@
 /**
  * TableRenderer — рендеринг таблицы на основе схемы
  * 
- * Ширина столбцов читается из метаданных:
- * - width: '1%', '99%', 'auto'
- * - min_width: '4.5rem', '12ch', '30px'
- * - max_width: '5.5rem', '16ch', '600px'
+ * Ширина столбцов читается из метаданных и задаётся в colgroup
+ * Высота строк задаётся через tr (один раз)
  */
 
 class TableRenderer {
@@ -16,7 +14,7 @@ class TableRenderer {
         this._resizeData = null;
         this._rowResizeData = null;
         this._state = null;
-        this.offset = 0;  // количество уже загруженных строк
+        this.offset = 0;
         this.pageSize = 50;
     }
 
@@ -48,7 +46,7 @@ class TableRenderer {
             await this._loadSchema();
         }
         try {
-            let url = `/api/v1/tables/${this.tableKey}/data?page=1&per_page=50`;
+            let url = `/api/v1/tables/${this.tableKey}/data?page=1`;
             const response = await fetch(url, { credentials: 'include' });
             if (!response.ok) {
                 throw new Error(`Ошибка загрузки данных: ${response.status}`);
@@ -56,7 +54,6 @@ class TableRenderer {
             const result = await response.json();
             this.data = result.data || [];
             this.total = result.meta?.total || 0;
-            // При полной загрузке offset = 0
             this.offset = 0;
         } catch (error) {
             console.error('Ошибка загрузки данных:', error);
@@ -111,20 +108,11 @@ class TableRenderer {
             return ia - ib;
         });
 
-        // ============================================================
-        // УНИВЕРСАЛЬНЫЙ ПОРЯДОК СТОЛБЦОВ
-        // ============================================================
-        // 1. # (номер строки) — СОЗДАЁМ ИСКУССТВЕННО (не в БД)
-        // 2. status — по типу (если есть)
-        // 3. Остальные — из метаданных
-
-        // Находим столбец с типом 'status' (по типу, а не по имени!)
+        // Находим столбец с типом 'status'
         const statusCol = sortedColumns.find(c => c.type === 'status');
-
-        // Все остальные столбцы (кроме status)
         const restColumns = sortedColumns.filter(c => c.type !== 'status');
 
-        // СОЗДАЁМ ROW ИСКУССТВЕННО (НЕ ИЩЕМ В МЕТАДАННЫХ!)
+        // СОЗДАЁМ ROW ИСКУССТВЕННО
         const rowCol = {
             key: 'row',
             type: 'row_number',
@@ -145,12 +133,12 @@ class TableRenderer {
             <div class="table-wrap">
                 <table class="table table-hover table-sm table-custom" style="width: 100%; border-collapse: separate; border-spacing: 0;">
                     <colgroup>
-                        ${finalColumns.map((col, idx) => {
+                        ${finalColumns.map((col) => {
                             const key = col.key;
                             const isRow = key === 'row' || col.type === 'row_number';
                             const isStatus = key === 'status' || col.type === 'status';
-                            const isFirst = idx === 0;
                             
+                            // Ширина ТОЛЬКО из метаданных
                             const width = col.width || 'auto';
                             const minWidth = col.min_width || null;
                             const maxWidth = col.max_width || null;
@@ -177,14 +165,6 @@ class TableRenderer {
                                 const isFirst = idx === 0;
                                 const isFixed = col.fixed || false;
                                 
-                                const width = col.width || 'auto';
-                                const minWidth = col.min_width || null;
-                                const maxWidth = col.max_width || null;
-                                
-                                let style = `width: ${width};`;
-                                if (minWidth) style += ` min-width: ${minWidth};`;
-                                if (maxWidth) style += ` max-width: ${maxWidth};`;
-                                
                                 const statusThClass = isStatus ? 'col-status-th' : '';
                                 
                                 let colClass = '';
@@ -207,7 +187,6 @@ class TableRenderer {
                                 
                                 return `
                                     <th data-col="${key}" data-index="${idx}"
-                                        style="${style} position: relative; ${isFixed ? 'cursor: default;' : ''} ${zIndex}"
                                         class="${col.sortable ? 'sortable' : ''} ${colClass} ${stickyClass} ${statusThClass}">
                                         <div class="th-content" style="display: flex; align-items: center; gap: 0.25rem;">
                                             <span class="col-label" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${labels[key] || col.label || ''}</span>
@@ -226,7 +205,7 @@ class TableRenderer {
                             const statusClass = item.status ? `status-${item.status}` : '';
                             const deletedClass = item.is_deleted ? 'table-deleted' : '';
                             return `
-                                <tr data-id="${item.id || index}" class="${statusClass} ${deletedClass}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 2.5rem)'}px;">
+                                <tr data-id="${item.id || index}" class="${statusClass} ${deletedClass}" style="height: var(--row-height, 2.2rem);">
                                     ${finalColumns.map((col, idx) => {
                                         const key = col.key;
                                         const isRow = key === 'row' || col.type === 'row_number';
@@ -262,9 +241,12 @@ class TableRenderer {
                                             cellClass = 'col-ellipsis';
                                         }
                                         
+                                        // # — вычисляется напрямую, без _renderCell()
+                                        const cellContent = isRow ? (index + 1) : this._renderCell(item, col, index);
+                                        
                                         return `
-                                            <td class="${cellClass} ${statusTdClass}" style="height: ${this.settings.rowHeights?.[item.id] || 'var(--row-height, 2.5rem)'}px; overflow: hidden; position: relative; vertical-align: middle; text-align: ${isRow ? 'center' : isStatus ? 'center' : 'left'};">
-                                                ${this._renderCell(item, col, index)}
+                                            <td class="${cellClass} ${statusTdClass}" style="text-align: ${isRow ? 'center' : isStatus ? 'center' : 'left'};">
+                                                ${cellContent}
                                             </td>
                                         `;
                                     }).join('')}
@@ -287,13 +269,7 @@ class TableRenderer {
             return '';
         }
 
-        // ============================================================
-        // # (НОМЕР СТРОКИ) — ВЫЧИСЛЯЕТСЯ НА КЛИЕНТЕ
-        // ============================================================
-        if (type === 'row_number' || column.key === 'row') {
-            const rowNumber = this.offset + index + 1;
-            return `<span style="display: inline-block; text-align: center; font-variant-numeric: tabular-nums;">${rowNumber}</span>`;
-        }
+        // row_number больше НЕ обрабатывается в _renderCell()
 
         if (type === 'status' && column.values) {
             const val = column.values.find(v => v.key === value);
