@@ -113,7 +113,6 @@ function createTable(tableKey, containerId, dataLoader, crudFunctions) {
 
     renderTableHeader(state);
     loadData(state, 1);
-    setupResize(state);
 
     state.initialized = true;
     window._tableState = state;
@@ -183,7 +182,6 @@ function renderTableHeader(state) {
             th.classList.add('col-fixed');
         }
 
-        // Определяем, активна ли сортировка для этого столбца
         const isSortActive = state.columnSort && state.columnSort.key === col.key;
         if (isSortActive) {
             th.classList.add('sort-active');
@@ -205,7 +203,6 @@ function renderTableHeader(state) {
             labelSpan.style.whiteSpace = 'nowrap';
             content.appendChild(labelSpan);
             
-            // Индикатор сортировки (показываем только если активна)
             if (col.sortable !== false) {
                 const sortIndicator = document.createElement('span');
                 sortIndicator.className = 'sort-indicator';
@@ -217,7 +214,6 @@ function renderTableHeader(state) {
                 content.appendChild(sortIndicator);
             }
             
-            // Фильтр (всегда)
             const filterBtn = document.createElement('button');
             filterBtn.className = 'col-btn filter-btn';
             filterBtn.innerHTML = '▼';
@@ -245,7 +241,6 @@ function renderTableHeader(state) {
             th.textContent = label;
         }
 
-        // Resize handle — для всех столбцов, включая последний
         if (!isFixed) {
             const handle = document.createElement('div');
             handle.className = 'resize-handle';
@@ -284,7 +279,12 @@ function renderTableHeader(state) {
     }, 100);
 }
 
+// ============================================================
+//  РЕСАЙЗ СТОЛБЦОВ (ВРЕМЕННО ОТКЛЮЧЁН)
+// ============================================================
 
+// Функции ресайза перенесены в TableRenderer.js
+// setupResize, startResize, onResize, stopResize — удалены
 
 // ============================================================
 //  ЗАГРУЗКА ДАННЫХ
@@ -363,7 +363,6 @@ function renderTableBody(state, data) {
     });
     tbody.innerHTML = html;
     
-    // Иконки редактирования только если editMode включён
     if (state.editMode) {
         renderEditIcons(state);
     }
@@ -381,7 +380,7 @@ function renderTableBody(state, data) {
 }
 
 // ============================================================
-//  ИКОНКИ РЕДАКТИРОВАНИЯ (справа от таблицы)
+//  ИКОНКИ РЕДАКТИРОВАНИЯ
 // ============================================================
 
 function renderEditIcons(state) {
@@ -501,7 +500,6 @@ function updateSortIndicators(state) {
         if (targetTh) {
             targetTh.classList.add('sort-active');
             targetTh.classList.add(state.columnSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
-            // Обновляем индикатор
             const indicator = targetTh.querySelector('.sort-indicator');
             if (indicator) {
                 indicator.textContent = state.columnSort.direction === 'asc' ? '↑' : '↓';
@@ -538,7 +536,7 @@ function toggleFilterDropdown(th, colKey, state) {
 }
 
 // ============================================================
-//  УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО
+//  МОДАЛЬНЫЕ ОКНА
 // ============================================================
 
 function openEditModal(tableState, data) {
@@ -1004,7 +1002,7 @@ function toggleEditMode() {
 }
 
 // ============================================================
-//  ВЫДЕЛЕНИЕ СТРОК (для мультиредактирования)
+//  ВЫДЕЛЕНИЕ СТРОК
 // ============================================================
 
 function selectRow(state, rowId, ctrlKey, shiftKey) {
@@ -1023,7 +1021,6 @@ function selectRow(state, rowId, ctrlKey, shiftKey) {
         state.selectedRows.add(rowId);
     }
     
-    // Обновляем отображение (перерисовываем строки)
     renderTableBody(state, state._lastData);
 }
 
@@ -1035,9 +1032,6 @@ window.createTable = createTable;
 window.loadData = loadData;
 window.renderTableHeader = renderTableHeader;
 window.renderTableBody = renderTableBody;
-window.startResize = startResize;
-window.onResize = onResize;
-window.stopResize = stopResize;
 window.updateRecordCount = updateRecordCount;
 window.toggleSort = toggleSort;
 window.openEditModal = openEditModal;

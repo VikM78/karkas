@@ -16,6 +16,8 @@ class TableRenderer {
         this._resizeData = null;
         this._rowResizeData = null;
         this._state = null;
+        this.offset = 0;  // количество уже загруженных строк
+        this.pageSize = 50;
     }
 
     async init(tableKey) {
@@ -54,6 +56,8 @@ class TableRenderer {
             const result = await response.json();
             this.data = result.data || [];
             this.total = result.meta?.total || 0;
+            // При полной загрузке offset = 0
+            this.offset = 0;
         } catch (error) {
             console.error('Ошибка загрузки данных:', error);
             this.data = [];
@@ -107,24 +111,31 @@ class TableRenderer {
             return ia - ib;
         });
 
-        // Жёсткий порядок: row всегда первый, status второй (из метаданных)
-        const fixedOrder = ['status'];
-        const restColumns = sortedColumns.filter(c => !fixedOrder.includes(c.key));
-        const statusCol = sortedColumns.find(c => c.key === 'status' || c.type === 'status');
+        // ============================================================
+        // УНИВЕРСАЛЬНЫЙ ПОРЯДОК СТОЛБЦОВ
+        // ============================================================
+        // 1. # (номер строки) — СОЗДАЁМ ИСКУССТВЕННО (не в БД)
+        // 2. status — по типу (если есть)
+        // 3. Остальные — из метаданных
 
-		// СОЗДАЁМ ROW ИСКУССТВЕННО
-		const rowCol = {
-			key: 'row',
-			type: 'row_number',
-			label: '#',
-			width: '1%',
-			min_width: '4.5rem',
-			max_width: '5.5rem',
-			is_row_number: true,
-			fixed: true,
-			sortable: false,
-			filterable: false
-		};
+        // Находим столбец с типом 'status' (по типу, а не по имени!)
+        const statusCol = sortedColumns.find(c => c.type === 'status');
+
+        // Все остальные столбцы (кроме status)
+        const restColumns = sortedColumns.filter(c => c.type !== 'status');
+
+        // СОЗДАЁМ ROW ИСКУССТВЕННО (НЕ ИЩЕМ В МЕТАДАННЫХ!)
+        const rowCol = {
+            key: 'row',
+            type: 'row_number',
+            label: '#',
+            width: '1%',
+            min_width: '4.5rem',
+            max_width: '5.5rem',
+            fixed: true,
+            sortable: false,
+            filterable: false
+        };
 
         const finalColumns = [rowCol];
         if (statusCol) finalColumns.push(statusCol);
@@ -175,7 +186,6 @@ class TableRenderer {
                                 if (maxWidth) style += ` max-width: ${maxWidth};`;
                                 
                                 const statusThClass = isStatus ? 'col-status-th' : '';
-                                const statusTdClass = isStatus ? 'col-status-td' : '';
                                 
                                 let colClass = '';
                                 let stickyClass = '';
@@ -277,8 +287,12 @@ class TableRenderer {
             return '';
         }
 
+        // ============================================================
+        // # (НОМЕР СТРОКИ) — ВЫЧИСЛЯЕТСЯ НА КЛИЕНТЕ
+        // ============================================================
         if (type === 'row_number' || column.key === 'row') {
-            return `<span style="display: inline-block; text-align: center; font-variant-numeric: tabular-nums;">${index + 1}</span>`;
+            const rowNumber = this.offset + index + 1;
+            return `<span style="display: inline-block; text-align: center; font-variant-numeric: tabular-nums;">${rowNumber}</span>`;
         }
 
         if (type === 'status' && column.values) {
@@ -417,149 +431,13 @@ class TableRenderer {
         });
     }
 
-_setupColumnResize() {
-    const table = this.container.querySelector('table');
-    if (!table) return;
+    _setupColumnResize() {
+        // Будет реализовано на следующем этапе
+    }
 
-    let resizeData = null;
-
-    // 1. mousedown на resize-handle
-    table.addEventListener('mousedown', (e) => {
-        const handle = e.target.closest('.resize-handle');
-        if (!handle) return;
-        const th = handle.closest('th');
-        if (!th) return;
-        if (th.classList.contains('col-fixed')) return;
-
-        const index = parseInt(handle.dataset.index);
-        const col = th.closest('table').querySelector(`colgroup col:nth-child(${index + 1})`);
-        const nextCol = th.closest('table').querySelector(`colgroup col:nth-child(${index + 2})`);
-        const nextTh = th.nextElementSibling;
-
-        // Сохраняем данные в resizeData
-        resizeData = {
-            index,
-            startX: e.clientX,
-            col,
-            nextCol,
-            th,
-            nextTh,
-            leftWidth: parseInt(col?.style.width) || 150,
-            rightWidth: parseInt(nextCol?.style.width) || 150,
-            // ... остальные данные
-        };
-
-        handle.classList.add('active');
-        document.body.style.userSelect = 'none';
-        e.preventDefault();
-    });
-
-    // 2. mousemove
-    document.addEventListener('mousemove', (e) => {
-        if (!resizeData) return;
-        const delta = e.clientX - resizeData.startX;
-        let newLeft = Math.max(30, resizeData.leftWidth + delta);
-        let newRight = Math.max(30, resizeData.rightWidth - delta);
-        // Применяем ширину
-        resizeData.col.style.width = newLeft + 'px';
-        resizeData.th.style.width = newLeft + 'px';
-        resizeData.nextCol.style.width = newRight + 'px';
-        resizeData.nextTh.style.width = newRight + 'px';
-        // Сохраняем в settings
-        const leftKey = resizeData.th.dataset.col;
-        const rightKey = resizeData.nextTh.dataset.col;
-        if (leftKey && rightKey && this.settings.widths) {
-            this.settings.widths[leftKey] = Math.round(newLeft);
-            this.settings.widths[rightKey] = Math.round(newRight);
-        }
-    });
-
-    // 3. mouseup
-    document.addEventListener('mouseup', () => {
-        if (resizeData) {
-            const handle = resizeData.th?.querySelector('.resize-handle');
-            if (handle) handle.classList.remove('active');
-            document.body.style.userSelect = '';
-            // Сохраняем в localStorage
-            if (this.settings.widths) {
-                const storageKey = `table_settings_${this.tableKey}`;
-                localStorage.setItem(storageKey, JSON.stringify(this.settings));
-            }
-            resizeData = null;
-        }
-    });
-}
-
-_setupRowResize() {
-    const table = this.container.querySelector('table');
-    if (!table) return;
-
-    let resizeData = null;
-
-    // Добавляем handle для каждой строки (в зоне #)
-    table.querySelectorAll('tbody tr').forEach(row => {
-        const oldHandle = row.querySelector('.row-resize-handle');
-        if (oldHandle) oldHandle.remove();
-
-        const handle = document.createElement('div');
-        handle.className = 'row-resize-handle';
-        handle.style.cssText = `
-            position: absolute;
-            bottom: -3px;
-            left: 0;
-            width: 60px;
-            height: 6px;
-            cursor: row-resize;
-            z-index: 10;
-            background: transparent;
-        `;
-        row.style.position = 'relative';
-        row.appendChild(handle);
-    });
-
-    // mousedown на handle
-    document.addEventListener('mousedown', (e) => {
-        const handle = e.target.closest('.row-resize-handle');
-        if (!handle) return;
-        const row = handle.closest('tr');
-        if (!row) return;
-        const startY = e.clientY;
-        const startHeight = row.offsetHeight;
-        resizeData = { row, startY, startHeight };
-        handle.classList.add('active');
-        document.body.style.userSelect = 'none';
-        e.preventDefault();
-    });
-
-    // mousemove
-    document.addEventListener('mousemove', (e) => {
-        if (!resizeData) return;
-        const delta = e.clientY - resizeData.startY;
-        const newHeight = Math.max(32, Math.min(300, resizeData.startHeight + delta));
-        resizeData.row.style.height = newHeight + 'px';
-        resizeData.row.querySelectorAll('td').forEach(td => {
-            td.style.height = newHeight + 'px';
-        });
-        const rowId = resizeData.row.dataset.id;
-        if (rowId && this.settings.rowHeights) {
-            this.settings.rowHeights[rowId] = newHeight;
-        }
-    });
-
-    // mouseup
-    document.addEventListener('mouseup', () => {
-        if (resizeData) {
-            const handle = resizeData.row?.querySelector('.row-resize-handle');
-            if (handle) handle.classList.remove('active');
-            document.body.style.userSelect = '';
-            if (this.settings.rowHeights) {
-                const storageKey = `row_heights_${this.tableKey}`;
-                localStorage.setItem(storageKey, JSON.stringify(this.settings.rowHeights));
-            }
-            resizeData = null;
-        }
-    });
-}
+    _setupRowResize() {
+        // Будет реализовано на следующем этапе
+    }
 
     _setupAutoWidth() {
         // Будет реализовано на следующем этапе
