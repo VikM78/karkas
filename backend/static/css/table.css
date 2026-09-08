@@ -1,7 +1,5 @@
 /* ============================================================
    УНИВЕРСАЛЬНАЯ ТАБЛИЦА — СТИЛИ
-   Ширина столбцов задаётся через colgroup (из метаданных)
-   Высота строк задаётся через tr
    ============================================================ */
 
 /* ===== КОНТЕЙНЕР ТАБЛИЦЫ ===== */
@@ -49,9 +47,12 @@
 /* ===== ВЫСОТА СТРОК ===== */
 .table-custom thead tr {
     height: var(--header-row-height, 2.5rem);
+    min-height: var(--header-row-height, 2.5rem);
 }
 .table-custom tbody tr {
     height: var(--row-height, 2.2rem);
+    min-height: var(--row-height-min, 2rem);
+    max-height: var(--row-height-max, 18.75rem);
 }
 
 /* ===== ШАПКА (закреплена) ===== */
@@ -65,7 +66,7 @@
     background: var(--table-header-bg, #f8f9fa);
     border-right: 1px solid var(--border-color, #dee2e6);
     border-bottom: 1px solid var(--border-color, #dee2e6);
-    padding: var(--table-header-padding, 0.5rem 0.5rem);
+    padding: var(--padding-cell-header, 0.5rem 0.75rem);
     font-weight: var(--table-header-font-weight, 600);
     font-size: var(--table-header-font-size, 0.875rem);
     white-space: nowrap;
@@ -80,9 +81,9 @@
     border-right: none;
 }
 
-/* --- СТОЛБЕЦ СТАТУС В ШАПКЕ --- */
+/* --- СТОЛБЕЦ СТАТУС В ШАПКЕ (компактный) --- */
 .table-custom thead th.col-status-th {
-    padding: var(--padding-sm) 0.25rem var(--padding-sm) 0.25rem !important;
+    padding: var(--padding-cell-compact, 0.25rem 0.5rem) !important;
     text-align: right;
 }
 
@@ -136,7 +137,7 @@
 
 /* ===== ТЕЛО ТАБЛИЦЫ ===== */
 .table-custom tbody td {
-    padding: var(--table-body-padding, 0.25rem 0.5rem);
+    padding: var(--padding-cell-default, 0.5rem 0.75rem);
     border-right: 1px solid var(--border-color, #dee2e6);
     border-bottom: 1px solid var(--border-color, #dee2e6);
     vertical-align: var(--cell-vertical-align, middle);
@@ -151,9 +152,19 @@
     border-right: none;
 }
 
-/* --- СТОЛБЕЦ СТАТУС В ТЕЛЕ --- */
+/* --- СТОЛБЕЦ СТАТУС В ТЕЛЕ (компактный) --- */
 .table-custom tbody td.col-status-td {
-    padding: var(--padding-sm) 0.25rem var(--padding-sm) 0.25rem !important;
+    padding: var(--padding-cell-compact, 0.25rem 0.5rem) !important;
+}
+
+/* --- СТОЛБЕЦ ИМЕНИ (широкий padding) --- */
+.table-custom tbody td.col-name {
+    padding: var(--padding-cell-wide, 0.5rem 1rem);
+}
+
+/* --- СТОЛБЕЦ КОММЕНТАРИЯ (широкий padding) --- */
+.table-custom tbody td.col-comment {
+    padding: var(--padding-cell-wide, 0.5rem 1rem);
 }
 
 /* ===== СТАТУС (иконка) ===== */
@@ -244,7 +255,6 @@
 }
 
 /* ===== ЛИНИИ (не двигаются при прокрутке) ===== */
-/* Вертикальная линия справа от # */
 .col-row-sticky::after {
     content: '';
     position: absolute;
@@ -256,7 +266,6 @@
     pointer-events: none;
 }
 
-/* Горизонтальная линия под шапкой */
 .table-custom thead::after {
     content: '';
     position: absolute;
@@ -352,9 +361,9 @@
 }
 
 /* ===== ВЫРАВНИВАНИЕ ===== */
-.col-align-top { vertical-align: var(--vertical-align-top); }
-.col-align-middle { vertical-align: var(--vertical-align-middle); }
-.col-align-bottom { vertical-align: var(--vertical-align-bottom); }
+.col-align-top { vertical-align: var(--vertical-align-top, top); }
+.col-align-middle { vertical-align: var(--vertical-align-middle, middle); }
+.col-align-bottom { vertical-align: var(--vertical-align-bottom, bottom); }
 .col-align-left { text-align: left; }
 .col-align-center { text-align: center; }
 .col-align-right { text-align: right; }
@@ -446,6 +455,13 @@ nav.mt-3 {
     text-overflow: ellipsis;
     white-space: normal;
     word-wrap: break-word;
+}
+
+/* ===== # (обычное форматирование, без наследования статусов) ===== */
+.col-row {
+    font-style: normal !important;
+    text-decoration: none !important;
+    font-weight: 400 !important;
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */

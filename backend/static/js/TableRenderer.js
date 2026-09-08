@@ -1,8 +1,9 @@
 /**
  * TableRenderer — рендеринг таблицы на основе схемы
  * 
- * Ширина столбцов читается из метаданных и задаётся в colgroup
- * Высота строк задаётся через tr (один раз)
+ * Ширина столбцов — из метаданных (colgroup)
+ * Высота строк — через CSS-переменные (tr)
+ * Отступы — по типам ячеек (CSS-классы)
  */
 
 class TableRenderer {
@@ -112,7 +113,7 @@ class TableRenderer {
         const statusCol = sortedColumns.find(c => c.type === 'status');
         const restColumns = sortedColumns.filter(c => c.type !== 'status');
 
-        // СОЗДАЁМ ROW ИСКУССТВЕННО
+        // СОЗДАЁМ ROW ИСКУССТВЕННО (не в БД)
         const rowCol = {
             key: 'row',
             type: 'row_number',
@@ -138,7 +139,6 @@ class TableRenderer {
                             const isRow = key === 'row' || col.type === 'row_number';
                             const isStatus = key === 'status' || col.type === 'status';
                             
-                            // Ширина ТОЛЬКО из метаданных
                             const width = col.width || 'auto';
                             const minWidth = col.min_width || null;
                             const maxWidth = col.max_width || null;
@@ -185,11 +185,15 @@ class TableRenderer {
                                     colClass = 'col-comment';
                                 }
                                 
+                                // Скрываем название для статуса
+                                const label = (isStatus) ? '' : (labels[key] || col.label || '');
+                                
                                 return `
                                     <th data-col="${key}" data-index="${idx}"
-                                        class="${col.sortable ? 'sortable' : ''} ${colClass} ${stickyClass} ${statusThClass}">
+                                        class="${col.sortable ? 'sortable' : ''} ${colClass} ${stickyClass} ${statusThClass}"
+                                        ${zIndex ? `style="${zIndex}"` : ''}>
                                         <div class="th-content" style="display: flex; align-items: center; gap: 0.25rem;">
-                                            <span class="col-label" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${labels[key] || col.label || ''}</span>
+                                            <span class="col-label" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${label}</span>
                                             ${col.sortable ? `<span class="sort-indicator" style="font-size: 0.75rem; color: var(--color-primary, #4a6cf7); flex-shrink: 0; display: none;">↑</span>` : ''}
                                             ${col.filterable ? `<button class="col-btn filter-btn" data-key="${key}" style="background: none; border: none; padding: 0 2px; color: #adb5bd; cursor: pointer; font-size: 0.75rem; flex-shrink: 0;">▼</button>` : ''}
                                         </div>
@@ -205,7 +209,7 @@ class TableRenderer {
                             const statusClass = item.status ? `status-${item.status}` : '';
                             const deletedClass = item.is_deleted ? 'table-deleted' : '';
                             return `
-                                <tr data-id="${item.id || index}" class="${statusClass} ${deletedClass}" style="height: var(--row-height, 2.2rem);">
+                                <tr data-id="${item.id || index}" class="${statusClass} ${deletedClass}">
                                     ${finalColumns.map((col, idx) => {
                                         const key = col.key;
                                         const isRow = key === 'row' || col.type === 'row_number';
@@ -245,7 +249,7 @@ class TableRenderer {
                                         const cellContent = isRow ? (index + 1) : this._renderCell(item, col, index);
                                         
                                         return `
-                                            <td class="${cellClass} ${statusTdClass}" style="text-align: ${isRow ? 'center' : isStatus ? 'center' : 'left'};">
+                                            <td class="${cellClass} ${statusTdClass}" style="vertical-align: var(--cell-vertical-align, middle); text-align: ${isRow ? 'center' : isStatus ? 'center' : 'left'};">
                                                 ${cellContent}
                                             </td>
                                         `;
