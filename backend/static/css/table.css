@@ -436,9 +436,6 @@ nav.mt-3 {
     word-wrap: break-word;
     word-break: break-word;
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--multiline-max-lines, 5);
     text-overflow: ellipsis;
     line-height: var(--multiline-font-size, 0.875rem);
     max-height: var(--multiline-block-height);
