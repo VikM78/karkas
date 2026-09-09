@@ -1,30 +1,28 @@
 /* ============================================================
-   ШАПКА (HEADER) — финальная версия
+   ШАПКА (КАРТОЧКА ЗАГОЛОВКА)
    ============================================================ */
 
 .top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--header-height);
-    background: rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
+    height: var(--header-height, 3.75rem);
+    min-height: var(--header-height, 3.75rem);
+    background: var(--header-bg, rgba(255, 255, 255, 0.6));
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--header-border);
-    box-shadow: var(--header-shadow);
-    z-index: var(--header-z-index);
+    border: 1px solid var(--header-border, #e8ecf1);
+    border-radius: var(--card-radius, 0.5rem);
+    box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.06));
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 var(--padding-lg);
+    padding: 0 var(--padding-lg, 1.25rem);
 }
 
 /* ===== ЛЕВАЯ ЧАСТЬ ===== */
 .top-bar-left {
     display: flex;
     align-items: center;
-    gap: var(--padding-md);
+    gap: var(--padding-md, 1rem);
     flex: 1;
     min-width: 0;
 }
@@ -33,12 +31,12 @@
 .menu-toggle {
     background: none;
     border: none;
-    font-size: var(--font-size-xl);
-    color: var(--text-primary);
+    font-size: var(--font-size-xl, 1.125rem);
+    color: var(--text-primary, #1a1a2e);
     cursor: pointer;
     padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm, 0.5rem);
+    transition: all var(--transition-fast, 0.15s ease);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -47,18 +45,18 @@
 }
 
 .menu-toggle:hover {
-    background: var(--bg-secondary);
+    background: var(--bg-secondary, #f0f2f5);
 }
 
 .menu-toggle .bi-list {
     font-size: 28px;
 }
 
-/* Разделитель после кнопки меню */
+/* Разделитель */
 .top-bar-divider {
     width: 1px;
     height: 32px;
-    background: var(--border-color);
+    background: var(--border-color, #dee2e6);
     flex-shrink: 0;
 }
 
@@ -66,22 +64,22 @@
 .top-bar-left .brand {
     display: flex;
     align-items: center;
-    gap: var(--padding-sm);
-    font-size: var(--font-size-lg);
+    gap: var(--padding-sm, 0.5rem);
+    font-size: var(--font-size-lg, 1rem);
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text-primary, #1a1a2e);
     text-decoration: none;
     flex-shrink: 0;
 }
 
 .top-bar-left .brand .brand-icon {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-2xl, 1.25rem);
 }
 
 .top-bar-left .brand .brand-sub {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-sm, 0.75rem);
     font-weight: 400;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #6c757d);
     margin-left: 4px;
 }
 
@@ -89,11 +87,11 @@
 .top-bar-left .page-title {
     margin: 0;
     font-weight: 600;
-    font-size: var(--font-size-lg);
-    color: var(--text-primary);
-    margin-left: var(--padding-md);
-    padding-left: var(--padding-md);
-    border-left: 1px solid var(--border-color);
+    font-size: var(--font-size-lg, 1rem);
+    color: var(--text-primary, #1a1a2e);
+    margin-left: var(--padding-md, 1rem);
+    padding-left: var(--padding-md, 1rem);
+    border-left: 1px solid var(--border-color, #dee2e6);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -103,7 +101,7 @@
 .top-bar-right {
     display: flex;
     align-items: center;
-    gap: var(--padding-sm);
+    gap: var(--padding-sm, 0.5rem);
     flex-shrink: 0;
     position: relative;
 }
@@ -112,15 +110,15 @@
 .user-avatar-btn {
     background: none;
     border: none;
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-3xl, 1.5rem);
     cursor: pointer;
     padding: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform var(--transition-fast);
+    transition: transform var(--transition-fast, 0.15s ease);
     position: relative;
-    color: var(--text-primary);
+    color: var(--text-primary, #1a1a2e);
     border-radius: 50%;
 }
 
@@ -129,7 +127,7 @@
 }
 
 .user-avatar-btn .avatar-icon {
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-3xl, 1.5rem);
 }
 
 .user-avatar-btn .status-dot {
@@ -139,30 +137,30 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid var(--header-bg);
+    border: 2px solid var(--header-bg, #ffffff);
 }
 
 .user-avatar-btn .status-dot.online {
-    background: var(--status-online);
+    background: var(--status-online, #10b981);
 }
 
 .user-avatar-btn .status-dot.offline {
-    background: var(--status-offline);
+    background: var(--status-offline, #ef4444);
 }
 
 /* ===== ВЫПАДАЮЩЕЕ МЕНЮ ПОЛЬЗОВАТЕЛЯ ===== */
 .user-dropdown {
     display: none;
     position: absolute;
-    top: calc(100% + var(--padding-sm));
+    top: calc(100% + var(--padding-sm, 0.5rem));
     right: 0;
-    background: var(--header-bg);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
+    background: var(--bg-primary, #ffffff);
+    border-radius: var(--radius-md, 0.75rem);
+    box-shadow: var(--shadow-lg, 0 8px 32px rgba(0,0,0,0.15));
     min-width: 220px;
-    padding: var(--padding-sm) 0;
+    padding: var(--padding-sm, 0.5rem) 0;
     z-index: 100;
-    border: 1px solid var(--header-border);
+    border: 1px solid var(--border-color, #dee2e6);
 }
 
 .user-dropdown.show {
@@ -170,14 +168,14 @@
 }
 
 .user-dropdown .dropdown-item {
-    padding: 10px var(--padding-lg);
-    color: var(--text-primary);
+    padding: 10px var(--padding-lg, 1.25rem);
+    color: var(--text-primary, #1a1a2e);
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: var(--padding-sm);
-    font-size: var(--font-size-base);
-    transition: background var(--transition-fast);
+    gap: var(--padding-sm, 0.5rem);
+    font-size: var(--font-size-base, 0.875rem);
+    transition: background var(--transition-fast, 0.15s ease);
     cursor: pointer;
     border: none;
     background: none;
@@ -186,88 +184,75 @@
 }
 
 .user-dropdown .dropdown-item:hover {
-    background: var(--bg-secondary);
+    background: var(--bg-secondary, #f0f2f5);
 }
 
 .user-dropdown .dropdown-item i {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-lg, 1rem);
     width: 24px;
     text-align: center;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #6c757d);
 }
 
 .user-dropdown .dropdown-divider {
     height: 1px;
-    background: var(--header-border);
-    margin: 4px var(--padding-sm);
+    background: var(--border-color, #dee2e6);
+    margin: 4px var(--padding-sm, 0.5rem);
 }
 
 .user-dropdown .dropdown-user-info {
-    padding: var(--padding-sm) var(--padding-lg);
-    border-bottom: 1px solid var(--header-border);
+    padding: var(--padding-sm, 0.5rem) var(--padding-lg, 1.25rem);
+    border-bottom: 1px solid var(--border-color, #dee2e6);
     margin-bottom: 4px;
 }
 
 .user-dropdown .dropdown-user-info .name {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-primary, #1a1a2e);
 }
 
 .user-dropdown .dropdown-user-info .role {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
+    font-size: var(--font-size-sm, 0.75rem);
+    color: var(--text-secondary, #6c757d);
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */
-@media (max-width: 768px) {
-    :root {
-        --header-height: 56px;
-    }
-
+@media (max-width: 48rem) {
     .top-bar-left .page-title {
         display: none;
     }
-
     .top-bar-left .brand .brand-sub {
         display: none;
     }
-
     .top-bar-left .brand {
         font-size: 17px;
     }
-
     .top-bar-left .brand .brand-icon {
-        font-size: var(--font-size-xl);
+        font-size: var(--font-size-xl, 1.125rem);
     }
-
     .menu-toggle .bi-list {
         font-size: 24px;
     }
-
     .user-dropdown {
         right: -8px;
         min-width: 200px;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
     .top-bar-left .brand .brand-sub {
         display: none;
     }
-
     .top-bar-left .brand {
         font-size: 15px;
     }
-
     .top-bar-left .brand .brand-icon {
         font-size: 20px;
     }
-
     .user-avatar-btn {
-        font-size: var(--font-size-xl);
+        font-size: var(--font-size-xl, 1.125rem);
     }
-
     .user-avatar-btn .avatar-icon {
-        font-size: var(--font-size-xl);
+        font-size: var(--font-size-xl, 1.125rem);
     }
 }
