@@ -386,7 +386,7 @@ class TableRenderer {
                 <span class="col-truncated col-expandable" 
                       data-tooltip="${displayValue}"
                       data-expanded="false"
-                      style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; cursor: help;"
+                      style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: normal; position: relative; cursor: help;"
                       ondblclick="this.classList.toggle('col-wrap'); this.classList.toggle('col-ellipsis'); this.dataset.expanded = this.classList.contains('col-wrap') ? 'true' : 'false'; this.style.whiteSpace = this.classList.contains('col-wrap') ? 'normal' : 'nowrap'; this.style.overflow = this.classList.contains('col-wrap') ? 'visible' : 'hidden';">
                     ${displayValue}
                 </span>

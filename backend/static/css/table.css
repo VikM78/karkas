@@ -437,7 +437,7 @@ nav.mt-3 {
     word-break: break-word;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: var(--multiline-font-size, 0.875rem);
+    line-height: var(--multiline-line-height, 1.5);
     max-height: var(--multiline-block-height);
     min-height: calc(
         var(--multiline-font-size) +

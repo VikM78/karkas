@@ -308,7 +308,7 @@
        ============================================================ */
     --multiline-max-lines: 5;
     --multiline-font-size: var(--font-size-base);
-    --multiline-line-height: 0.5rem;
+    --multiline-line-height: 1.5;
     --multiline-padding-vertical: var(--padding-xs);
     --multiline-block-height: calc(
         var(--multiline-font-size) * var(--multiline-max-lines) +
