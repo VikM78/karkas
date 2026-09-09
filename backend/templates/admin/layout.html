@@ -20,12 +20,8 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
-    {% include 'components/sidebar.html' %}
-
-    <!-- Main Content -->
-    <div class="main-content" id="mainContent">
-        <!-- Top Bar (Fixed) -->
+    <!-- ===== КАРТОЧКА ЗАГОЛОВКА (как в эталоне) ===== -->
+    <div class="card-header">
         <div class="top-bar">
             <div class="top-bar-left">
                 <button class="menu-toggle" id="menuToggle" title="Показать меню">
@@ -45,8 +41,6 @@
                         <i class="bi bi-person-circle avatar-icon"></i>
                         <span class="status-dot online" id="statusDot"></span>
                     </button>
-
-                    <!-- Выпадающее меню -->
                     <div class="user-dropdown" id="userDropdown">
                         <div class="dropdown-user-info">
                             <div class="name" id="dropdownUserName">admin</div>
@@ -67,8 +61,10 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Page Content -->
+    <!-- ===== КАРТОЧКА ТАБЛИЦЫ (как в эталоне) ===== -->
+    <div class="card-table">
         <div class="page-content">
             {% block content %}
             <div class="placeholder-page">
