@@ -15,12 +15,12 @@
     --header-z-index: 1000;
 
     /* ===== ОТСТУПЫ ===== */
-    --padding-xs: 0.25rem;           /* 4px */
-    --padding-sm: 0.5rem;            /* 8px */
-    --padding-md: 1rem;              /* 16px */
-    --padding-lg: 1.25rem;           /* 20px */
-    --padding-xl: 1.5rem;            /* 24px */
-    --padding-2xl: 2.5rem;           /* 40px */
+    --padding-xs: 0.25rem;
+    --padding-sm: 0.5rem;
+    --padding-md: 1rem;
+    --padding-lg: 1.25rem;
+    --padding-xl: 1.5rem;
+    --padding-2xl: 2.5rem;
 
     /* ===== СКОРОГЛЕНИЯ ===== */
     --radius-sm: 0.5rem;
@@ -183,26 +183,11 @@
     --padding-cell-wide: 0.5rem 1rem;
     --padding-cell-header: 0.5rem 0.75rem;
 
-    /* Ширина столбцов (из метаданных) */
-    --col-width-row: auto;
-    --col-width-name: auto;
-    --col-width-comment: 9.375rem;
-    --col-width-status: 2.5rem;
-    --col-width-created-at: 9.375rem;
-    --col-width-updated-at: 9.375rem;
-    --col-width-updated-by: 7.5rem;
-    --col-width-id: 3.75rem;
-    --col-width-actions: 3.125rem;
-
-    /* Минимальная/максимальная ширина столбцов */
-    --col-min-width-name: 12rem;
-    --col-min-width-comment: 8rem;
-    --col-row-min: 4.5rem;
-    --col-row-max: 5.5rem;
-    --col-status-min: 2.5rem;
-    --col-status-max: 3.5rem;
-    --col-date-min: 12ch;
-    --col-date-max: 16ch;
+    /* ============================================================
+       ГЛОБАЛЬНЫЙ МИНИМУМ ШИРИНЫ СТОЛБЦА
+       ============================================================ */
+    /* 1 символ (1ch) + "..." (3ch) + padding (1rem) */
+    --col-absolute-min: calc(4ch + 1rem);
 
     /* ============================================================
        ТАБЛИЦА — ФОРМАТИРОВАНИЕ
@@ -308,7 +293,7 @@
        ============================================================ */
     --multiline-max-lines: 5;
     --multiline-font-size: var(--font-size-base);
-    --multiline-line-height: 1.5;
+    --multiline-line-height: 1.5rem;
     --multiline-padding-vertical: var(--padding-xs);
     --multiline-block-height: calc(
         var(--multiline-font-size) * var(--multiline-max-lines) +
@@ -358,16 +343,12 @@
 @media screen and (max-width: 48rem) {
     :root {
         --base-font-size: 87.5%;
-        --col-min-width-name: 10rem;
-        --col-min-width-comment: 6rem;
         --scrollbar-gap: 2px;
     }
 }
 @media screen and (max-width: 30rem) {
     :root {
         --base-font-size: 75%;
-        --col-min-width-name: 8rem;
-        --col-min-width-comment: 4rem;
         --scrollbar-gap: 2px;
     }
 }

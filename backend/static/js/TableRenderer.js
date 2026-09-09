@@ -4,6 +4,13 @@
  * Ширина столбцов — из метаданных (colgroup)
  * Высота строк — через CSS-переменные (tr)
  * Отступы — по типам ячеек (CSS-классы)
+ * 
+ * Логика ширины:
+ * - min_width > 0 → активен
+ * - min_width < 0 → отключен, используется --col-absolute-min
+ * - max_width > 0 → активен
+ * - max_width < 0 → отключен (без ограничения)
+ * - is_auto = true → столбец растягивается
  */
 
 class TableRenderer {
@@ -130,22 +137,88 @@ class TableRenderer {
         if (statusCol) finalColumns.push(statusCol);
         finalColumns.push(...restColumns);
 
+        // ============================================================
+        // АЛГОРИТМ РАСПРЕДЕЛЕНИЯ ШИРИНЫ
+        // ============================================================
+        // 1. Находим все растягиваемые столбцы (is_auto = true)
+        // 2. Распределяем оставшуюся ширину пропорционально
+        // 3. Учитываем min_width > 0, max_width > 0, глобальный минимум
+        // ============================================================
+
+        // Глобальный минимум (не может быть нарушен)
+        const absoluteMin = 'var(--col-absolute-min, 4ch + 1rem)';
+
+        // Собираем растягиваемые столбцы
+        const flexibleColumns = finalColumns.filter(c => c.is_auto === true);
+        const totalFlex = flexibleColumns.length;
+
+        // Для каждого столбца определяем ширину
+        const columnStyles = finalColumns.map((col) => {
+            const key = col.key;
+            const isRow = key === 'row' || col.type === 'row_number';
+            const isStatus = key === 'status' || col.type === 'status';
+            const isFlex = col.is_auto === true;
+            
+            let widthStyle = '';
+            let minStyle = '';
+            let maxStyle = '';
+            
+            // ===== МИНИМАЛЬНАЯ ШИРИНА =====
+            const minVal = parseFloat(col.min_width);
+            if (minVal > 0) {
+                // Активное ограничение
+                minStyle = `min-width: ${col.min_width};`;
+            } else {
+                // Отключено — используем глобальный минимум
+                minStyle = `min-width: ${absoluteMin};`;
+            }
+            
+            // ===== МАКСИМАЛЬНАЯ ШИРИНА =====
+            const maxVal = parseFloat(col.max_width);
+            if (maxVal > 0) {
+                maxStyle = `max-width: ${col.max_width};`;
+            } else {
+                // Отключено — без ограничения
+                maxStyle = '';
+            }
+            
+            // ===== ОСНОВНАЯ ШИРИНА =====
+            if (isRow) {
+                widthStyle = 'width: 1%;';
+            } else if (isFlex) {
+                if (totalFlex === 1) {
+                    widthStyle = 'width: 100%;';
+                } else {
+                    const share = 100 / totalFlex;
+                    widthStyle = `width: ${share}%;`;
+                }
+            } else if (isStatus) {
+                widthStyle = 'width: 1%;';
+            } else {
+                // Остальные — по содержимому
+                widthStyle = 'width: auto;';
+            }
+            
+            return {
+                key,
+                widthStyle,
+                minStyle,
+                maxStyle,
+                isRow,
+                isStatus,
+                isFlex
+            };
+        });
+
         let html = `
             <div class="table-wrap">
                 <table class="table table-hover table-sm table-custom" style="width: 100%; border-collapse: separate; border-spacing: 0;">
                     <colgroup>
-                        ${finalColumns.map((col) => {
+                        ${finalColumns.map((col, idx) => {
                             const key = col.key;
                             const isRow = key === 'row' || col.type === 'row_number';
                             const isStatus = key === 'status' || col.type === 'status';
-                            
-                            const width = col.width || 'auto';
-                            const minWidth = col.min_width || null;
-                            const maxWidth = col.max_width || null;
-                            
-                            let style = `width: ${width};`;
-                            if (minWidth) style += ` min-width: ${minWidth};`;
-                            if (maxWidth) style += ` max-width: ${maxWidth};`;
+                            const styleData = columnStyles[idx];
                             
                             let colClass = '';
                             if (isRow) colClass = 'col-row';
@@ -153,7 +226,7 @@ class TableRenderer {
                             else if (key === 'created_at' || key === 'updated_at') colClass = 'col-created-at';
                             else if (key === 'comment' || col.type === 'text') colClass = 'col-comment';
                             
-                            return `<col data-col="${key}" class="${colClass}" style="${style}">`;
+                            return `<col data-col="${key}" class="${colClass}" style="${styleData.widthStyle} ${styleData.minStyle} ${styleData.maxStyle}">`;
                         }).join('')}
                     </colgroup>
                     <thead>
@@ -185,7 +258,6 @@ class TableRenderer {
                                     colClass = 'col-comment';
                                 }
                                 
-                                // Скрываем название для статуса
                                 const label = (isStatus) ? '' : (labels[key] || col.label || '');
                                 
                                 return `
@@ -245,7 +317,7 @@ class TableRenderer {
                                             cellClass = 'col-ellipsis';
                                         }
                                         
-                                        // # — вычисляется напрямую, без _renderCell()
+                                        // # — вычисляется напрямую
                                         const cellContent = isRow ? (index + 1) : this._renderCell(item, col, index);
                                         
                                         return `
@@ -272,8 +344,6 @@ class TableRenderer {
         if (value === null || value === undefined || value === '') {
             return '';
         }
-
-        // row_number больше НЕ обрабатывается в _renderCell()
 
         if (type === 'status' && column.values) {
             const val = column.values.find(v => v.key === value);
@@ -381,7 +451,10 @@ class TableRenderer {
             }
         }
 
-        if (type === 'text' || type === 'textarea') {
+        // ============================================================
+        // МНОГОСТРОЧНЫЙ ТЕКСТ (text, textarea, или string с is_multiline)
+        // ============================================================
+        if (type === 'text' || type === 'textarea' || (type === 'string' && column.is_multiline)) {
             return `
                 <span class="col-truncated col-expandable" 
                       data-tooltip="${displayValue}"
