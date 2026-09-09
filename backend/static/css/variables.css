@@ -145,6 +145,10 @@
 
     --status-online: var(--color-green-500);
     --status-offline: var(--color-red-500);
+	
+	--color-scrollbar-track: var(--color-gray-50);
+	--color-scrollbar-thumb: rgba(0, 0, 0, 0.15);
+	--color-scrollbar-thumb-hover: rgba(0, 0, 0, 0.30);
 
     /* Сайдбар */
     --bg-sidebar: rgba(30, 30, 50, 0.90);
