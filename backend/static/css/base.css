@@ -8,32 +8,35 @@
     box-sizing: border-box;
 }
 
-html, body {
+html {
     height: 100%;
-    overflow: hidden;
 }
 
 body {
-    background: var(--bg-secondary);
-    font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    color: var(--text-primary);
+    background: var(--bg-body, #f0f2f5);
+    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif);
+    font-size: var(--font-size-base, 0.875rem);
+    color: var(--text-primary, #1a1a2e);
+    line-height: 1.5;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: var(--padding-xl, 1.5rem);
+    gap: var(--card-gap, 1rem);
+    margin: 0;
 }
 
 /* ===== СКРОЛЛ (глобальный) ===== */
 ::-webkit-scrollbar {
     width: 6px;
 }
-
 ::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: var(--bg-secondary, #f0f2f5);
 }
-
 ::-webkit-scrollbar-thumb {
     background: #d0d5dd;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-sm, 0.5rem);
 }
-
 ::-webkit-scrollbar-thumb:hover {
     background: #b0b5bd;
 }

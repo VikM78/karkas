@@ -5,7 +5,7 @@
 /* ===== ОСНОВНОЙ КОНТЕЙНЕР ===== */
 .main-content {
     height: 100vh;
-    padding-top: var(--header-height);
+    padding-top: var(--header-height, 3.75rem);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -14,17 +14,73 @@
 /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
 .page-content {
     flex: 1;
-    overflow-y: auto;
-    padding: var(--padding-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: var(--padding-md, 1rem);
     min-height: 0;
+}
+
+/* ===== КАРТОЧКА С ТАБЛИЦЕЙ ===== */
+.card-table {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-width: 100%;
+    width: 100%;
+    background: var(--bg-primary, #ffffff);
+    border-radius: var(--card-radius, 0.5rem);
+    border: 1px solid var(--border-color, #dee2e6);
+    padding: var(--padding-lg, 1rem);
+    padding-right: calc(var(--padding-lg, 1rem) + var(--scrollbar-gap, 2px));
+    box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.06));
+}
+
+/* ===== КОНТЕЙНЕР ТАБЛИЦЫ ===== */
+.table-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: var(--card-radius, 0.5rem);
+    margin-right: calc(-1 * var(--scrollbar-gap, 2px));
+    padding-right: var(--scrollbar-gap, 2px);
+}
+
+/* ===== ПРОКРУТКА ===== */
+.table-wrap::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.table-wrap::-webkit-scrollbar-track {
+    background: transparent;
+}
+.table-wrap::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+}
+.table-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.30);
+}
+.table-wrap {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+/* ===== ПАГИНАЦИЯ ===== */
+nav.mt-3 {
+    flex-shrink: 0;
+    padding-top: var(--padding-md, 1rem);
+    margin-top: 0 !important;
 }
 
 /* ===== СТРАНИЦА ЗАГЛУШКА ===== */
 .placeholder-page {
-    background: var(--card-bg);
-    border-radius: var(--card-radius);
-    padding: var(--card-padding);
-    box-shadow: var(--card-shadow);
+    background: var(--bg-primary, #ffffff);
+    border-radius: var(--card-radius, 0.5rem);
+    padding: var(--padding-2xl, 2.5rem);
+    box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.06));
     text-align: center;
     height: calc(100% - 4px);
     display: flex;
@@ -35,45 +91,46 @@
 
 .placeholder-page .icon {
     font-size: 64px;
-    color: var(--color-primary);
-    margin-bottom: var(--padding-lg);
+    color: var(--color-primary, #4a6cf7);
+    margin-bottom: var(--padding-lg, 1.25rem);
 }
 
 .placeholder-page h3 {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-xl, 1.125rem);
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--padding-sm);
+    color: var(--text-primary, #1a1a2e);
+    margin-bottom: var(--padding-sm, 0.5rem);
 }
 
 .placeholder-page p {
-    color: var(--text-secondary);
+    color: var(--text-secondary, #6c757d);
     font-size: 15px;
     max-width: 500px;
     margin: 0 auto;
 }
 
 .placeholder-page .version {
-    margin-top: var(--padding-lg);
-    font-size: var(--font-size-sm);
-    color: var(--text-muted);
+    margin-top: var(--padding-lg, 1.25rem);
+    font-size: var(--font-size-sm, 0.75rem);
+    color: var(--text-muted, #adb5bd);
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
     .page-content {
-        padding: var(--padding-sm);
+        padding: var(--padding-sm, 0.5rem);
     }
-
+    .card-table {
+        padding: var(--padding-sm, 0.5rem);
+        padding-right: calc(var(--padding-sm, 0.5rem) + var(--scrollbar-gap, 2px));
+    }
     .placeholder-page {
         padding: 30px 20px;
         height: calc(100% - 4px);
     }
-
     .placeholder-page .icon {
         font-size: 48px;
     }
-
     .placeholder-page h3 {
         font-size: 20px;
     }
