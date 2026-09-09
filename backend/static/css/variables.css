@@ -187,7 +187,7 @@
        ГЛОБАЛЬНЫЙ МИНИМУМ ШИРИНЫ СТОЛБЦА
        ============================================================ */
     /* 1 символ (1ch) + "..." (3ch) + padding (1rem) */
-    --col-absolute-min: calc(4ch + 1rem);
+    --col-absolute-min: calc(3ch + var(--padding-cell-compact));
 
     /* ============================================================
        ТАБЛИЦА — ФОРМАТИРОВАНИЕ
@@ -200,7 +200,7 @@
     --table-body-font-size: var(--font-size-base);
     --table-body-color: var(--text-primary);
 
-    --cell-vertical-align: middle;
+    --cell-vertical-align: top;
 
     /* ============================================================
        ТАБЛИЦА — ВЫРАВНИВАНИЕ ПО ТИПАМ
@@ -291,15 +291,19 @@
     /* ============================================================
        ТАБЛИЦА — МНОГОСТРОЧНЫЙ ТЕКСТ
        ============================================================ */
-    --multiline-max-lines: 5;
+    --multiline-max-lines: 3;
     --multiline-font-size: var(--font-size-base);
-    --multiline-line-height: 1.5rem;
-    --multiline-padding-vertical: var(--padding-xs);
+    --multiline-line-height: var(--row-height);
+    --multiline-padding-vertical: calc(var(--padding-xs)/2);
     --multiline-block-height: calc(
+		var(--multiline-line-height) * 
+		var(--multiline-max-lines)
+	);
+	/* --multiline-block-height: calc(
         var(--multiline-font-size) * var(--multiline-max-lines) +
         var(--multiline-line-height) * (var(--multiline-max-lines) - 1) +
-        var(--multiline-padding-vertical) * 2
-    );
+        var(--multiline-padding-vertical) *2
+    ); */
 
     /* ============================================================
        КАРТОЧКИ
