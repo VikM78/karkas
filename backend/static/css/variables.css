@@ -15,6 +15,7 @@
     --header-z-index: 1000;
 
     /* ===== ОТСТУПЫ ===== */
+    --padding-null: 0;
     --padding-xs: 0.25rem;
     --padding-sm: 0.5rem;
     --padding-md: 1rem;
@@ -215,7 +216,7 @@
     --table-body-color: var(--text-primary);
     --table-body-padding: var(--padding-xs) var(--padding-sm);
 
-    --cell-vertical-align: middle;
+    --cell-vertical-align: top;
 
     /* Выравнивание по типам */
     --col-row-align: var(--text-center);
@@ -284,7 +285,7 @@
     /* Многострочный текст */
     --multiline-max-lines: 3;
     --multiline-font-size: var(--font-size-base);
-    --multiline-line-height: 1.5rem;
+    --multiline-line-height: 1.6rem;
     --multiline-padding-vertical: var(--padding-xs);
     --multiline-block-height: calc(
         var(--multiline-font-size) * var(--multiline-max-lines) +
