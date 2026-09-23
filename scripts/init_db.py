@@ -1,17 +1,14 @@
-#!/usr/bin/env python3
-# scripts/init_db.py - Инициализация базы данных
-
+# start_my_file scripts/init_db.py
 import sys
+import secrets
 from pathlib import Path
 
-# Добавляем корень в PYTHONPATH
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from backend.config import config
 from backend.app import create_app
 from backend.models import db, User
-
 
 def init_database():
     """Инициализация БД: создание таблиц и начальных данных"""
@@ -21,10 +18,17 @@ def init_database():
         db.create_all()
         print("✅ Таблицы созданы")
 
-        # ===== Создание администратора =====
         print("👤 Создание администратора...")
         admin = User.query.filter_by(username=config.ADMIN_USERNAME).first()
+        
+        password_to_show = config.ADMIN_PASSWORD
+        
         if not admin:
+            if not password_to_show:
+                # Генерируем безопасный пароль, если он не передан в ENV
+                password_to_show = secrets.token_urlsafe(12)
+                print("🎲 Пароль не задан в ENV. Сгенерирован случайный безопасный пароль.")
+            
             admin = User(
                 username=config.ADMIN_USERNAME,
                 email=config.ADMIN_EMAIL,
@@ -32,12 +36,13 @@ def init_database():
                 role='admin',
                 is_active=True
             )
-            admin.set_password(config.ADMIN_PASSWORD)
+            admin.set_password(password_to_show)
             db.session.add(admin)
             db.session.commit()
             print(f"  ✅ Создан администратор: {config.ADMIN_USERNAME}")
         else:
             print(f"  ⚠️ Администратор уже существует: {config.ADMIN_USERNAME}")
+            password_to_show = "******** (Уже был создан ранее)"
 
         print("""
 ╔══════════════════════════════════════════════════════════════════╗
@@ -54,9 +59,9 @@ def init_database():
 ╚══════════════════════════════════════════════════════════════════╝
         """.format(
             username=config.ADMIN_USERNAME,
-            password=config.ADMIN_PASSWORD
+            password=password_to_show
         ))
-
 
 if __name__ == '__main__':
     init_database()
+# end_my_file scripts/init_db.py

@@ -1,3 +1,4 @@
+<!-- start_my_file backend/templates/admin/manufacturers.html -->
 {% extends "admin/layout.html" %}
 
 {% block title %}Производители{% endblock %}
@@ -9,36 +10,28 @@
         <span class="badge bg-secondary" id="recordCount">0 записей</span>
     </div>
     <div class="title-right">
-        <button class="btn btn-primary btn-sm" onclick="openAddModal()">
+        <button class="btn btn-primary btn-sm" id="btnAddNewRow">
             <i class="bi bi-plus-circle me-1"></i>Добавить
         </button>
-        <button class="btn btn-outline-secondary btn-sm" id="editModeToggle" onclick="toggleEditMode()">
+        <button class="btn btn-outline-secondary btn-sm" id="editModeToggle">
             <i class="bi bi-pencil me-1"></i>Редактировать
-        </button>
-        <button class="btn btn-outline-secondary btn-sm btn-columns" id="btnColumns" onclick="openColumnSettings()" style="display:none;">
-            <i class="bi bi-layout-three-columns me-1"></i>Столбцы
         </button>
     </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
-<script src="{{ url_for('static', filename='js/table-config.js') }}"></script>
-<script src="{{ url_for('static', filename='js/table-filters.js') }}"></script>
-<script src="{{ url_for('static', filename='js/table.js') }}"></script>
-<script src="{{ url_for('static', filename='js/TableRenderer.js') }}"></script>
-
+<!-- Подключаем только необходимые стили, скрипты фильтров и настроек будут модульными -->
+<link rel="stylesheet" href="/static/css/table.css">
 
 <div class="table-wrap" id="manufacturersTableContainer">
-	<!-- Рендерится через TableRenderer -->
+    <!-- Таблица полностью рендерится через изолированный TableRenderer.js -->
 </div>
 
-
-<!-- Затемнение -->
+<!-- Затемнение фона для модального окна -->
 <div class="edit-overlay" id="editOverlay"></div>
 
-<!-- Модальное окно редактирования -->
+<!-- Модальное окно редактирования/добавления записей -->
 <div class="modal fade edit-modal" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -55,198 +48,47 @@
     </div>
 </div>
 
-<!-- Модальное окно настройки столбцов -->
-<div class="modal fade column-settings-modal" id="columnSettingsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Настройка столбцов</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="columnSettingsBody"></div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-secondary" onclick="resetColumnSettings()">Сбросить</button>
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-            </div>
-        </div>
-    </div>
-</div>
+<script type="module">
+    import Table from "/static/js/components/Table.js";
 
-<script>
-    // ============================================================
-    //  ИНИЦИАЛИЗАЦИЯ ЧЕРЕЗ TableRenderer
-    // ============================================================
-
-    let tableState = null;
-    let editMode = false;
-
-    function loadManufacturersData(page, search, filter, callback) {
-        const statusFilter = filter || 'all';
-        let url = `/api/v1/tables/manufacturers/data?page=${page}&per_page=50&status=${statusFilter}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        
-        if (tableState && tableState.columnSort && tableState.columnSort.key) {
-            url += `&sort=${tableState.columnSort.key}&order=${tableState.columnSort.direction || 'asc'}`;
+    document.addEventListener("DOMContentLoaded", function() {
+        // Защита от утечек памяти: уничтожаем предыдущую таблицу, если она была инициализирована в SPA-сессии
+        if (window._activeTable && typeof window._activeTable.destroy === "function") {
+            console.log("♻️ Обнаружена старая таблица. Уничтожаем инстанс для очистки памяти...");
+            window._activeTable.destroy();
         }
 
-        if (tableState && tableState.columnFilters) {
-            Object.keys(tableState.columnFilters).forEach(key => {
-                const values = tableState.columnFilters[key];
-                if (values && values.length > 0) {
-                    url += `&filter_${key}=${encodeURIComponent(values.join(','))}`;
-                }
+        // Создаем новый изолированный экземпляр таблицы для текущей страницы
+        const manufacturersTable = new Table({
+            containerId: "manufacturersTableContainer",
+            tableKey: "manufacturers",
+            pageSize: 50
+        });
+
+        // Сохраняем ссылку на активную таблицу в глобальный контекст для последующей очистки
+        window._activeTable = manufacturersTable;
+
+        // Инициализируем загрузку метаданных схемы и отрисовку данных
+        manufacturersTable.init();
+
+        // Привязываем локальное событие добавления новой строки
+        const addBtn = document.getElementById("btnAddNewRow");
+        if (addBtn) {
+            addBtn.addEventListener("click", function() {
+                alert("Функция вызова динамической формы добавления записи");
             });
         }
 
-        fetch(url, { credentials: 'include' })
-            .then(response => {
-                if (!response.ok) throw new Error('Ошибка загрузки');
-                return response.json();
-            })
-            .then(data => {
-                callback(data.data || []);
-                if (typeof updateRecordCount === 'function') {
-                    updateRecordCount(data.total || data.data?.length || 0);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки:', error);
-                callback([]);
-                if (typeof updateRecordCount === 'function') {
-                    updateRecordCount(0);
-                }
+        // Переключение режима редактирования справочника
+        const editToggleBtn = document.getElementById("editModeToggle");
+        if (editToggleBtn) {
+            editToggleBtn.addEventListener("click", function() {
+                manufacturersTable.editMode = !manufacturersTable.editMode;
+                this.classList.toggle("active", manufacturersTable.editMode);
+                manufacturersTable.render();
             });
-    }
-
-    function openAddModal() {
-        if (!tableState) {
-            alert('Таблица не загружена');
-            return;
         }
-        window.openEditModal(tableState, null);
-    }
-
-    function editManufacturer(id) {
-        fetch(`/api/v1/tables/manufacturers/${id}`, { credentials: 'include' })
-            .then(response => response.json())
-            .then(data => {
-                console.log('📝 Данные для редактирования:', data);
-                if (!tableState) {
-                    alert('Таблица не загружена');
-                    return;
-                }
-                window.openEditModal(tableState, data);
-            })
-            .catch(() => alert('Ошибка загрузки данных'));
-    }
-
-    function deleteManufacturer(id) {
-        if (!confirm('Пометить производителя на удаление?')) return;
-        fetch(`/api/v1/tables/manufacturers/${id}`, { method: 'DELETE', credentials: 'include' })
-            .then(response => {
-                if (response.ok) { alert('✅ Производитель удалён'); loadData(tableState, 1); }
-                else { alert('❌ Ошибка при удалении'); }
-            });
-    }
-
-    function restoreManufacturer(id) {
-        if (!confirm('Восстановить производителя?')) return;
-        fetch(`/api/v1/tables/manufacturers/${id}/restore`, { method: 'POST', credentials: 'include' })
-            .then(response => {
-                if (response.ok) { alert('✅ Производитель восстановлен'); loadData(tableState, 1); }
-                else { alert('❌ Ошибка при восстановлении'); }
-            });
-    }
-
-    function hardDeleteManufacturer(id) {
-        if (!confirm('Удалить производителя навсегда? Это действие необратимо!')) return;
-        fetch(`/api/v1/tables/manufacturers/${id}/hard`, { method: 'DELETE', credentials: 'include' })
-            .then(response => {
-                if (response.ok) { alert('✅ Производитель удалён навсегда'); loadData(tableState, 1); }
-                else { alert('❌ Ошибка при удалении'); }
-            });
-    }
-
-    window.editItem = editManufacturer;
-    window.deleteItem = deleteManufacturer;
-    window.restoreItem = restoreManufacturer;
-    window.hardDeleteItem = hardDeleteManufacturer;
-
-    // Выделение строки для мультиредактирования
-    document.addEventListener('click', function(e) {
-        const row = e.target.closest('tr[data-id]');
-        if (!row || !tableState) return;
-        const rowId = parseInt(row.dataset.id);
-        const ctrlKey = e.ctrlKey || e.metaKey;
-        const shiftKey = e.shiftKey;
-        selectRow(tableState, rowId, ctrlKey, shiftKey);
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const renderer = new TableRenderer('manufacturersTableContainer');
-		window._tableState = window._tableState || {};
-		window._tableState.renderer = renderer;  // ← ДОБАВИТЬ        
-        loadTableSchema('manufacturers').then((schema) => {
-            if (!schema) {
-                console.error('❌ Схема не загружена');
-                return;
-            }
-            
-            console.log('✅ Схема загружена:', schema);
-            
-            const settings = loadTableSettings('manufacturers');
-            tableState = {
-                tableKey: 'manufacturers',
-                settings: settings,
-                config: schema,
-                currentPage: 1,
-                currentFilter: 'all',
-                currentSearch: '',
-                columnFilters: {},
-                columnSort: { key: null, direction: null },
-                editMode: false,
-                rowHeights: settings.rowHeights || {},
-                _lastData: [],
-                selectedRows: new Set(),
-                container: document.getElementById('manufacturersTableContainer'),
-                table: null,
-                colgroup: null,
-                thead: null,
-                tbody: null,
-            };
-            
-            window._tableState = tableState;
-            
-            loadManufacturersData(1, '', 'all', function(data) {
-                tableState._lastData = data || [];
-                renderer.schema = schema;
-                renderer.settings = settings;
-                renderer.data = data || [];
-                renderer.tableKey = 'manufacturers';
-                renderer.render();
-                updateRecordCount(data?.length || 0);
-                
-                // Сохраняем ссылки на элементы
-                const container = document.getElementById('manufacturersTableContainer');
-                tableState.table = container.querySelector('table');
-                tableState.colgroup = container.querySelector('colgroup');
-                tableState.thead = container.querySelector('thead');
-                tableState.tbody = container.querySelector('tbody');
-            });
-        });
-
-        document.getElementById('editSaveBtn').addEventListener('click', () => {
-            if (!tableState) {
-                alert('Таблица не загружена');
-                return;
-            }
-            window.saveEditForm(tableState);
-        });
-
-        document.getElementById('editModal').addEventListener('hidden.bs.modal', function() {
-            const editOverlay = document.getElementById('editOverlay');
-            if (editOverlay) { editOverlay.classList.remove('active'); editOverlay.style.zIndex = '1040'; }
-        });
     });
 </script>
 {% endblock %}
+<!-- end_my_file backend/templates/admin/manufacturers.html -->

@@ -9,7 +9,7 @@
     /* ===== РАЗМЕРЫ ===== */
     --header-height: 3.75rem;
     --sidebar-width: 16.25rem;
-    --sidebar-top: 0;
+    --sidebar-top: var(--header-height);   /* 3.75rem */
     --sidebar-z-index: 999;
     --overlay-z-index: 998;
     --header-z-index: 1000;
