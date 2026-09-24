@@ -1,0 +1,19 @@
+/* Файл локальных векторных ссылок */
+.bi { display: inline-block; width: 1.25rem; height: 1.25rem; background-repeat: no-repeat; background-position: center; background-size: contain; vertical-align: middle; flex-shrink: 0; }
+.bi-list { background-image: url('./icons/list.svg'); }
+.bi-person-circle { background-image: url('./icons/person-circle.svg'); }
+.bi-tags { background-image: url('./icons/tags.svg'); }
+.bi-pencil { background-image: url('./icons/pencil.svg'); }
+.bi-plus-circle { background-image: url('./icons/plus-circle.svg'); }
+.bi-layout-three-columns { background-image: url('./icons/layout-three-columns.svg'); }
+.bi-chevron-left { background-image: url('./icons/chevron-left.svg'); }
+.bi-chevron-right { background-image: url('./icons/chevron-right.svg'); }
+.bi-folder { background-image: url('./icons/folder.svg'); }
+.bi-puzzle { background-image: url('./icons/puzzle.svg'); }
+.bi-cart { background-image: url('./icons/cart.svg'); }
+.bi-box-seam { background-image: url('./icons/box-seam.svg'); }
+.bi-graph-up { background-image: url('./icons/graph-up.svg'); }
+.bi-gear { background-image: url('./icons/gear.svg'); }
+.bi-box { background-image: url('./icons/box.svg'); }
+.bi-tools { background-image: url('./icons/tools.svg'); }
+.bi-people { background-image: url('./icons/people.svg'); }

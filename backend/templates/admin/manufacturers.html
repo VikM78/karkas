@@ -1,31 +1,13 @@
-<!-- start_my_file backend/templates/admin/manufacturers.html -->
 {% extends "admin/layout.html" %}
 
 {% block title %}Производители{% endblock %}
 
-{% block page_title %}
-<div class="page-title-row">
-    <div class="title-left">
-        <span>🏷️ Производители</span>
-        <span class="badge bg-secondary" id="recordCount">0 записей</span>
-    </div>
-    <div class="title-right">
-        <button class="btn btn-primary btn-sm" id="btnAddNewRow">
-            <i class="bi bi-plus-circle me-1"></i>Добавить
-        </button>
-        <button class="btn btn-outline-secondary btn-sm" id="editModeToggle">
-            <i class="bi bi-pencil me-1"></i>Редактировать
-        </button>
-    </div>
-</div>
-{% endblock %}
+{% block page_title %}Производители{% endblock %}
 
 {% block content %}
-<!-- Подключаем только необходимые стили, скрипты фильтров и настроек будут модульными -->
-<link rel="stylesheet" href="/static/css/table.css">
-
-<div class="table-wrap" id="manufacturersTableContainer">
-    <!-- Таблица полностью рендерится через изолированный TableRenderer.js -->
+<!-- Чистый контейнер рабочей области без вложенного бардака и лишних серых рамок -->
+<div id="manufacturersTableContainer" style="height: 100%; display: flex; flex-direction: column; min-height: 0; width: 100%;">
+    <!-- Таблица полностью рендерится через изолированный Table.js -->
 </div>
 
 <!-- Затемнение фона для модального окна -->
@@ -52,13 +34,12 @@
     import Table from "/static/js/components/Table.js";
 
     document.addEventListener("DOMContentLoaded", function() {
-        // Защита от утечек памяти: уничтожаем предыдущую таблицу, если она была инициализирована в SPA-сессии
+        // Защита от утечек памяти: уничтожаем предыдущую таблицу перед инициализацией новой
         if (window._activeTable && typeof window._activeTable.destroy === "function") {
-            console.log("♻️ Обнаружена старая таблица. Уничтожаем инстанс для очистки памяти...");
             window._activeTable.destroy();
         }
 
-        // Создаем новый изолированный экземпляр таблицы для текущей страницы
+        // Создаем новый изолированный экземпляр таблицы для страницы
         const manufacturersTable = new Table({
             containerId: "manufacturersTableContainer",
             tableKey: "manufacturers",
@@ -70,25 +51,6 @@
 
         // Инициализируем загрузку метаданных схемы и отрисовку данных
         manufacturersTable.init();
-
-        // Привязываем локальное событие добавления новой строки
-        const addBtn = document.getElementById("btnAddNewRow");
-        if (addBtn) {
-            addBtn.addEventListener("click", function() {
-                alert("Функция вызова динамической формы добавления записи");
-            });
-        }
-
-        // Переключение режима редактирования справочника
-        const editToggleBtn = document.getElementById("editModeToggle");
-        if (editToggleBtn) {
-            editToggleBtn.addEventListener("click", function() {
-                manufacturersTable.editMode = !manufacturersTable.editMode;
-                this.classList.toggle("active", manufacturersTable.editMode);
-                manufacturersTable.render();
-            });
-        }
     });
 </script>
 {% endblock %}
-<!-- end_my_file backend/templates/admin/manufacturers.html -->

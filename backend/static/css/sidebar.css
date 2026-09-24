@@ -67,15 +67,16 @@
 }
 
 /* ===== ТРИГГЕР ДЛЯ HOVER-ПОКАЗА ===== */
+/* Активация триггерной зоны левого края для раскрытия меню */
 .sidebar-trigger {
     position: fixed;
-    top: var(--sidebar-top);
-    left: 0;
-    width: 10px;
-    height: calc(100vh - var(--sidebar-top));
-    z-index: calc(var(--sidebar-z-index) + 1);
-    cursor: pointer;
+    top: var(--header-height, 3.75rem);
+    left: var(--padding-null, 0);
+    width: var(--scrollbar-width, 10px); /* Зона шириной 6px у левого края экрана */
+    height: calc(100vh - var(--header-height, 3.75rem));
+    z-index: calc(var(--sidebar-z-index, 999) + 1);
     background: transparent;
+    cursor: pointer;
 }
 
 .sidebar-trigger::after {

@@ -4,18 +4,18 @@
 
 .top-bar {
     flex-shrink: 0;
-    height: var(--header-height, 3.75rem);
-    min-height: var(--header-height, 3.75rem);
-    background: var(--header-bg, rgba(255, 255, 255, 0.6));
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--header-border, #e8ecf1);
-    border-radius: var(--card-radius, 0.5rem);
-    box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.06));
+    height: 100% !important;
+    min-height: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 var(--padding-lg, 1.25rem);
+    padding: 0 !important;
 }
 
 /* ===== ЛЕВАЯ ЧАСТЬ ===== */
@@ -42,6 +42,7 @@
     justify-content: center;
     flex-shrink: 0;
     line-height: 1;
+    margin-left: var(--padding-xs, 0.25rem);
 }
 
 .menu-toggle:hover {
@@ -104,6 +105,7 @@
     gap: var(--padding-sm, 0.5rem);
     flex-shrink: 0;
     position: relative;
+    margin-right: var(--padding-xs, 0.25rem);
 }
 
 /* ===== АВАТАР ПОЛЬЗОВАТЕЛЯ ===== */

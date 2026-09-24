@@ -177,24 +177,38 @@ class Table {
         const container = document.getElementById(this.containerId);
         if (!container || this.loading || !this.schema) return;
 
-        const tableHtml = this.renderer.render(this.schema, this.data, this.settings, this.currentPage, this.sort);
+        // Отрисовываем чистую HTML-сетку таблицы контента
+        container.innerHTML = this.renderer.render(this.schema, this.data, this.settings, this.currentPage, this.sort);
 
-        let toolbarHtml = '<div class="table-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 1rem;">';
-        toolbarHtml += '<div class="toolbar-left" style="display: flex; align-items: center; gap: 1rem;">';
-        toolbarHtml += '<div class="input-group input-group-sm" style="width: 250px;">';
-        toolbarHtml += '<input type="text" class="form-control table-search-input" placeholder="Поиск..." value="' + this.search + '">';
-        toolbarHtml += '</div>';
-        toolbarHtml += '<span class="badge bg-secondary" id="tableRecordCount">' + this.total + ' записей</span>';
-        toolbarHtml += '</div>';
-        toolbarHtml += '<div class="toolbar-right">';
-        toolbarHtml += '<button class="btn btn-sm btn-outline-secondary btn-column-settings"><i class="bi bi-layout-three-columns me-1"></i> Столбцы</button> ';
-        toolbarHtml += '<button class="btn btn-sm btn-primary btn-add-row" onclick="alert(\'Добавление новой записи...\')"><i class="bi bi-plus-circle me-1"></i> Добавить</button>';
-        toolbarHtml += '</div></div>';
+        // 1. Записываем имя страницы и аккуратный бадж записей вdynamicPageTitle
+        const titleContainer = document.getElementById("dynamicPageTitle");
+        if (titleContainer) {
+            const label = this.schema.table?.table_name || "Справочник";
+            let titleHtml = '<span class="page-title" style="font-weight: 600; font-size: var(--font-size-lg, 1rem); color: var(--text-primary, #1a1a2e);">' + label + '</span>';
+            titleHtml += ' <span class="badge bg-secondary" style="font-size: 0.75rem; font-weight: 700; padding: 0.35em 0.65em; border-radius: 0.25rem;">' + this.total + ' записей</span>';
+            titleContainer.innerHTML = titleHtml;
+        }
 
-        container.innerHTML = toolbarHtml + tableHtml;
+        // 2. Выводим кнопки управления в dynamicToolbarRight в одну линию перед аватаром
+        const toolbarRight = document.getElementById("dynamicToolbarRight");
+        if (toolbarRight) {
+            let btns = '';
+            
+            // Кнопка "Столбцы" рендерится на панели только если включен режим редактирования (this.editMode === true)
+            if (this.editMode) {
+                btns += '<button class="btn btn-sm btn-outline-secondary btn-column-settings" id="btnColumnSettings" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><span class="bi bi-layout-three-columns me-1"></span> Столбцы</button> ';
+            }
+            
+            btns += '<button class="btn btn-sm btn-outline-secondary btn-edit-mode ' + (this.editMode ? 'active' : '') + '" id="editModeToggle" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><span class="bi bi-pencil me-1"></span> Редактировать</button> ';
+            btns += '<button class="btn btn-sm btn-primary btn-add-row" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; background-color: var(--color-primary, #4a6cf7); color: #fff; border: 1px solid var(--color-primary, #4a6cf7);"><span class="bi bi-plus-circle me-1"></span> Добавить</button>';
+            
+            toolbarRight.innerHTML = btns;
+        }
+
         this._renderPagination();
         this._checkTruncatedCells();
     }
+
 
     _renderPagination() {
         const container = document.getElementById(this.containerId);

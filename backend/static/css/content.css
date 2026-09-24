@@ -19,21 +19,21 @@
 }
 
 /* ===== КАРТОЧКА ТАБЛИЦЫ ===== */
+/* СТАЛО: */
 .card-table {
     max-width: 100%;
     width: 100%;
     background: var(--bg-primary, #ffffff);
     border-radius: var(--card-radius, 0.5rem);
     border: 1px solid var(--border-color, #dee2e6);
-    padding: 0; /*var(--padding-lg, 1rem);*/
-    /*padding-right: 0; /*calc(var(--padding-lg, 1rem) + var(--scrollbar-gap, 2px));*/
+    padding: var(--padding-md, 1rem) !important; /* <--- ТЕПЕРЬ ТУТ БЕЗОПАСНЫЙ ОТСТУП */
     box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.06));
-
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
+
 
 /* ===== КОНТЕНТ ВНУТРИ КАРТОЧКИ ===== */
 .page-content {
@@ -155,6 +155,24 @@ nav.mt-3 {
     margin-top: var(--padding-lg, 1.25rem);
     font-size: var(--font-size-sm, 0.75rem);
     color: var(--text-muted, #adb5bd);
+}
+
+/* Исправляем сетку Bootstrap, чтобы карточки дашборда не слипались */
+.row.g-4 {
+    display: flex !important;
+    flex-wrap: wrap;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    gap: var(--card-gap, 1rem) !important;
+}
+
+/* Настраиваем ширину колонок для карточек дашборда */
+.row.g-4 .col-md-3 {
+    flex: 1 1 calc(25% - var(--card-gap, 1rem));
+    min-width: 220px; /* Чтобы карточки красиво переносились на мобильных */
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+    width: auto !important;
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */

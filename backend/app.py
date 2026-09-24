@@ -148,6 +148,15 @@ def create_app():
     def app_profile():
         return render_template('admin/profile.html')
 
+    # ===== ПРИНУДИТЕЛЬНОЕ ОТКЛЮЧЕНИЕ КЭША НА БЭКЕНДЕ =====
+    @app.after_request
+    def add_header(response):
+        """Запрещаем кэширование статики сервером Flask"""
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+
     # ===== Обработчики ошибок =====
     @app.errorhandler(404)
     def not_found(error):
