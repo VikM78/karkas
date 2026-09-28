@@ -22,22 +22,27 @@
     min-width: 0;
 }
 
+/* ===== КНОПКА МЕНЮ (ГАМБУРГЕР) ===== */
 .my-menu-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: var(--my-size-btn-height);
+    height: var(--my-size-btn-height);
+    padding: var(--my-padding-null);
     background: transparent;
     border: none;
     color: var(--my-text-primary);
     cursor: pointer;
-    padding: var(--my-padding-xs);
     border-radius: var(--my-radius-sm);
-    transition: background var(--my-duration-fast) var(--my-ease-out);
     flex-shrink: 0;
+    transition: background var(--my-duration-fast) var(--my-ease-out),
+                color var(--my-duration-fast) var(--my-ease-out);
 }
 
 .my-menu-toggle:hover {
     background: var(--my-bg-hover);
+    color: var(--my-color-primary);
 }
 
 .my-menu-toggle .bi {
@@ -51,6 +56,7 @@
     flex-shrink: 0;
 }
 
+/* ===== БРЕНД ===== */
 .my-brand {
     display: flex;
     align-items: center;
@@ -61,6 +67,19 @@
     text-decoration: none;
     flex-shrink: 0;
     white-space: nowrap;
+}
+
+.my-brand-logo {
+    height: var(--my-size-icon-lg);
+    width: auto;
+    flex-shrink: 0;
+    display: block;
+}
+
+.my-brand-text-fallback {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--my-padding-xs);
 }
 
 .my-brand-icon {
