@@ -351,6 +351,7 @@
     --my-bg-sidebar: color-mix(in srgb, var(--my-color-sidebar-base) 90%, transparent);
     --my-bg-header: var(--my-color-overlay-white-base);
     --my-bg-overlay: var(--my-color-overlay-heavy);
+	--my-bg-overlay-sidebar: var(--my-color-overlay-base);
     --my-bg-input: var(--my-color-white);
     --my-bg-hover: var(--my-color-overlay-subtle);
     --my-bg-active: var(--my-color-primary-10);

@@ -233,7 +233,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: var(--my-bg-overlay);
+    background: var(--my-bg-overlay-sidebar);
     z-index: calc(var(--my-sidebar-z-index) - 1);
 }
 
