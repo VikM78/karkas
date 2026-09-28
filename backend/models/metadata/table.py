@@ -12,6 +12,10 @@ class Table(BaseModel):
     model_name = db.Column(db.String(200))
     is_active = db.Column(db.Boolean, default=True)
 
+    # v2
+    default_sort_list = db.Column(db.JSON, nullable=True)
+    default_filters = db.Column(db.JSON, nullable=True)
+
     # Связи
     columns = db.relationship('TableColumn', backref='table', lazy='dynamic',
                               cascade='all, delete-orphan', order_by='TableColumn.sort_order')

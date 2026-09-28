@@ -13,6 +13,11 @@ class ColumnValue(BaseModel):
     sort_order = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
 
+    # v2
+    show_icon = db.Column(db.Boolean, default=True)
+    show_in_filter = db.Column(db.Boolean, default=True)
+    row_styles = db.Column(db.JSON, nullable=True)
+    
     __table_args__ = (
         db.UniqueConstraint('column_id', 'value_key', name='uq_column_value'),
     )

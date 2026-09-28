@@ -20,7 +20,16 @@ class TableColumn(BaseModel):
     is_row_number = db.Column(db.Boolean, default=False)
     is_editable = db.Column(db.Boolean, default=True)
     is_required = db.Column(db.Boolean, default=False)
-    is_multiline = db.Column(db.Boolean, default=False)  # ← НОВОЕ
+    is_multiline = db.Column(db.Boolean, default=False)
+
+    # v2
+    default_width_px = db.Column(db.Numeric(10, 2), nullable=True)
+    min_width_px = db.Column(db.Numeric(10, 2), nullable=True)
+    max_width_px = db.Column(db.Numeric(10, 2), nullable=True)
+    align_h = db.Column(db.String(20), nullable=True)
+    align_v = db.Column(db.String(20), nullable=True)
+    max_lines = db.Column(db.Integer, nullable=True)
+    cell_styles = db.Column(db.JSON, nullable=True)
 
     # Связи
     column_type = db.relationship('ColumnType', backref='columns')

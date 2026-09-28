@@ -12,6 +12,12 @@ class ColumnType(BaseModel):
     is_numeric = db.Column(db.Boolean, default=False)
     sort_order = db.Column(db.Integer, default=0)
 
+    # v2
+    default_width_px = db.Column(db.Numeric(10, 2), nullable=True)
+    min_width_px = db.Column(db.Numeric(10, 2), nullable=True)
+    max_width_px = db.Column(db.Numeric(10, 2), nullable=True)
+    default_align_h = db.Column(db.String(20), nullable=True)
+    default_align_v = db.Column(db.String(20), nullable=True)
     def to_dict(self):
         return {
             'id': self.id,
