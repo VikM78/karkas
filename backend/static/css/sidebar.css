@@ -4,7 +4,7 @@
 
 .my-sidebar {
     position: fixed;
-    top: var(--my-sidebar-top);
+    top: calc(var(--my-header-height) + var(--my-card-border-width));
     left: 0;
     bottom: 0;
     width: var(--my-sidebar-width);

@@ -504,7 +504,7 @@
     --my-sidebar-group-items-max-height: 50rem;
     --my-sidebar-overlay-bg: var(--my-bg-overlay);
     --my-sidebar-z-index: var(--my-z-sidebar);
-    --my-sidebar-top: var(--my-header-height);
+    --my-sidebar-top: calc(var(--my-header-height) + var(--my-card-border-width));
     --my-sidebar-toggle-size: 1.75rem;
     --my-sidebar-trigger-width: 0.625rem;
 

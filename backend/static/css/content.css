@@ -29,6 +29,7 @@
     flex: 1;
     min-width: 0;
     min-height: 0;
+    padding: var(--my-padding-md);
     gap: var(--my-card-gap);
     transition: margin-left var(--my-duration-base) var(--my-ease-out);
 }
@@ -72,6 +73,9 @@
 }
 
 @media (max-width: 48rem) {
+    .my-main-content {
+        padding: var(--my-padding-sm);
+    }
     .my-card-table {
         padding: var(--my-padding-sm);
     }

@@ -26,9 +26,8 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    margin: var(--my-padding-null);
-    padding: var(--my-padding-md);
-    gap: var(--my-card-gap);
+    margin: 0;
+    padding: 0;
     color: var(--my-text-primary);
 }
 
@@ -50,7 +49,6 @@ body {
 /* ===== АДАПТАЦИЯ ===== */
 @media (max-width: 48rem) {
     body {
-        padding: var(--my-padding-sm);
-        gap: var(--my-padding-sm);
+        padding: 0;
     }
 }
