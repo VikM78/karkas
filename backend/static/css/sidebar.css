@@ -1,0 +1,263 @@
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.my-sidebar {
+    position: fixed;
+    top: var(--my-sidebar-top);
+    left: 0;
+    bottom: 0;
+    width: var(--my-sidebar-width);
+    display: flex;
+    flex-direction: column;
+    background: var(--my-sidebar-bg);
+    color: var(--my-sidebar-text);
+    border-right: var(--my-card-border-width) var(--my-card-border-style) var(--my-border-sidebar);
+    box-shadow: var(--my-shadow-sidebar);
+    z-index: var(--my-sidebar-z-index);
+    overflow: hidden;
+    transform: translateX(-100%);
+    transition: transform var(--my-duration-base) var(--my-ease-out);
+    user-select: none;
+}
+
+.my-sidebar.show {
+    transform: translateX(0);
+}
+
+.my-sidebar.pinned {
+    transform: translateX(0);
+    box-shadow: none;
+}
+
+/* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+.my-sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--my-gap-xs);
+    padding: var(--my-padding-sm);
+    flex-shrink: 0;
+}
+
+.my-sidebar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--my-sidebar-toggle-size);
+    height: var(--my-sidebar-toggle-size);
+    padding: var(--my-padding-null);
+    background: transparent;
+    border: none;
+    color: var(--my-sidebar-text);
+    cursor: pointer;
+    border-radius: var(--my-radius-sm);
+    transition: background var(--my-duration-fast) var(--my-ease-out),
+                color var(--my-duration-fast) var(--my-ease-out);
+}
+
+.my-sidebar-btn:hover {
+    background: var(--my-bg-hover);
+    color: var(--my-sidebar-text-hover);
+}
+
+.my-sidebar-btn.pinned {
+    color: var(--my-color-primary);
+}
+
+/* ===== НАВИГАЦИЯ ===== */
+.my-sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--my-padding-sm) var(--my-padding-sm);
+    scrollbar-width: thin;
+    scrollbar-color: var(--my-scrollbar-thumb) var(--my-scrollbar-track);
+}
+
+.my-sidebar-nav::-webkit-scrollbar {
+    width: var(--my-scrollbar-width);
+}
+.my-sidebar-nav::-webkit-scrollbar-track {
+    background: var(--my-scrollbar-track);
+}
+.my-sidebar-nav::-webkit-scrollbar-thumb {
+    background: var(--my-scrollbar-thumb);
+    border-radius: var(--my-scrollbar-radius);
+}
+
+/* ===== ЭЛЕМЕНТ МЕНЮ ===== */
+.my-nav-item {
+    margin-bottom: var(--my-space-05);
+}
+
+.my-nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--my-gap-sm);
+    min-height: var(--my-sidebar-item-height);
+    padding: var(--my-sidebar-item-padding);
+    border-radius: var(--my-sidebar-item-radius);
+    color: var(--my-sidebar-text);
+    font-size: var(--my-font-size-base);
+    font-weight: var(--my-font-weight-normal);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--my-duration-fast) var(--my-ease-out),
+                color var(--my-duration-fast) var(--my-ease-out);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.my-nav-link:hover {
+    background: var(--my-bg-hover);
+    color: var(--my-sidebar-text-hover);
+}
+
+.my-nav-link.active {
+    background: var(--my-bg-active);
+    color: var(--my-sidebar-text-active);
+    border-right: var(--my-table-border-width) var(--my-border-style) var(--my-border-active);
+}
+
+.my-nav-link .bi {
+    font-size: var(--my-sidebar-icon-size);
+    width: var(--my-size-icon-lg);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.my-nav-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-nav-badge {
+    padding: var(--my-space-05) var(--my-space-2);
+    font-size: var(--my-font-size-xs);
+    font-weight: var(--my-font-weight-semibold);
+    background: var(--my-color-primary-30);
+    color: var(--my-text-on-accent);
+    border-radius: var(--my-radius-full);
+    flex-shrink: 0;
+}
+
+/* ===== ГРУППЫ ===== */
+.my-nav-group {
+    margin-bottom: var(--my-space-05);
+}
+
+.my-nav-group-title {
+    display: flex;
+    align-items: center;
+    gap: var(--my-gap-sm);
+    min-height: var(--my-sidebar-item-height);
+    padding: var(--my-sidebar-item-padding);
+    font-size: var(--my-font-size-base);
+    font-weight: var(--my-font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--my-sidebar-group-letter-spacing);
+    color: var(--my-sidebar-group-color);
+    border-radius: var(--my-sidebar-item-radius);
+    cursor: pointer;
+    transition: color var(--my-duration-fast) var(--my-ease-out),
+                background var(--my-duration-fast) var(--my-ease-out);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.my-nav-group-title:hover {
+    color: var(--my-sidebar-text-hover);
+    background: var(--my-bg-hover);
+}
+
+.my-nav-group-title .my-group-arrow {
+    font-size: var(--my-font-size-xs);
+    color: var(--my-sidebar-group-color);
+    flex-shrink: 0;
+    transition: transform var(--my-duration-base) var(--my-ease-out);
+}
+
+.my-nav-group-title .my-group-arrow.open {
+    transform: rotate(90deg);
+}
+
+.my-nav-group-title .my-group-icon {
+    font-size: var(--my-sidebar-icon-size);
+    width: var(--my-size-icon-lg);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.my-nav-group-title .my-group-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-nav-group-items {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height var(--my-duration-base) var(--my-ease-out);
+}
+
+.my-nav-group-items.open {
+    max-height: var(--my-sidebar-group-items-max-height);
+}
+
+.my-nav-group-items .my-nav-link {
+    padding-left: var(--my-sidebar-item-padding-indent);
+}
+
+/* ===== РАЗДЕЛИТЕЛЬ ===== */
+.my-nav-divider {
+    height: var(--my-card-border-width);
+    margin: var(--my-padding-sm) var(--my-padding-sm);
+    background: var(--my-border-sidebar);
+}
+
+/* ===== ТРИГГЕР ===== */
+.my-sidebar-trigger {
+    position: fixed;
+    top: var(--my-sidebar-top);
+    left: 0;
+    width: var(--my-sidebar-trigger-width);
+    height: calc(100vh - var(--my-sidebar-top));
+    background: transparent;
+    z-index: var(--my-z-sidebar-trigger);
+    cursor: pointer;
+}
+
+/* ===== ОВЕРЛЕЙ ===== */
+.my-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--my-bg-overlay);
+    z-index: calc(var(--my-sidebar-z-index) - 1);
+}
+
+.my-sidebar-overlay.active {
+    display: block;
+}
+
+/* ===== ЗАКРЕПЛЕНИЕ ===== */
+body.sidebar-pinned .my-main-content {
+    margin-left: var(--my-sidebar-width);
+}
+
+/* ===== АДАПТАЦИЯ ===== */
+@media (max-width: 48rem) {
+    .my-sidebar {
+        top: 0;
+    }
+    .my-sidebar-header {
+        display: none;
+    }
+    .my-sidebar-trigger {
+        display: none;
+    }
+    body.sidebar-pinned .my-main-content {
+        margin-left: 0;
+    }
+}

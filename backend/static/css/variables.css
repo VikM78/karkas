@@ -1,0 +1,895 @@
+/* ============================================================
+   ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ — КАРКАС v2
+   ============================================================
+   Принцип: трёхуровневая система.
+   1. Базовые токены (конкретные значения — атомы системы).
+   2. Семантические переменные (по назначению).
+   3. Компонентные переменные (для конкретных компонентов).
+   
+   Правило: компонентные и семантические переменные НЕ содержат
+   чисел/цветов напрямую, только ссылки на базовые токены.
+   ============================================================ */
+
+:root {
+
+    /* ========================================================
+       СЕКЦИЯ 1: БАЗОВЫЕ ТОКЕНЫ — ЦВЕТА (ПАЛИТРА)
+       ======================================================== */
+
+    /* White / Black */
+    --my-color-white: #ffffff;
+    --my-color-black: #000000;
+
+    /* Gray */
+    --my-color-gray-50: #f8f9fa;
+    --my-color-gray-100: #f0f2f5;
+    --my-color-gray-200: #e8ecf1;
+    --my-color-gray-300: #dee2e6;
+    --my-color-gray-400: #ced4da;
+    --my-color-gray-500: #adb5bd;
+    --my-color-gray-600: #6c757d;
+    --my-color-gray-700: #495057;
+    --my-color-gray-800: #343a40;
+    --my-color-gray-900: #1a1a2e;
+
+    /* Blue */
+    --my-color-blue-50: #e8eeff;
+    --my-color-blue-100: #d0ddff;
+    --my-color-blue-200: #a1bbff;
+    --my-color-blue-300: #7299ff;
+    --my-color-blue-400: #4a6cf7;
+    --my-color-blue-500: #3b5de7;
+    --my-color-blue-600: #2a4ac7;
+    --my-color-blue-700: #1a37a7;
+
+    /* Green */
+    --my-color-green-50: #ecfdf5;
+    --my-color-green-100: #d1fae5;
+    --my-color-green-200: #a7f3d0;
+    --my-color-green-300: #6ee7b7;
+    --my-color-green-400: #34d399;
+    --my-color-green-500: #10b981;
+    --my-color-green-600: #059669;
+    --my-color-green-700: #047857;
+
+    /* Red */
+    --my-color-red-50: #fef2f2;
+    --my-color-red-100: #fee2e2;
+    --my-color-red-200: #fecaca;
+    --my-color-red-300: #fca5a5;
+    --my-color-red-400: #f87171;
+    --my-color-red-500: #ef4444;
+    --my-color-red-600: #dc2626;
+    --my-color-red-700: #b91c1c;
+
+    /* Yellow */
+    --my-color-yellow-50: #fffbeb;
+    --my-color-yellow-100: #fef3c7;
+    --my-color-yellow-200: #fde68a;
+    --my-color-yellow-300: #fcd34d;
+    --my-color-yellow-400: #fbbf24;
+    --my-color-yellow-500: #f59e0b;
+    --my-color-yellow-600: #d97706;
+    --my-color-yellow-700: #b45309;
+
+    /* Purple */
+    --my-color-purple-50: #f5f3ff;
+    --my-color-purple-100: #ede9fe;
+    --my-color-purple-200: #ddd6fe;
+    --my-color-purple-300: #c4b5fd;
+    --my-color-purple-400: #a78bfa;
+    --my-color-purple-500: #8b5cf6;
+    --my-color-purple-600: #7c3aed;
+    --my-color-purple-700: #6d28d9;
+
+    /* Orange */
+    --my-color-orange-50: #fff7ed;
+    --my-color-orange-100: #ffedd5;
+    --my-color-orange-200: #fed7aa;
+    --my-color-orange-300: #fdba74;
+    --my-color-orange-400: #fb923c;
+    --my-color-orange-500: #f97316;
+    --my-color-orange-600: #ea580c;
+    --my-color-orange-700: #c2410c;
+
+    /* Teal */
+    --my-color-teal-50: #f0fdfa;
+    --my-color-teal-100: #ccfbf1;
+    --my-color-teal-200: #99f6e4;
+    --my-color-teal-300: #5eead4;
+    --my-color-teal-400: #2dd4bf;
+    --my-color-teal-500: #14b8a6;
+    --my-color-teal-600: #0d9488;
+    --my-color-teal-700: #0f766e;
+
+    /* Специальные базовые цвета */
+    --my-color-sidebar-base: #1e1e32;
+
+
+    /* ========================================================
+       СЕКЦИЯ 2: БАЗОВЫЕ ТОКЕНЫ — ПРОЗРАЧНОСТЬ
+       ======================================================== */
+
+    --my-opacity-100: 1;
+    --my-opacity-90: 0.9;
+    --my-opacity-80: 0.8;
+    --my-opacity-70: 0.7;
+    --my-opacity-60: 0.6;
+    --my-opacity-50: 0.5;
+    --my-opacity-40: 0.4;
+    --my-opacity-30: 0.3;
+    --my-opacity-25: 0.25;
+    --my-opacity-20: 0.2;
+    --my-opacity-15: 0.15;
+    --my-opacity-10: 0.1;
+    --my-opacity-05: 0.05;
+    --my-opacity-04: 0.04;
+    --my-opacity-03: 0.03;
+    --my-opacity-0: 0;
+
+
+    /* ========================================================
+       СЕКЦИЯ 3: БАЗОВЫЕ ТОКЕНЫ — ШКАЛА ОТСТУПОВ
+       ======================================================== */
+
+    --my-space-0: 0;
+    --my-space-05: 0.125rem;
+    --my-space-1: 0.25rem;
+    --my-space-15: 0.375rem;
+    --my-space-2: 0.5rem;
+    --my-space-25: 0.625rem;
+    --my-space-3: 0.75rem;
+    --my-space-35: 0.875rem;
+    --my-space-4: 1rem;
+    --my-space-5: 1.25rem;
+    --my-space-6: 1.5rem;
+    --my-space-7: 1.75rem;
+    --my-space-8: 2rem;
+    --my-space-9: 2.25rem;
+    --my-space-10: 2.5rem;
+    --my-space-12: 3rem;
+    --my-space-14: 3.5rem;
+    --my-space-16: 4rem;
+    --my-space-20: 5rem;
+
+
+    /* ========================================================
+       СЕКЦИЯ 4: БАЗОВЫЕ ТОКЕНЫ — РАЗМЕРЫ ШРИФТА
+       ======================================================== */
+
+    --my-font-size-2xs: 0.5rem;
+    --my-font-size-xs: 0.625rem;
+    --my-font-size-sm: 0.75rem;
+    --my-font-size-base: 0.875rem;
+    --my-font-size-lg: 1rem;
+    --my-font-size-xl: 1.125rem;
+    --my-font-size-2xl: 1.25rem;
+    --my-font-size-3xl: 1.5rem;
+    --my-font-size-4xl: 1.75rem;
+
+
+    /* ========================================================
+       СЕКЦИЯ 5: БАЗОВЫЕ ТОКЕНЫ — ТИПОГРАФИКА
+       ======================================================== */
+
+    --my-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --my-font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+
+    --my-font-weight-normal: 400;
+    --my-font-weight-medium: 500;
+    --my-font-weight-semibold: 600;
+    --my-font-weight-bold: 700;
+
+    --my-font-style-normal: normal;
+    --my-font-style-italic: italic;
+
+    --my-text-decoration-none: none;
+    --my-text-decoration-underline: underline;
+    --my-text-decoration-line-through: line-through;
+
+    --my-line-height-tight: 1.2;
+    --my-line-height-base: 1.5;
+    --my-line-height-loose: 1.8;
+
+
+    /* ========================================================
+       СЕКЦИЯ 6: БАЗОВЫЕ ТОКЕНЫ — РАДИУСЫ
+       ======================================================== */
+
+    --my-radius-none: 0;
+    --my-radius-sm: 0.5rem;
+    --my-radius-md: 0.75rem;
+    --my-radius-lg: 1rem;
+    --my-radius-full: 9999px;
+
+
+    /* ========================================================
+       СЕКЦИЯ 7: БАЗОВЫЕ ТОКЕНЫ — ДЛИТЕЛЬНОСТИ, ЗАДЕРЖКИ
+       ======================================================== */
+
+    --my-duration-fast: 0.15s;
+    --my-duration-base: 0.25s;
+    --my-duration-slow: 0.4s;
+    --my-duration-slower: 0.6s;
+
+    --my-delay-hover: 300ms;
+    --my-delay-tooltip: 500ms;
+    --my-toast-duration: 5000ms;
+    --my-spinner-duration: 0.8s;
+
+    --my-ease-default: ease;
+    --my-ease-in-out: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --my-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+
+    /* ========================================================
+       СЕКЦИЯ 8: БАЗОВЫЕ ТОКЕНЫ — Z-INDEX
+       ======================================================== */
+
+    --my-z-base: 1;
+    --my-z-sticky-row: 5;
+    --my-z-sticky-header: 10;
+    --my-z-dropdown: 100;
+    --my-z-sidebar-trigger: 900;
+    --my-z-overlay: 998;
+    --my-z-sidebar: 999;
+    --my-z-header: 1000;
+    --my-z-modal: 1050;
+    --my-z-filter: 1060;
+    --my-z-tooltip: 1100;
+    --my-z-toast: 1200;
+
+
+    /* ========================================================
+       СЕКЦИЯ 9: БАЗОВЫЕ ТОКЕНЫ — СТИЛИ ГРАНИЦ
+       ======================================================== */
+
+    --my-border-style: solid;
+
+
+    /* ========================================================
+       СЕКЦИЯ 10: БАЗОВЫЕ ТОКЕНЫ — ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ
+       ======================================================== */
+
+    --my-valign-top: top;
+    --my-valign-middle: middle;
+    --my-valign-bottom: bottom;
+
+
+    /* ========================================================
+       СЕКЦИЯ 11: БАЗОВЫЕ ТОКЕНЫ — АКЦЕНТЫ (ДЛЯ СТРОК)
+       ======================================================== */
+
+    --my-accent-width-thin: 2px;
+    --my-accent-width-medium: 3px;
+    --my-accent-width-thick: 4px;
+
+
+    /* ========================================================
+       СЕКЦИЯ 12: БАЗОВЫЕ ТОКЕНЫ — АДАПТАЦИЯ ШРИФТА
+       ======================================================== */
+
+    --my-base-font-size: 100%;
+
+    --my-breakpoint-mobile: 48rem;
+    --my-breakpoint-small: 30rem;
+
+
+    /* ========================================================
+       СЕКЦИЯ 13: СЕМАНТИЧЕСКИЕ ЦВЕТА — АКЦЕНТ
+       ======================================================== */
+
+    --my-color-primary: var(--my-color-blue-400);
+    --my-color-primary-hover: var(--my-color-blue-500);
+    --my-color-primary-light: var(--my-color-blue-50);
+    --my-color-primary-active: var(--my-color-blue-600);
+
+    --my-color-secondary: var(--my-color-gray-200);
+    --my-color-secondary-hover: var(--my-color-gray-300);
+    --my-color-secondary-active: var(--my-color-gray-400);
+
+    --my-color-success: var(--my-color-green-500);
+    --my-color-success-hover: var(--my-color-green-600);
+    --my-color-success-active: var(--my-color-green-700);
+
+    --my-color-danger: var(--my-color-red-500);
+    --my-color-danger-hover: var(--my-color-red-600);
+    --my-color-danger-active: var(--my-color-red-700);
+
+    --my-color-warning: var(--my-color-yellow-500);
+    --my-color-warning-hover: var(--my-color-yellow-600);
+    --my-color-warning-active: var(--my-color-yellow-700);
+
+    --my-color-info: var(--my-color-teal-500);
+
+
+    /* ========================================================
+       СЕКЦИЯ 14: СЕМАНТИЧЕСКИЕ ПРОЗРАЧНЫЕ ОТТЕНКИ
+       ======================================================== */
+
+    /* Чёрные оверлеи */
+    --my-color-overlay-heavy: color-mix(in srgb, var(--my-color-black) 40%, transparent);
+    --my-color-overlay-base: color-mix(in srgb, var(--my-color-black) 15%, transparent);
+    --my-color-overlay-light: color-mix(in srgb, var(--my-color-black) 6%, transparent);
+    --my-color-overlay-subtle: color-mix(in srgb, var(--my-color-black) 4%, transparent);
+    --my-color-overlay-faint: color-mix(in srgb, var(--my-color-black) 3%, transparent);
+
+    /* Белые оверлеи */
+    --my-color-overlay-white-base: color-mix(in srgb, var(--my-color-white) 60%, transparent);
+    --my-color-overlay-white-soft: color-mix(in srgb, var(--my-color-white) 30%, transparent);
+    --my-color-overlay-white-faint: color-mix(in srgb, var(--my-color-white) 6%, transparent);
+
+    /* Первичный цвет */
+    --my-color-primary-30: color-mix(in srgb, var(--my-color-primary) 30%, transparent);
+    --my-color-primary-25: color-mix(in srgb, var(--my-color-primary) 25%, transparent);
+    --my-color-primary-15: color-mix(in srgb, var(--my-color-primary) 15%, transparent);
+    --my-color-primary-10: color-mix(in srgb, var(--my-color-primary) 10%, transparent);
+
+    /* Цвета теней */
+    --my-shadow-color-light: color-mix(in srgb, var(--my-color-black) 4%, transparent);
+    --my-shadow-color-base: color-mix(in srgb, var(--my-color-black) 6%, transparent);
+    --my-shadow-color-medium: color-mix(in srgb, var(--my-color-black) 12%, transparent);
+    --my-shadow-color-heavy: color-mix(in srgb, var(--my-color-black) 15%, transparent);
+
+    /* Outline */
+    --my-color-outline-danger-bg-hover: var(--my-color-red-50);
+
+    /* Скроллбар */
+    --my-color-scrollbar-thumb: color-mix(in srgb, var(--my-color-black) 12%, transparent);
+    --my-color-scrollbar-thumb-hover: color-mix(in srgb, var(--my-color-black) 30%, transparent);
+
+
+    /* ========================================================
+       СЕКЦИЯ 15: СЕМАНТИЧЕСКИЕ ЦВЕТА — ФОН
+       ======================================================== */
+
+    --my-bg-body: var(--my-color-gray-100);
+    --my-bg-primary: var(--my-color-white);
+    --my-bg-secondary: var(--my-color-gray-50);
+    --my-bg-tertiary: var(--my-color-gray-200);
+
+    --my-bg-sidebar: color-mix(in srgb, var(--my-color-sidebar-base) 90%, transparent);
+    --my-bg-header: var(--my-color-overlay-white-base);
+    --my-bg-overlay: var(--my-color-overlay-heavy);
+    --my-bg-input: var(--my-color-white);
+    --my-bg-hover: var(--my-color-overlay-subtle);
+    --my-bg-active: var(--my-color-primary-10);
+    --my-bg-selected: var(--my-color-blue-50);
+
+    --my-bg-sticky-row: var(--my-color-gray-50);
+    --my-bg-table-header: var(--my-color-gray-50);
+    --my-bg-table-row-hover: var(--my-color-overlay-faint);
+    --my-bg-table-row-selected: var(--my-color-blue-50);
+
+    --my-bg-tooltip: var(--my-color-gray-900);
+
+    --my-bg-toast-info: var(--my-color-info);
+    --my-bg-toast-success: var(--my-color-success);
+    --my-bg-toast-error: var(--my-color-danger);
+    --my-bg-toast-warning: var(--my-color-warning);
+
+    --my-bg-filter: var(--my-color-white);
+
+
+    /* ========================================================
+       СЕКЦИЯ 16: СЕМАНТИЧЕСКИЕ ЦВЕТА — ТЕКСТ
+       ======================================================== */
+
+    --my-text-primary: var(--my-color-gray-900);
+    --my-text-secondary: var(--my-color-gray-600);
+    --my-text-muted: var(--my-color-gray-500);
+    --my-text-light: var(--my-color-white);
+    --my-text-link: var(--my-color-primary);
+    --my-text-link-hover: var(--my-color-primary-hover);
+    --my-text-disabled: var(--my-color-gray-400);
+    --my-text-danger: var(--my-color-red-600);
+    --my-text-success: var(--my-color-green-600);
+    --my-text-warning: var(--my-color-yellow-600);
+    --my-text-on-accent: var(--my-color-white);
+
+
+    /* ========================================================
+       СЕКЦИЯ 17: СЕМАНТИЧЕСКИЕ ЦВЕТА — ГРАНИЦЫ
+       ======================================================== */
+
+    --my-border-default: var(--my-color-gray-300);
+    --my-border-light: var(--my-color-gray-200);
+    --my-border-input: var(--my-color-gray-300);
+    --my-border-focus: var(--my-color-primary);
+    --my-border-danger: var(--my-color-red-500);
+    --my-border-active: var(--my-color-primary-30);
+    --my-border-sidebar: var(--my-color-overlay-white-faint);
+
+
+    /* ========================================================
+       СЕКЦИЯ 18: СЕМАНТИЧЕСКИЕ ТЕНИ
+       ======================================================== */
+
+    --my-shadow-sm: 0 var(--my-space-05) var(--my-space-3) var(--my-shadow-color-light);
+    --my-shadow-md: 0 var(--my-space-05) var(--my-space-8) var(--my-shadow-color-base);
+    --my-shadow-lg: 0 var(--my-space-8) var(--my-space-12) var(--my-shadow-color-heavy);
+
+    --my-shadow-card: var(--my-shadow-md);
+    --my-shadow-dropdown: var(--my-shadow-lg);
+    --my-shadow-modal: var(--my-shadow-lg);
+    --my-shadow-sidebar: var(--my-space-05) 0 var(--my-space-20) var(--my-shadow-color-heavy);
+    --my-shadow-header: var(--my-shadow-sm);
+    --my-shadow-tooltip: var(--my-shadow-md);
+    --my-shadow-toast: 0 var(--my-space-4) var(--my-space-8) var(--my-shadow-color-medium);
+    --my-shadow-focus: 0 0 0 var(--my-space-1) var(--my-color-primary-25);
+
+
+    /* ========================================================
+       СЕКЦИЯ 19: СЕМАНТИЧЕСКИЕ ОТСТУПЫ
+       ======================================================== */
+
+    --my-padding-null: var(--my-space-0);
+    --my-padding-xs: var(--my-space-1);
+    --my-padding-sm: var(--my-space-2);
+    --my-padding-md: var(--my-space-4);
+    --my-padding-lg: var(--my-space-5);
+    --my-padding-xl: var(--my-space-6);
+    --my-padding-2xl: var(--my-space-10);
+
+    --my-gap-xs: var(--my-space-1);
+    --my-gap-sm: var(--my-space-2);
+    --my-gap-md: var(--my-space-4);
+    --my-gap-lg: var(--my-space-6);
+
+
+    /* ========================================================
+       СЕКЦИЯ 20: БАЗОВЫЕ ТОКЕНЫ — РАЗМЕРЫ КОМПОНЕНТОВ
+       ======================================================== */
+
+    --my-size-header-height: 3.75rem;
+    --my-size-sidebar-width: 16.25rem;
+    --my-size-sidebar-item-height: 2.5rem;
+    --my-size-btn-height: 2.25rem;
+    --my-size-btn-height-sm: 1.75rem;
+    --my-size-input-height: 2.25rem;
+    --my-size-icon-sm: 1rem;
+    --my-size-icon-md: 1.25rem;
+    --my-size-icon-lg: 1.5rem;
+    --my-size-col-row-number-min: 2.5rem;
+    --my-size-col-row-number-max: 5rem;
+    --my-size-col-status-min: 2.5rem;
+    --my-size-col-status-max: 5rem;
+    --my-size-filter-width: 17.5rem;
+    --my-size-filter-min: 12.5rem;
+    --my-size-filter-max: 31.25rem;
+    --my-size-filter-max-height: 25rem;
+    --my-size-filter-item-height: 1.75rem;
+    --my-size-modal-max-width: 43.75rem;
+    --my-size-modal-max-width-lg: 56rem;
+    --my-size-tooltip-max-width: 25rem;
+    --my-size-toast-max-width: 25rem;
+    --my-size-pagination-btn: 2rem;
+    --my-size-placeholder-max-width: 31.25rem;
+    --my-size-login-card-max-width: 25rem;
+    --my-size-table-row-height: 2.2rem;
+    --my-size-table-row-min: 2rem;
+    --my-size-table-row-max: 18.75rem;
+    --my-size-table-header-height: 2.5rem;
+
+
+    /* ========================================================
+       СЕКЦИЯ 21: КОМПОНЕНТНЫЕ — HEADER
+       ======================================================== */
+
+    --my-header-height: var(--my-size-header-height);
+    --my-header-bg: var(--my-bg-header);
+    --my-header-border: var(--my-border-light);
+    --my-header-padding: var(--my-padding-null) var(--my-padding-md);
+    --my-header-gap: var(--my-padding-md);
+    --my-header-z-index: var(--my-z-header);
+    --my-user-avatar-hover-scale: 1.05;
+
+
+    /* ========================================================
+       СЕКЦИЯ 22: КОМПОНЕНТНЫЕ — SIDEBAR
+       ======================================================== */
+
+    --my-sidebar-width: var(--my-size-sidebar-width);
+    --my-sidebar-bg: var(--my-bg-sidebar);
+    --my-sidebar-text: var(--my-color-gray-500);
+    --my-sidebar-text-hover: var(--my-color-white);
+    --my-sidebar-text-active: var(--my-color-white);
+    --my-sidebar-item-height: var(--my-size-sidebar-item-height);
+    --my-sidebar-item-padding: var(--my-padding-sm) var(--my-padding-sm);
+    --my-sidebar-item-padding-indent: var(--my-space-7);
+    --my-sidebar-item-radius: var(--my-radius-sm);
+    --my-sidebar-icon-size: var(--my-size-icon-md);
+    --my-sidebar-group-color: var(--my-color-overlay-white-soft);
+    --my-sidebar-group-letter-spacing: 0.3px;
+    --my-sidebar-group-items-max-height: 50rem;
+    --my-sidebar-overlay-bg: var(--my-bg-overlay);
+    --my-sidebar-z-index: var(--my-z-sidebar);
+    --my-sidebar-top: var(--my-header-height);
+    --my-sidebar-toggle-size: 1.75rem;
+    --my-sidebar-trigger-width: 0.625rem;
+
+
+    /* ========================================================
+       СЕКЦИЯ 23: КОМПОНЕНТНЫЕ — USER DROPDOWN
+       ======================================================== */
+
+    --my-user-dropdown-min-width: 14rem;
+    --my-user-dropdown-min-width-sm: 12.5rem;
+
+
+    /* ========================================================
+       СЕКЦИЯ 24: КОМПОНЕНТНЫЕ — КАРТОЧКИ
+       ======================================================== */
+
+    --my-card-radius: var(--my-radius-sm);
+    --my-card-padding: var(--my-padding-md);
+    --my-card-shadow: var(--my-shadow-card);
+    --my-card-border-width: var(--my-table-border-width);
+    --my-card-border-style: var(--my-border-style);
+    --my-card-border-color: var(--my-border-default);
+    --my-card-gap: var(--my-gap-md);
+    --my-card-header-height: var(--my-header-height);
+
+
+    /* ========================================================
+       СЕКЦИЯ 25: КОМПОНЕНТНЫЕ — КНОПКИ
+       ======================================================== */
+
+    --my-btn-height: var(--my-size-btn-height);
+    --my-btn-height-sm: var(--my-size-btn-height-sm);
+    --my-btn-padding: var(--my-space-15) var(--my-space-3);
+    --my-btn-padding-sm: var(--my-space-1) var(--my-space-2);
+    --my-btn-padding-icon: var(--my-padding-null);
+    --my-btn-font-size: var(--my-font-size-base);
+    --my-btn-font-size-sm: var(--my-font-size-sm);
+    --my-btn-radius: var(--my-radius-sm);
+    --my-btn-border-width: var(--my-table-border-width);
+    --my-btn-icon-size: var(--my-size-icon-sm);
+    --my-btn-active-translate: 1px;
+
+
+    /* ========================================================
+       СЕКЦИЯ 26: КОМПОНЕНТНЫЕ — ФОРМЫ
+       ======================================================== */
+
+    --my-input-height: var(--my-size-input-height);
+    --my-input-min-height-textarea: 5rem;
+    --my-input-padding: var(--my-space-15) var(--my-space-3);
+    --my-input-padding-lg: var(--my-space-3) var(--my-space-4);
+    --my-input-font-size: var(--my-font-size-base);
+    --my-input-radius: var(--my-radius-sm);
+    --my-input-border-width: var(--my-table-border-width);
+    --my-input-border-width-lg: 2px;
+    --my-input-bg: var(--my-bg-input);
+    --my-input-disabled-bg: var(--my-bg-secondary);
+    --my-input-readonly-bg: var(--my-bg-secondary);
+    --my-input-border: var(--my-border-input);
+    --my-input-border-focus: var(--my-border-focus);
+    --my-input-shadow-focus: var(--my-shadow-focus);
+    --my-input-shadow-focus-lg: 0 0 0 var(--my-space-1) var(--my-color-primary-25);
+    --my-input-placeholder-color: var(--my-text-muted);
+    --my-input-color: var(--my-text-primary);
+    --my-input-color-disabled: var(--my-text-disabled);
+
+    --my-form-check-size: 1rem;
+    --my-form-check-color: var(--my-color-primary);
+    --my-form-check-gap: var(--my-gap-sm);
+    --my-form-label-required-color: var(--my-color-danger);
+    --my-form-label-required-content: ' *';
+
+    --my-shadow-focus-danger: 0 0 0 var(--my-space-1) var(--my-color-red-200);
+    --my-shadow-focus-success: 0 0 0 var(--my-space-1) var(--my-color-green-200);
+
+
+    /* ========================================================
+       СЕКЦИЯ 27: КОМПОНЕНТНЫЕ — МОДАЛЬНЫЕ ОКНА
+       ======================================================== */
+
+    --my-modal-radius: var(--my-radius-md);
+    --my-modal-shadow: var(--my-shadow-modal);
+    --my-modal-max-width: var(--my-size-modal-max-width);
+    --my-modal-max-width-lg: var(--my-size-modal-max-width-lg);
+    --my-modal-body-max-height: 70vh;
+    --my-modal-content-max-height: 90vh;
+    --my-modal-slide-offset: -1rem;
+    --my-modal-header-padding: var(--my-padding-md) var(--my-padding-lg);
+    --my-modal-body-padding: var(--my-padding-lg);
+    --my-modal-footer-padding: var(--my-padding-md) var(--my-padding-lg);
+    --my-modal-bg: var(--my-bg-primary);
+    --my-modal-z-index: var(--my-z-modal);
+
+
+    /* ========================================================
+       СЕКЦИЯ 28: КОМПОНЕНТНЫЕ — TOOLTIP
+       ======================================================== */
+
+    --my-tooltip-bg: var(--my-bg-tooltip);
+    --my-tooltip-color: var(--my-text-light);
+    --my-tooltip-padding: var(--my-space-15) var(--my-space-3);
+    --my-tooltip-radius: var(--my-radius-sm);
+    --my-tooltip-max-width: var(--my-size-tooltip-max-width);
+    --my-tooltip-font-size: var(--my-font-size-sm);
+    --my-tooltip-shadow: var(--my-shadow-tooltip);
+    --my-tooltip-arrow-size: var(--my-space-15);
+
+
+    /* ========================================================
+       СЕКЦИЯ 29: КОМПОНЕНТНЫЕ — TOAST
+       ======================================================== */
+
+    --my-toast-bg: var(--my-color-gray-900);
+    --my-toast-bg-success: var(--my-bg-toast-success);
+    --my-toast-bg-error: var(--my-bg-toast-error);
+    --my-toast-bg-info: var(--my-bg-toast-info);
+    --my-toast-bg-warning: var(--my-bg-toast-warning);
+    --my-toast-color: var(--my-text-on-accent);
+    --my-toast-padding: var(--my-padding-md) var(--my-padding-lg);
+    --my-toast-radius: var(--my-radius-sm);
+    --my-toast-shadow: var(--my-shadow-toast);
+    --my-toast-duration: 5000ms;
+    --my-toast-top: var(--my-padding-lg);
+    --my-toast-right: var(--my-padding-lg);
+    --my-toast-max-width: var(--my-size-toast-max-width);
+
+
+    /* ========================================================
+       СЕКЦИЯ 30: КОМПОНЕНТНЫЕ — BADGE
+       ======================================================== */
+
+    --my-badge-padding: var(--my-space-05) var(--my-space-2);
+    --my-badge-radius: var(--my-radius-sm);
+    --my-badge-font-size: var(--my-font-size-xs);
+    --my-badge-font-weight: var(--my-font-weight-semibold);
+
+
+    /* ========================================================
+       СЕКЦИЯ 31: КОМПОНЕНТНЫЕ — ALERT
+       ======================================================== */
+
+    --my-alert-padding: var(--my-padding-md);
+    --my-alert-radius: var(--my-radius-sm);
+    --my-alert-border-width: var(--my-table-border-width);
+
+    --my-alert-info-bg: var(--my-color-teal-50);
+    --my-alert-info-text: var(--my-color-teal-700);
+    --my-alert-info-border: var(--my-color-teal-200);
+    --my-alert-success-bg: var(--my-color-green-50);
+    --my-alert-success-text: var(--my-color-green-700);
+    --my-alert-success-border: var(--my-color-green-200);
+    --my-alert-warning-bg: var(--my-color-yellow-50);
+    --my-alert-warning-text: var(--my-color-yellow-700);
+    --my-alert-warning-border: var(--my-color-yellow-200);
+    --my-alert-danger-bg: var(--my-color-red-50);
+    --my-alert-danger-text: var(--my-color-red-700);
+    --my-alert-danger-border: var(--my-color-red-200);
+
+
+    /* ========================================================
+       СЕКЦИЯ 32: КОМПОНЕНТНЫЕ — SPINNER
+       ======================================================== */
+
+    --my-spinner-size: var(--my-size-icon-lg);
+    --my-spinner-size-sm: var(--my-size-icon-sm);
+    --my-spinner-color: var(--my-color-primary);
+    --my-spinner-duration: 0.8s;
+    --my-spinner-border-width: 2px;
+    --my-spinner-border-width-sm: 1px;
+    --my-spinner-border-transparent: transparent;
+
+
+    /* ========================================================
+       СЕКЦИЯ 33: КОМПОНЕНТНЫЕ — PAGINATION
+       ======================================================== */
+
+    --my-pagination-btn-size: var(--my-size-pagination-btn);
+    --my-pagination-gap: var(--my-space-1);
+    --my-pagination-radius: var(--my-radius-sm);
+    --my-pagination-bg: transparent;
+    --my-pagination-bg-hover: var(--my-bg-hover);
+    --my-pagination-bg-active: var(--my-color-primary);
+    --my-pagination-color: var(--my-text-primary);
+    --my-pagination-color-active: var(--my-text-on-accent);
+    --my-pagination-border-color: var(--my-border-default);
+
+
+    /* ========================================================
+       СЕКЦИЯ 34: КОМПОНЕНТНЫЕ — СКРОЛЛБАР
+       ======================================================== */
+
+    --my-scrollbar-width: 6px;
+    --my-scrollbar-track: transparent;
+    --my-scrollbar-thumb: var(--my-color-scrollbar-thumb);
+    --my-scrollbar-thumb-hover: var(--my-color-scrollbar-thumb-hover);
+    --my-scrollbar-radius: var(--my-radius-sm);
+    --my-scrollbar-gap: var(--my-space-05);
+
+
+    /* ========================================================
+       СЕКЦИЯ 35: КОМПОНЕНТНЫЕ — ТАБЛИЦА
+       ======================================================== */
+
+    --my-table-border-width: 1px;
+    --my-table-border-color: var(--my-border-default);
+    --my-table-radius: var(--my-radius-sm);
+    --my-table-row-height: var(--my-size-table-row-height);
+    --my-table-row-min-height: var(--my-size-table-row-min);
+    --my-table-row-max-height: var(--my-size-table-row-max);
+    --my-table-header-height: var(--my-size-table-header-height);
+    --my-table-header-bg: var(--my-bg-table-header);
+    --my-table-header-color: var(--my-text-primary);
+    --my-table-header-font-size: var(--my-font-size-base);
+    --my-table-header-font-weight: var(--my-font-weight-semibold);
+    --my-table-body-font-size: var(--my-font-size-base);
+    --my-table-body-color: var(--my-text-primary);
+    --my-table-cell-padding-default: var(--my-space-2) var(--my-space-3);
+    --my-table-cell-padding-compact: var(--my-space-1) var(--my-space-2);
+    --my-table-cell-padding-wide: var(--my-space-2) var(--my-space-4);
+    --my-table-cell-padding-text: var(--my-space-2) var(--my-space-3);
+    --my-table-cell-padding-status: var(--my-space-1) var(--my-space-1);
+    --my-table-cell-vertical-align: var(--my-valign-middle);
+    --my-table-sticky-z-index: var(--my-z-sticky-row);
+    --my-table-header-z-index: var(--my-z-sticky-header);
+    --my-table-sticky-row-bg: var(--my-bg-sticky-row);
+    --my-table-sticky-row-text: var(--my-text-secondary);
+
+    --my-table-row-hover-bg: var(--my-bg-table-row-hover);
+    --my-table-row-selected-bg: var(--my-bg-table-row-selected);
+    --my-table-row-selected-hover-bg: var(--my-color-primary-15);
+
+
+    /* ========================================================
+       СЕКЦИЯ 36: КОМПОНЕНТНЫЕ — КОЛОНКА НОМЕРА
+       ======================================================== */
+
+    --my-col-row-number-min: var(--my-size-col-row-number-min);
+    --my-col-row-number-max: var(--my-size-col-row-number-max);
+    --my-col-row-number-char-width: 0.6em;
+    --my-col-row-number-padding: var(--my-space-2) var(--my-space-3);
+    --my-col-row-number-font-size: var(--my-font-size-base);
+
+
+    /* ========================================================
+       СЕКЦИЯ 37: КОМПОНЕНТНЫЕ — КОЛОНКА СТАТУСА
+       ======================================================== */
+
+    --my-col-status-icon-size: 1.75em;
+    --my-col-status-padding: var(--my-space-1) var(--my-space-1);
+    --my-col-status-min-width: var(--my-size-col-status-min);
+    --my-col-status-max-width: var(--my-size-col-status-max);
+    --my-status-icon-hover-scale: 1.15;
+
+
+    /* ========================================================
+       СЕКЦИЯ 38: КОМПОНЕНТНЫЕ — ВЫПАДАШКА ФИЛЬТРА
+       ======================================================== */
+
+    --my-filter-width: var(--my-size-filter-width);
+    --my-filter-min-width: var(--my-size-filter-min);
+    --my-filter-max-width: var(--my-size-filter-max);
+    --my-filter-max-height: var(--my-size-filter-max-height);
+    --my-filter-rows: 10;
+    --my-filter-padding: var(--my-padding-sm);
+    --my-filter-radius: var(--my-radius-sm);
+    --my-filter-shadow: var(--my-shadow-dropdown);
+    --my-filter-bg: var(--my-bg-filter);
+    --my-filter-border: var(--my-table-border-width) var(--my-border-style) var(--my-border-default);
+    --my-filter-item-height: var(--my-size-filter-item-height);
+    --my-filter-item-padding: var(--my-space-1) var(--my-space-2);
+    --my-filter-item-hover-bg: var(--my-bg-hover);
+    --my-filter-item-selected-bg: var(--my-bg-active);
+    --my-filter-search-height: var(--my-size-input-height);
+    --my-filter-resize-handle-size: var(--my-space-3);
+    --my-filter-resize-handle-color: var(--my-color-gray-400);
+    --my-filter-divider-color: var(--my-border-light);
+    --my-filter-divider-margin: var(--my-padding-xs) var(--my-padding-null);
+
+
+    /* ========================================================
+       СЕКЦИЯ 39: КОМПОНЕНТНЫЕ — МНОГОСТРОЧНЫЙ ТЕКСТ
+       ======================================================== */
+
+    --my-multiline-max-lines: 3;
+    --my-multiline-min-lines: 1;
+    --my-multiline-line-height: 1.5;
+    --my-multiline-word-break: break-word;
+
+
+    /* ========================================================
+       СЕКЦИЯ 40: КОМПОНЕНТНЫЕ — EDIT ICON
+       ======================================================== */
+
+    --my-edit-icon-offset: var(--my-space-2);
+    --my-edit-icon-size: var(--my-space-5);
+    --my-edit-icon-color: var(--my-color-primary);
+    --my-edit-icon-hover-color: var(--my-color-primary-hover);
+    --my-edit-icon-hover-scale: 1.1;
+    --my-edit-icon-z-index: var(--my-z-dropdown);
+
+
+    /* ========================================================
+       СЕКЦИЯ 41: КОМПОНЕНТНЫЕ — RESIZE HANDLE
+       ======================================================== */
+
+    --my-resize-handle-width: 6px;
+    --my-resize-handle-color: var(--my-color-primary);
+    --my-resize-handle-opacity: 0.4;
+
+
+    /* ========================================================
+       СЕКЦИЯ 42: КОМПОНЕНТНЫЕ — LOGIN
+       ======================================================== */
+
+    --my-bg-login-gradient: linear-gradient(135deg, var(--my-color-gray-900) 0%, var(--my-color-gray-800) 100%);
+
+
+    /* ========================================================
+       СЕКЦИЯ 43: ИКОНКИ
+       ======================================================== */
+
+    --my-icon-gap: var(--my-space-1);
+
+
+    /* ========================================================
+       СЕКЦИЯ 44: ВЫРАВНИВАНИЕ ПО ТИПАМ (ГОРИЗОНТАЛЬ)
+       ======================================================== */
+
+    --my-align-row-number-h: center;
+    --my-align-id-h: center;
+    --my-align-status-h: center;
+    --my-align-boolean-h: center;
+    --my-align-int-h: right;
+    --my-align-numeric-h: right;
+    --my-align-currency-h: right;
+    --my-align-percent-h: right;
+    --my-align-string-h: left;
+    --my-align-text-h: left;
+    --my-align-date-h: center;
+    --my-align-datetime-h: center;
+    --my-align-email-h: left;
+    --my-align-phone-h: left;
+    --my-align-url-h: left;
+
+
+    /* ========================================================
+       СЕКЦИЯ 45: ВЫРАВНИВАНИЕ ПО ВЕРТИКАЛИ
+       ======================================================== */
+
+    --my-align-default-v: var(--my-valign-middle);
+    --my-align-row-default-v: var(--my-align-default-v);
+    --my-align-text-v: var(--my-valign-top);
+    --my-align-multiline-v: var(--my-valign-top);
+
+
+    /* ========================================================
+       СЕКЦИЯ 46: FALLBACK ДЛЯ СТРОК
+       ======================================================== */
+
+    --my-row-bg-default: transparent;
+    --my-row-text-default: var(--my-text-primary);
+    --my-row-font-style-default: var(--my-font-style-normal);
+    --my-row-font-weight-default: var(--my-font-weight-normal);
+    --my-row-text-decoration-default: var(--my-text-decoration-none);
+    --my-row-opacity-default: var(--my-opacity-100);
+
+}
+
+
+/* ============================================================
+   АДАПТАЦИЯ ПОД 2K/4K/8K
+   ============================================================ */
+
+@media screen and (min-width: 160rem) {
+    :root {
+        --my-base-font-size: 125%;
+    }
+}
+@media screen and (min-width: 240rem) {
+    :root {
+        --my-base-font-size: 150%;
+    }
+}
+@media screen and (min-width: 480rem) {
+    :root {
+        --my-base-font-size: 200%;
+    }
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — КАРКАС</title>
+
+    <!-- Иконки -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}">
+
+    <!-- Bootstrap (временно, опора) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+    <!-- Переменные -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+
+    <!-- Базовые стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+
+    <!-- UI-компоненты -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ui.css') }}">
+
+    <!-- Стили страницы логина -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+
+    <!-- ===== СТРАНИЦА ВХОДА ===== -->
+    <div class="my-login-page">
+
+        <div class="my-login-card">
+
+            <!-- Логотип -->
+            <div class="my-login-logo">
+                <i class="bi bi-tools my-login-logo-icon"></i>
+                <h2>КАРКАС</h2>
+                <small>Automation Construction System</small>
+            </div>
+
+            <!-- Форма -->
+            <form class="my-login-form" id="loginForm" method="POST">
+
+                <div class="my-form-group">
+                    <label for="username" class="my-form-label">Имя пользователя</label>
+                    <input type="text" class="my-form-control" id="username" name="username" placeholder="admin" required autofocus>
+                </div>
+
+                <div class="my-form-group">
+                    <label for="password" class="my-form-label">Пароль</label>
+                    <input type="password" class="my-form-control" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div class="my-login-error" id="errorMessage"></div>
+
+                <button type="submit" class="my-btn my-btn-primary" id="loginBtn">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Войти</span>
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('errorMessage');
+            const btn = document.getElementById('loginBtn');
+            const btnText = btn.querySelector('span');
+            const btnIcon = btn.querySelector('i');
+
+            btn.disabled = true;
+            btnText.textContent = 'Вход...';
+            btnIcon.className = 'bi bi-hourglass-split';
+            errorEl.classList.remove('show');
+            errorEl.textContent = '';
+
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    window.location.href = data.redirect || '/';
+                } else {
+                    errorEl.textContent = data.error || 'Ошибка входа';
+                    errorEl.classList.add('show');
+                    btn.disabled = false;
+                    btnText.textContent = 'Войти';
+                    btnIcon.className = 'bi bi-box-arrow-in-right';
+                }
+            } catch (error) {
+                errorEl.textContent = 'Ошибка соединения с сервером';
+                errorEl.classList.add('show');
+                btn.disabled = false;
+                btnText.textContent = 'Войти';
+                btnIcon.className = 'bi bi-box-arrow-in-right';
+            }
+        });
+    </script>
+</body>
+</html>

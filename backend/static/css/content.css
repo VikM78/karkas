@@ -1,0 +1,87 @@
+/* ============================================================
+   КОНТЕНТНАЯ ОБЛАСТЬ
+   ============================================================ */
+
+.my-card-table {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    padding: var(--my-card-padding);
+    background: var(--my-bg-primary);
+    border: var(--my-card-border-width) var(--my-card-border-style) var(--my-card-border-color);
+    border-radius: var(--my-card-radius);
+    box-shadow: var(--my-card-shadow);
+}
+
+.my-page-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    padding: var(--my-padding-null);
+    overflow: hidden;
+}
+
+.my-main-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    gap: var(--my-card-gap);
+    transition: margin-left var(--my-duration-base) var(--my-ease-out);
+}
+
+.my-placeholder-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: var(--my-padding-2xl);
+    background: var(--my-bg-primary);
+    border-radius: var(--my-card-radius);
+    box-shadow: var(--my-card-shadow);
+    text-align: center;
+}
+
+.my-placeholder-page .my-icon {
+    font-size: var(--my-font-size-4xl);
+    color: var(--my-color-primary);
+    margin-bottom: var(--my-padding-lg);
+}
+
+.my-placeholder-page h3 {
+    font-size: var(--my-font-size-xl);
+    font-weight: var(--my-font-weight-semibold);
+    color: var(--my-text-primary);
+    margin-bottom: var(--my-padding-sm);
+}
+
+.my-placeholder-page p {
+    max-width: var(--my-size-placeholder-max-width);
+    color: var(--my-text-secondary);
+    font-size: var(--my-font-size-lg);
+}
+
+.my-placeholder-page .my-version {
+    margin-top: var(--my-padding-lg);
+    font-size: var(--my-font-size-sm);
+    color: var(--my-text-muted);
+}
+
+@media (max-width: 48rem) {
+    .my-card-table {
+        padding: var(--my-padding-sm);
+    }
+    .my-placeholder-page {
+        padding: var(--my-padding-lg);
+    }
+    .my-placeholder-page .my-icon {
+        font-size: var(--my-font-size-3xl);
+    }
+    .my-placeholder-page h3 {
+        font-size: var(--my-font-size-lg);
+    }
+}

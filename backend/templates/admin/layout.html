@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}КАРКАС{% endblock %}</title>
+
+    <!-- Иконки (Bootstrap Icons — локальная копия) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}">
+
+    <!-- Bootstrap (временно, опора) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+    <!-- Переменные -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+
+    <!-- Базовые стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+
+    <!-- UI-компоненты -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ui.css') }}">
+
+    <!-- Компоненты layout -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/content.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="my-top-bar">
+
+        <!-- Левая часть -->
+        <div class="my-top-bar-left">
+
+            <!-- 1. Кнопка меню -->
+            <button class="my-menu-toggle" id="menuToggle" title="Показать меню">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <!-- 2. Разделитель -->
+            <span class="my-top-bar-divider"></span>
+
+            <!-- 3. Бренд -->
+            <a href="/" class="my-brand">
+                <i class="bi bi-tools my-brand-icon"></i>
+                <span>КАРКАС</span>
+                <span class="my-brand-sub">| Automation System</span>
+            </a>
+
+            <!-- 4. Разделитель -->
+            <span class="my-top-bar-divider"></span>
+
+            <!-- 5. Заголовок страницы (заполняется через JS) -->
+            <div class="my-page-title" id="dynamicPageTitle">
+                <span class="my-page-title-text">{% block page_title %}Дашборд{% endblock %}</span>
+            </div>
+
+            <!-- 6. Кнопки действий (заполняется через JS) -->
+            <div class="my-toolbar-right" id="dynamicToolbarRight"></div>
+
+        </div>
+
+        <!-- Правая часть -->
+        <div class="my-top-bar-right">
+
+            <!-- Аватар пользователя -->
+            <button class="my-user-avatar-btn" id="userAvatarBtn" title="Профиль">
+                <i class="bi bi-person-circle my-avatar-icon"></i>
+                <span class="my-status-dot online" id="statusDot"></span>
+            </button>
+
+            <!-- Выпадающее меню пользователя -->
+            <div class="my-user-dropdown" id="userDropdown">
+
+                <div class="my-dropdown-user-info">
+                    <div class="my-name" id="dropdownUserName">—</div>
+                    <div class="my-role" id="dropdownUserRole">—</div>
+                </div>
+
+                <div class="my-dropdown-divider"></div>
+
+                <a href="/app/profile" class="my-dropdown-item">
+                    <i class="bi bi-person"></i>
+                    <span>Профиль</span>
+                </a>
+                <a href="/app/settings" class="my-dropdown-item">
+                    <i class="bi bi-gear"></i>
+                    <span>Настройки</span>
+                </a>
+
+                <div class="my-dropdown-divider"></div>
+
+                <button class="my-dropdown-item my-dropdown-item-danger" data-action="logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Выйти</span>
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+    <!-- ===== SIDEBAR ===== -->
+    {% include 'components/sidebar.html' %}
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="my-main-content" id="mainContent">
+
+        <div class="my-card-table">
+            <div class="my-page-content">
+                {% block content %}
+                <div class="my-placeholder-page">
+                    <i class="bi bi-tools my-icon"></i>
+                    <h3>Страница в разработке</h3>
+                    <p>Контент будет добавлен позже.</p>
+                </div>
+                {% endblock %}
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,417 @@
+/* ============================================================
+   ТАБЛИЦА
+   ============================================================ */
+
+/* ===== КОНТЕЙНЕР ТАБЛИЦЫ ===== */
+.my-table-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: var(--my-padding-null);
+    background: var(--my-bg-primary);
+    border: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
+    border-radius: var(--my-table-radius);
+    scrollbar-width: thin;
+    scrollbar-color: var(--my-scrollbar-thumb) var(--my-scrollbar-track);
+}
+
+.my-table-wrap::-webkit-scrollbar {
+    width: var(--my-scrollbar-width);
+    height: var(--my-scrollbar-width);
+}
+.my-table-wrap::-webkit-scrollbar-track {
+    background: var(--my-scrollbar-track);
+}
+.my-table-wrap::-webkit-scrollbar-thumb {
+    background: var(--my-scrollbar-thumb);
+    border-radius: var(--my-scrollbar-radius);
+}
+.my-table-wrap::-webkit-scrollbar-thumb:hover {
+    background: var(--my-scrollbar-thumb-hover);
+}
+
+/* ===== БАЗОВАЯ ТАБЛИЦА ===== */
+.my-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: var(--my-padding-null);
+    margin: var(--my-padding-null);
+    font-size: var(--my-table-body-font-size);
+    color: var(--my-table-body-color);
+}
+
+/* ===== ШАПКА ===== */
+.my-table thead {
+    position: sticky;
+    top: var(--my-padding-null);
+    z-index: var(--my-table-header-z-index);
+}
+
+.my-table thead th {
+    position: sticky;
+    top: var(--my-padding-null);
+    padding: var(--my-table-cell-padding-default);
+    height: var(--my-table-header-height);
+    background: var(--my-table-header-bg);
+    color: var(--my-table-header-color);
+    font-size: var(--my-table-header-font-size);
+    font-weight: var(--my-table-header-font-weight);
+    text-align: var(--my-text-left);
+    white-space: nowrap;
+    user-select: none;
+    vertical-align: var(--my-valign-middle);
+    border-right: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
+    border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
+}
+
+.my-table thead th:last-child {
+    border-right: none;
+}
+
+/* ===== ТЕЛО ===== */
+.my-table tbody tr {
+    height: var(--my-table-row-height);
+    min-height: var(--my-table-row-min-height);
+    color: var(--my-row-color, var(--my-text-primary));
+    background: var(--my-row-bg, transparent);
+    font-style: var(--my-row-font-style, var(--my-font-style-normal));
+    font-weight: var(--my-row-font-weight, var(--my-font-weight-normal));
+    text-decoration: var(--my-row-text-decoration, var(--my-text-decoration-none));
+    opacity: var(--my-row-opacity, var(--my-opacity-100));
+    vertical-align: var(--my-row-align-v, var(--my-align-row-default-v));
+    transition: background var(--my-duration-fast) var(--my-ease-out);
+}
+
+.my-table tbody tr:hover:not(.my-row-selected) {
+    background: var(--my-table-row-hover-bg);
+}
+
+.my-table tbody tr.my-row-selected {
+    background: var(--my-table-row-selected-bg);
+}
+
+.my-table tbody tr.my-row-selected:hover {
+    background: var(--my-table-row-selected-hover-bg);
+}
+
+.my-table tbody td {
+    padding: var(--my-table-cell-padding-default);
+    border-right: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
+    border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
+    vertical-align: var(--my-cell-align-v, inherit);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--my-cell-color, inherit);
+    background: var(--my-cell-bg, inherit);
+    font-style: var(--my-cell-font-style, inherit);
+    font-weight: var(--my-cell-font-weight, inherit);
+    text-decoration: var(--my-cell-text-decoration, inherit);
+    opacity: var(--my-cell-opacity, inherit);
+}
+
+.my-table tbody td:last-child {
+    border-right: none;
+}
+
+/* ===== КОЛОНКА НОМЕРА ===== */
+.my-table thead .my-col-row-sticky {
+    z-index: calc(var(--my-table-header-z-index) + 1);
+    background: var(--my-table-header-bg);
+}
+
+.my-table tbody td.my-col-row-sticky {
+    position: sticky;
+    left: var(--my-padding-null);
+    z-index: var(--my-table-sticky-z-index);
+    min-width: var(--my-col-row-number-min);
+    max-width: var(--my-col-row-number-max);
+    padding: var(--my-col-row-number-padding);
+    text-align: var(--my-align-row-number-h);
+    font-size: var(--my-col-row-number-font-size);
+    color: var(--my-table-sticky-row-text);
+    background: var(--my-table-sticky-row-bg);
+    font-style: var(--my-font-style-normal);
+    font-weight: var(--my-font-weight-normal);
+    text-decoration: var(--my-text-decoration-none);
+    opacity: var(--my-opacity-100);
+}
+
+.my-table tbody td.my-col-row-sticky::after {
+    content: '';
+    position: absolute;
+    top: var(--my-padding-null);
+    right: var(--my-padding-null);
+    bottom: var(--my-padding-null);
+    width: var(--my-table-border-width);
+    background: var(--my-table-border-color);
+    pointer-events: none;
+}
+
+/* ===== КОЛОНКА СТАТУСА ===== */
+.my-table thead th.my-col-status-th {
+    padding: var(--my-col-status-padding);
+    text-align: var(--my-align-status-h);
+}
+
+.my-table tbody td.my-col-status-td {
+    padding: var(--my-col-status-padding);
+    text-align: var(--my-align-status-h);
+    color: var(--my-table-sticky-row-text);
+    background: var(--my-table-sticky-row-bg);
+    font-style: var(--my-font-style-normal);
+    font-weight: var(--my-font-weight-normal);
+    text-decoration: var(--my-text-decoration-none);
+    opacity: var(--my-opacity-100);
+    overflow: visible;
+}
+
+.my-status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--my-col-status-icon-size);
+    height: var(--my-col-status-icon-size);
+    font-size: var(--my-font-size-lg);
+    cursor: default;
+    transition: transform var(--my-duration-fast) var(--my-ease-out);
+}
+
+.my-status-icon:hover {
+    transform: scale(var(--my-status-icon-hover-scale));
+}
+
+/* ===== СОРТИРОВКА И ФИЛЬТР В ШАПКЕ ===== */
+.my-th-content {
+    display: flex;
+    align-items: var(--my-valign-middle);
+    gap: var(--my-icon-gap);
+}
+
+.my-col-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.my-col-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--my-padding-null);
+    background: transparent;
+    border: none;
+    color: var(--my-text-muted);
+    cursor: pointer;
+    font-size: var(--my-font-size-xs);
+    line-height: 1;
+    opacity: var(--my-opacity-50);
+    border-radius: var(--my-radius-sm);
+    transition: opacity var(--my-duration-fast) var(--my-ease-out),
+                color var(--my-duration-fast) var(--my-ease-out),
+                background var(--my-duration-fast) var(--my-ease-out);
+    flex-shrink: 0;
+}
+
+.my-col-btn:hover {
+    opacity: var(--my-opacity-100);
+    color: var(--my-color-primary);
+    background: var(--my-bg-active);
+}
+
+.my-col-btn.active {
+    opacity: var(--my-opacity-100);
+    color: var(--my-color-primary);
+}
+
+.my-sort-indicator {
+    font-size: var(--my-font-size-xs);
+    color: var(--my-color-primary);
+    flex-shrink: 0;
+}
+
+/* ===== ВЫРАВНИВАНИЕ ПО ТИПАМ (ГОРИЗОНТАЛЬ) ===== */
+.my-col-row-number { text-align: var(--my-cell-align-h, var(--my-align-row-number-h)); }
+.my-col-id         { text-align: var(--my-cell-align-h, var(--my-align-id-h)); }
+.my-col-boolean    { text-align: var(--my-cell-align-h, var(--my-align-boolean-h)); }
+.my-col-int        { text-align: var(--my-cell-align-h, var(--my-align-int-h)); }
+.my-col-numeric    { text-align: var(--my-cell-align-h, var(--my-align-numeric-h)); }
+.my-col-currency   { text-align: var(--my-cell-align-h, var(--my-align-currency-h)); }
+.my-col-percent    { text-align: var(--my-cell-align-h, var(--my-align-percent-h)); }
+.my-col-string     { text-align: var(--my-cell-align-h, var(--my-align-string-h)); }
+.my-col-text       { text-align: var(--my-cell-align-h, var(--my-align-text-h)); }
+.my-col-date       { text-align: var(--my-cell-align-h, var(--my-align-date-h)); }
+.my-col-datetime   { text-align: var(--my-cell-align-h, var(--my-align-datetime-h)); }
+.my-col-email      { text-align: var(--my-cell-align-h, var(--my-align-email-h)); }
+.my-col-phone      { text-align: var(--my-cell-align-h, var(--my-align-phone-h)); }
+.my-col-url        { text-align: var(--my-cell-align-h, var(--my-align-url-h)); }
+
+/* ===== ОБРЕЗКА ТЕКСТА ===== */
+.my-col-ellipsis {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.my-col-wrap {
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow: visible;
+}
+
+.my-col-truncated {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
+}
+
+.my-col-expandable {
+    position: relative;
+}
+
+.my-col-expandable[data-expanded="true"] {
+    white-space: normal;
+    overflow: visible;
+}
+
+/* ===== МНОГОСТРОЧНЫЙ ТЕКСТ ===== */
+.my-col-multiline {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--my-multiline-max-lines);
+    line-clamp: var(--my-multiline-max-lines);
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: var(--my-multiline-word-break);
+    line-height: var(--my-multiline-line-height);
+    max-height: calc(var(--my-multiline-max-lines) * var(--my-multiline-line-height) * 1em);
+    vertical-align: var(--my-cell-align-v, var(--my-valign-top));
+}
+
+.my-col-multiline[data-expanded="true"] {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    max-height: none;
+    overflow: visible;
+}
+
+/* ===== ВЫРАВНИВАНИЕ ЯЧЕЙКИ (ПЕРЕОПРЕДЕЛЕНИЕ) ===== */
+.my-cell-align-left   { text-align: var(--my-text-left); }
+.my-cell-align-center { text-align: var(--my-text-center); }
+.my-cell-align-right  { text-align: var(--my-text-right); }
+.my-cell-valign-top    { vertical-align: var(--my-valign-top); }
+.my-cell-valign-middle { vertical-align: var(--my-valign-middle); }
+.my-cell-valign-bottom { vertical-align: var(--my-valign-bottom); }
+
+/* ===== ТУЛБАР ===== */
+.my-table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: var(--my-valign-middle);
+    gap: var(--my-gap-md);
+    margin-bottom: var(--my-padding-md);
+    width: 100%;
+}
+
+.my-toolbar-left {
+    display: flex;
+    align-items: var(--my-valign-middle);
+    gap: var(--my-gap-sm);
+}
+
+.my-toolbar-right {
+    display: flex;
+    align-items: var(--my-valign-middle);
+    gap: var(--my-gap-sm);
+}
+
+/* ===== ПАГИНАЦИЯ ТАБЛИЦЫ ===== */
+.my-table-pagination {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+    padding-top: var(--my-padding-md);
+}
+
+/* ===== ИКОНКА РЕДАКТИРОВАНИЯ ===== */
+.my-edit-icon-overlay {
+    position: absolute;
+    top: var(--my-padding-null);
+    right: var(--my-edit-icon-offset);
+    bottom: var(--my-padding-null);
+    pointer-events: none;
+    z-index: var(--my-edit-icon-z-index);
+}
+
+.my-edit-icon {
+    position: absolute;
+    right: var(--my-padding-null);
+    width: var(--my-edit-icon-size);
+    height: var(--my-edit-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--my-edit-icon-size);
+    color: var(--my-edit-icon-color);
+    cursor: pointer;
+    pointer-events: all;
+    opacity: var(--my-opacity-0);
+    transition: opacity var(--my-duration-fast) var(--my-ease-out),
+                transform var(--my-duration-fast) var(--my-ease-out);
+}
+
+.my-edit-icon:hover {
+    color: var(--my-edit-icon-hover-color);
+    transform: scale(var(--my-edit-icon-hover-scale));
+}
+
+.my-edit-icon.visible {
+    opacity: var(--my-opacity-100);
+}
+
+/* ===== СПЕЦИФИЧНЫЕ ОТСТУПЫ СТОЛБЦОВ ===== */
+.my-col-name    { padding: var(--my-table-cell-padding-wide); }
+.my-col-comment { padding: var(--my-table-cell-padding-wide); }
+
+/* ===== РЕСАЙЗ СТОЛБЦОВ ===== */
+.my-resize-handle {
+    position: absolute;
+    top: var(--my-padding-null);
+    right: calc(-1 * var(--my-resize-handle-width) / 2);
+    width: var(--my-resize-handle-width);
+    height: 100%;
+    cursor: col-resize;
+    background: transparent;
+    z-index: var(--my-z-base);
+}
+
+.my-resize-handle:hover {
+    background: var(--my-resize-handle-color);
+    opacity: var(--my-resize-handle-opacity);
+}
+
+/* ===== РЕСАЙЗ СТРОК ===== */
+.my-row-resize-handle {
+    position: absolute;
+    bottom: calc(-1 * var(--my-resize-handle-width) / 2);
+    left: var(--my-padding-null);
+    right: var(--my-padding-null);
+    height: var(--my-resize-handle-width);
+    cursor: row-resize;
+    background: transparent;
+    z-index: var(--my-z-base);
+}
+
+.my-row-resize-handle:hover {
+    background: var(--my-resize-handle-color);
+    opacity: var(--my-resize-handle-opacity);
+}
