@@ -18,6 +18,7 @@ class ColumnType(BaseModel):
     max_width_px = db.Column(db.Numeric(10, 2), nullable=True)
     default_align_h = db.Column(db.String(20), nullable=True)
     default_align_v = db.Column(db.String(20), nullable=True)
+    null_label = db.Column(db.String(100), nullable=True)
     def to_dict(self):
         return {
             'id': self.id,

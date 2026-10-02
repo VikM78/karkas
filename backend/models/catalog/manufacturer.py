@@ -14,7 +14,7 @@ class Manufacturer(BaseModel):
     __tablename__ = 'manufacturers'
 
     name = db.Column(db.String(255), nullable=False, unique=True)
-    status = db.Column(db.String(20), default='active')
+    status = db.Column(db.String(20), nullable=True)
     comment = db.Column(db.Text, nullable=True)
 
     def __repr__(self):
