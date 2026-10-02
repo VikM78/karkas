@@ -12,7 +12,7 @@ from .catalog import User, Manufacturer
 from .menu import MenuItem, MenuPermission, UserMenuSettings
 
 # Метаданные
-from .metadata import Table, TableColumn, ColumnType, ColumnValue
+from .metadata import Table, TableColumn, ColumnType, ColumnValue, ValidationRule
 
 # Настройки пользователя
 from .user_settings import UserTableSetting
@@ -29,5 +29,6 @@ __all__ = [
     'TableColumn',
     'ColumnType',
     'ColumnValue',
+    'ValidationRule',
     'UserTableSetting',
 ]
