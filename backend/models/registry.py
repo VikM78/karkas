@@ -58,28 +58,6 @@ def rebuild_registry():
 # ВНУТРЕННЯЯ ЛОГИКА
 # ============================================================
 
-# def _build_registry():
-    # """
-    # Построить реестр (с кешированием).
-
-    # Собирает всех наследников BaseModel, у которых есть __tablename__
-    # и которые не абстрактны.
-    # """
-    # global _registry
-    # if _registry is not None:
-        # return _registry
-
-    # # КРИТИЧНО: загружаем модуль backend.models полностью,
-    # # чтобы все модели были импортированы до сборки реестра.
-    # import backend.models  # noqa: F401
-
-    # # Только после этого импортируем BaseModel
-    # from backend.models.base import BaseModel
-
-    # _registry = {}
-    # _collect_subclasses(BaseModel, _registry)
-    # return _registry
-
 def _build_registry():
     global _registry
     if _registry is not None:
@@ -88,15 +66,9 @@ def _build_registry():
     import backend.models
     from backend.models.base import BaseModel
 
-    # ОТЛАДКА
-    print(f'[REGISTRY] Subclasses: {len(BaseModel.__subclasses__())}')
-    for s in BaseModel.__subclasses__():
-        print(f'  - {s.__name__}: {getattr(s, "__tablename__", "N/A")}')
-
     _registry = {}
     _collect_subclasses(BaseModel, _registry)
 
-    print(f'[REGISTRY] Built: {len(_registry)} models')
     return _registry
 
 def _collect_subclasses(cls, registry):
