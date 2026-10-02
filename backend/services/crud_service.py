@@ -102,17 +102,24 @@ class CrudService:
                 direction = item.get('direction', 'asc')
                 if not key or not hasattr(model, key):
                     continue
+
                 col = getattr(model, key)
+
+                # Применяем natural_sort_key ко всем столбцам — единообразная
+                # "человеческая" сортировка (Фирма-1, Фирма-2, ..., Фирма-10, ...)
+                natural_key = func.natural_sort_key(col)
+
                 if direction == 'desc':
-                    order_by.append(col.desc())
+                    order_by.append(natural_key.desc())
                 else:
-                    order_by.append(col.asc())
+                    order_by.append(natural_key.asc())
+
             if order_by:
                 query = query.order_by(*order_by)
         else:
             # дефолт — по id
             query = query.order_by(model.id)
-
+            
         # ---------- Пагинация ----------
         total = query.count()
         pages = (total + per_page - 1) // per_page if per_page > 0 else 1
