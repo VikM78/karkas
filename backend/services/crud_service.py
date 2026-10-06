@@ -15,6 +15,7 @@ from datetime import datetime, date
 from decimal import Decimal
 
 from sqlalchemy import or_, and_, func
+from sqlalchemy.exc import IntegrityError
 
 from backend.models import (
     db, Table, TableColumn, ColumnType, ColumnValue, ValidationRule
@@ -184,10 +185,13 @@ class CrudService:
         try:
             db.session.add(instance)
             db.session.commit()
+        except IntegrityError as e:
+            db.session.rollback()
+            CrudService._raise_integrity_error(e)
         except Exception as e:
             db.session.rollback()
             raise ConflictError(f'Ошибка сохранения: {e}')
-
+            
         # 7. Пост-хук
         if hasattr(instance, 'after_save'):
             instance.after_save()
@@ -230,6 +234,9 @@ class CrudService:
         # 6. Сохранить
         try:
             db.session.commit()
+        except IntegrityError as e:
+            db.session.rollback()
+            CrudService._raise_integrity_error(e)
         except Exception as e:
             db.session.rollback()
             raise ConflictError(f'Ошибка сохранения: {e}')
@@ -337,6 +344,48 @@ class CrudService:
             raise ConflictError(f'Ошибка удаления: {e}')
 
         return {'id': row_id, 'deleted': True}
+
+    # ============================================================
+    # ВНУТРЕННИЕ: ОБРАБОТКА ОШИБОК БД
+    # ============================================================
+
+    @staticmethod
+    def _raise_integrity_error(e):
+        """
+        Преобразовать IntegrityError в понятное сообщение.
+
+        Обрабатывает:
+            - UniqueViolation → ConflictError
+            - NotNullViolation → ValidationError
+            - ForeignKeyViolation → ConflictError
+            - другие → ConflictError с общим текстом
+
+        Всегда бросает исключение — возвращает None.
+        """
+        import re
+        error_str = str(e)
+
+        # UniqueViolation — уникальность
+        if 'UniqueViolation' in error_str or 'duplicate key' in error_str:
+            # Пытаемся понять, какое поле
+            if 'manufacturers_name_key' in error_str:
+                raise ConflictError('Производитель с таким наименованием уже существует')
+
+            # Общий случай — извлекаем имя constraint
+            match = re.search(r'"([^"]+)"', error_str)
+            constraint = match.group(1) if match else 'unknown'
+            raise ConflictError(f'Нарушено ограничение уникальности: {constraint}')
+
+        # NotNullViolation — обязательное поле
+        if 'NotNullViolation' in error_str or 'null value' in error_str:
+            raise ValidationError('Не заполнено обязательное поле')
+
+        # ForeignKeyViolation — ссылка
+        if 'ForeignKeyViolation' in error_str:
+            raise ConflictError('Нарушена ссылочная целостность')
+
+        # Общий случай
+        raise ConflictError('Ошибка сохранения данных')
 
     # ============================================================
     # ВНУТРЕННИЕ: RESOLVE, SERIALIZE
