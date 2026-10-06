@@ -56,6 +56,10 @@ def create_app():
     # ===== API =====
     register_blueprints(app)
 
+    # ===== CLI-команды =====
+    from backend.scripts.sync_metadata import register_commands as register_sync_metadata
+    register_sync_metadata(app)
+
     # ===== Страницы =====
     @app.route('/login')
     def login_page():
