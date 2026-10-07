@@ -3,10 +3,36 @@
 {% block title %}Производители{% endblock %}
 {% block page_title %}Производители{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="my-placeholder-page">
-    <i class="bi bi-tags my-icon"></i>
-    <h3>Производители</h3>
-    <p>Справочник производителей.</p>
+
+<div id="table-container" class="my-table-container">
+    <div class="my-flex my-flex-center my-items-center" style="min-height: 200px;">
+        <div class="my-spinner"></div>
+    </div>
 </div>
+
+<div id="table-pagination" class="my-table-pagination"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/api/tablesApi.js') }}"></script>
+<script src="{{ url_for('static', filename='js/components/TableRenderer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/components/Table.js') }}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const table = new Table({
+            tableKey: 'manufacturers',
+            container: '#table-container',
+            pagination: '#table-pagination',
+        });
+
+        await table.init();
+    });
+</script>
 {% endblock %}
