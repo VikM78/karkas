@@ -360,7 +360,9 @@
     --my-bg-sticky-row: var(--my-color-gray-50);
     --my-bg-table-header: var(--my-color-gray-50);
     --my-bg-table-row-hover: var(--my-color-overlay-faint);
-    --my-bg-table-row-selected: var(--my-color-blue-50);
+
+	/* Оверлей для hover — накладывается поверх background-color строки */
+	--my-table-row-hover-overlay: color-mix(in srgb, var(--my-color-black) 6%, transparent);    --my-bg-table-row-selected: var(--my-color-blue-50);
 
     --my-bg-tooltip: var(--my-color-gray-900);
 

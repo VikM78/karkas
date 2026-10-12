@@ -104,7 +104,7 @@ const TableRenderer = {
 
         const style = col.width ? `width: ${col.width}px;` : '';
 
-        const sortable = col.sortable && !col.is_virtual;
+        const sortable = col.sortable === true && !col.is_virtual;
         const sortAttr = sortable ? `data-sortable="1" data-column="${col.key}"` : '';
 
         // Статус — без заголовка
@@ -131,7 +131,7 @@ const TableRenderer = {
     _renderSortIndicator(columnKey) {
         if (!this._currentSort || !Array.isArray(this._currentSort)) return '';
 
-        const active = this._currentSort.find(s => s.key === columnKey);
+        const active = this._currentSort.find(s => s.key === columnKey || s.column === columnKey);
         if (!active) return '';
 
         const icon = active.direction === 'desc' ? 'bi-caret-down-fill' : 'bi-caret-up-fill';
@@ -166,7 +166,8 @@ const TableRenderer = {
         const statusFormatted = row.status_formatted;
         if (statusFormatted && statusFormatted.row_styles) {
             const rs = statusFormatted.row_styles;
-            if (rs.opacity !== undefined) trStyles.opacity = rs.opacity;
+            // opacity убираем — применяется к содержимому td
+			//if (rs.opacity !== undefined) trStyles.opacity = rs.opacity;
             if (rs.fontStyle) trStyles.fontStyle = rs.fontStyle;
             if (rs.backgroundColor) trStyles.backgroundColor = rs.backgroundColor;
             if (rs.textDecoration) trStyles.textDecoration = rs.textDecoration;
@@ -218,7 +219,14 @@ const TableRenderer = {
         const value = row[col.key];
         const content = this._renderCellContent(col, row, value);
 
-        return `<td class="${classes.join(' ')} my-col-${col.type}" style="${style.join(';')}">${content}</td>`;
+                // Применяем opacity к содержимому (не к tr — чтобы не портить границы)
+        const statusFormatted = row.status_formatted;
+        const opacity = statusFormatted?.row_styles?.opacity;
+        const styledContent = opacity !== undefined && opacity < 1
+            ? `<span style="opacity: ${opacity};">${content}</span>`
+            : content;
+
+        return `<td class="${classes.join(' ')} my-col-${col.type}" style="${style.join(';')}">${styledContent}</td>`;
     },
 
     /**

@@ -109,6 +109,9 @@ class CrudService:
 
         # ---------- Сортировка ----------
         if sort:
+            # Метаданные столбцов — для определения типа
+            columns_map = {c.column_key: c for c in table.columns.all()}
+
             order_by = []
             for item in sort:
                 key = item.get('key')
@@ -117,12 +120,25 @@ class CrudService:
                     continue
 
                 col = getattr(model, key)
-                natural_key = func.natural_sort_key(col)
+
+                # Natural sort для всего, кроме дат
+                table_col = columns_map.get(key)
+                type_key = (
+                    table_col.column_type.type_key
+                    if table_col and table_col.column_type
+                    else None
+                )
+
+                # Даты — обычная сортировка, всё остальное — natural
+                if type_key in ('date', 'datetime', 'time'):
+                    sort_expr = col
+                else:
+                    sort_expr = func.natural_sort_key(col)
 
                 if direction == 'desc':
-                    order_by.append(natural_key.desc())
+                    order_by.append(sort_expr.desc())
                 else:
-                    order_by.append(natural_key.asc())
+                    order_by.append(sort_expr.asc())
 
             if order_by:
                 query = query.order_by(*order_by)

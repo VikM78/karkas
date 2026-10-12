@@ -95,10 +95,7 @@ class Table {
 
     render() {
         // Текущая сортировка для рендера индикаторов
-        this.settings.sort = this.params.sort.map(s => ({
-            column: s.key,
-            direction: s.direction,
-        }));
+        this.settings.sort = this.params.sort;
 
         TableRenderer.render(
             this.container,

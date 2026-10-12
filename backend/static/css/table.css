@@ -91,8 +91,21 @@
     transition: background var(--my-duration-fast) var(--my-ease-out);
 }
 
-.my-table tbody tr:hover:not(.my-row-selected) {
-    background: var(--my-table-row-hover-bg);
+/* Hover — накладываем полупрозрачный слой поверх фона (включая backgroundColor строки) */
+.my-table tbody tr:hover:not(.my-row-selected) td {
+    background-image: linear-gradient(
+        var(--my-table-row-hover-overlay),
+        var(--my-table-row-hover-overlay)
+    );
+}
+
+/* Sticky-ячейки (row, status) — тоже получают hover */
+.my-table tbody tr:hover:not(.my-row-selected) td.my-col-row-sticky,
+.my-table tbody tr:hover:not(.my-row-selected) td.my-col-status-td {
+    background-image: linear-gradient(
+        var(--my-table-row-hover-overlay),
+        var(--my-table-row-hover-overlay)
+    );
 }
 
 .my-table tbody tr.my-row-selected {
