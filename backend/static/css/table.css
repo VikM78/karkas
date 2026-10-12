@@ -123,7 +123,9 @@
 }
 
 /* ===== КОЛОНКА НОМЕРА ===== */
-.my-table thead .my-col-row-sticky {
+.my-table thead th.my-col-row-sticky {
+    position: sticky;
+    left: 0;
     z-index: calc(var(--my-table-header-z-index) + 1);
     background: var(--my-table-header-bg);
 }

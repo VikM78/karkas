@@ -12,7 +12,7 @@ class Table {
 
         this.params = {
             page: 1,
-            per_page: 50,
+            per_page: options.perPage || 500,
             sort: [],
             filters: {},
             include_deleted: false,
@@ -72,14 +72,23 @@ class Table {
 
     async loadData() {
         const params = {
-            page: this.params.page,
+            page: 1,
             per_page: this.params.per_page,
             sort: this.params.sort,
             filters: this.params.filters,
             include_deleted: this.params.include_deleted,
         };
 
-        const result = await TablesApi.getData(this.tableKey, params);
+        let result = await TablesApi.getData(this.tableKey, params);
+
+        // Если записей немного — загружаем все сразу
+        if (result.meta.total > this.params.per_page && result.meta.total <= 5000) {
+            result = await TablesApi.getData(this.tableKey, {
+                ...params,
+                per_page: result.meta.total,
+            });
+        }
+
         this.data = result.data;
         this.meta = result.meta;
     }
@@ -105,7 +114,8 @@ class Table {
         const pages = this.meta.pages;
         const total = this.meta.total;
 
-        if (pages <= 1) {
+        // Пагинация только для больших таблиц (>5000)
+        if (pages <= 1 || total <= 5000) {
             this.paginationEl.innerHTML = '';
             return;
         }
