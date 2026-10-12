@@ -19,6 +19,9 @@ const TableRenderer = {
      * @param {Object} meta — пагинация (для номеров строк)
      */
     render(container, schema, data, settings, meta) {
+        // Сохранить текущую сортировку для рендера индикаторов
+        this._currentSort = settings.sort || [];
+
         const columns = this._getVisibleColumns(schema, settings);
         const html = `
             <div class="my-table-wrap">
@@ -46,7 +49,6 @@ const TableRenderer = {
         const colMap = {};
         schema.columns.forEach(c => { colMap[c.key] = c; });
 
-        // Строим список: виртуальный "row" + видимые из order
         const result = [];
 
         // Виртуальный столбец "row" — всегда первый
@@ -63,8 +65,14 @@ const TableRenderer = {
             width: settings.widths?.row || 45,
         });
 
+        // Статус — всегда второй (если видим)
+        if (visibleKeys.includes('status') && colMap['status']) {
+            result.push(colMap['status']);
+        }
+
+        // Остальные — в порядке order, кроме row и status
         for (const key of orderKeys) {
-            if (key === 'row') continue;
+            if (key === 'row' || key === 'status') continue;
             if (!visibleKeys.includes(key)) continue;
             const col = colMap[key];
             if (col) {
@@ -99,15 +107,37 @@ const TableRenderer = {
         const sortable = col.sortable && !col.is_virtual;
         const sortAttr = sortable ? `data-sortable="1" data-column="${col.key}"` : '';
 
+        // Статус — без заголовка
+        const labelHtml = col.type === 'status'
+            ? ''
+            : `<span class="my-col-label">${col.label}</span>`;
+
+        // Индикатор сортировки — если активна
+        const sortIndicator = this._renderSortIndicator(col.key);
+
         return `
             <th class="${classes.join(' ')} my-col-${col.type}" style="${style}" ${sortAttr}>
                 <div class="my-th-content">
-                    <span class="my-col-label">${col.label}</span>
+                    ${labelHtml}
+                    ${sortIndicator}
                 </div>
             </th>
         `;
     },
 
+    /**
+     * Индикатор сортировки — только если столбец активен в сортировке.
+     */
+    _renderSortIndicator(columnKey) {
+        if (!this._currentSort || !Array.isArray(this._currentSort)) return '';
+
+        const active = this._currentSort.find(s => s.key === columnKey);
+        if (!active) return '';
+
+        const icon = active.direction === 'desc' ? 'bi-caret-down-fill' : 'bi-caret-up-fill';
+        return `<i class="bi ${icon} my-sort-indicator"></i>`;
+    },
+	
     /**
      * Рендер <tbody>.
      */

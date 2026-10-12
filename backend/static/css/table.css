@@ -162,11 +162,17 @@
 .my-table thead th.my-col-status-th {
     padding: var(--my-col-status-padding);
     text-align: var(--my-align-status-h);
+    width: var(--my-col-status-width);       /* узкая */
+    max-width: var(--my-col-status-max-width);
+    min-width: var(--my-col-status-min-width);
 }
 
 .my-table tbody td.my-col-status-td {
     padding: var(--my-col-status-padding);
     text-align: var(--my-align-status-h);
+    width: var(--my-col-status-width);       /* узкая */
+    max-width: var(--my-col-status-max-width);
+    min-width: var(--my-col-status-min-width);
     color: var(--my-table-sticky-row-text);
     background: var(--my-table-sticky-row-bg);
     font-style: var(--my-font-style-normal);
@@ -236,9 +242,11 @@
 }
 
 .my-sort-indicator {
-    font-size: var(--my-font-size-xs);
+    font-size: var(--my-font-size-sm);
     color: var(--my-color-primary);
     flex-shrink: 0;
+    margin-left: var(--my-space-1);
+    cursor: pointer;
 }
 
 /* ===== ВЫРАВНИВАНИЕ ПО ТИПАМ (ГОРИЗОНТАЛЬ) ===== */

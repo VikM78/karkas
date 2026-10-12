@@ -757,6 +757,7 @@
     --my-col-status-padding: var(--my-space-1) var(--my-space-1);
     --my-col-status-min-width: var(--my-size-col-status-min);
     --my-col-status-max-width: var(--my-size-col-status-max);
+	--my-col-status-width: calc(var(--my-col-status-icon-size) + var(--my-col-status-padding) * 2);
     --my-status-icon-hover-scale: 1.15;
 
 

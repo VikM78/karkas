@@ -94,6 +94,12 @@ class Table {
     }
 
     render() {
+        // Текущая сортировка для рендера индикаторов
+        this.settings.sort = this.params.sort.map(s => ({
+            column: s.key,
+            direction: s.direction,
+        }));
+
         TableRenderer.render(
             this.container,
             this.schema,
@@ -102,11 +108,59 @@ class Table {
             this.meta
         );
 
+        // Обработчики сортировки
+        this._bindSortHandlers();
+
         if (this.paginationEl) {
             this._renderPagination();
         }
 
         this._updatePageTitle();
+    }
+
+    /**
+     * Обработчики кликов по заголовкам для сортировки.
+     */
+    _bindSortHandlers() {
+        const ths = this.container.querySelectorAll('[data-sortable="1"]');
+        ths.forEach(th => {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', () => {
+                const column = th.dataset.column;
+                if (column) {
+                    this.toggleSort(column);
+                }
+            });
+        });
+    }
+
+    /**
+     * Переключить сортировку по столбцу.
+     * asc → desc → сброс → asc → ...
+     */
+    async toggleSort(columnKey) {
+        const current = this.params.sort.find(s => s.key === columnKey);
+
+        if (!current) {
+            // Не сортировано → asc
+            this.params.sort = [{ key: columnKey, direction: 'asc' }];
+        } else if (current.direction === 'asc') {
+            // asc → desc
+            this.params.sort = [{ key: columnKey, direction: 'desc' }];
+        } else {
+            // desc → сброс
+            this.params.sort = [];
+        }
+
+        this.params.page = 1;  // сброс на первую страницу
+
+        this._showLoader();
+        try {
+            await this.loadData();
+            this.render();
+        } catch (error) {
+            console.error('[Table] Ошибка сортировки:', error);
+        }
     }
 
     _renderPagination() {
