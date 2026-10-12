@@ -14,6 +14,13 @@
     <!-- Переменные -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
 
+    <!-- Значения из БД (переопределяют CSS) -->
+    <style>
+        :root {
+            --my-base-font-size-px: {{ base_font_size_px or 16 }};
+        }
+    </style>
+
     <!-- Базовые стили -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
 

@@ -40,31 +40,40 @@ const TableRenderer = {
     },
 
     /**
+     * Базовый размер шрифта для FHD (px) — из CSS.
+     */
+    _getBaseFontPx() {
+        const val = getComputedStyle(document.documentElement)
+            .getPropertyValue('--my-base-font-size-px');
+        const num = parseFloat(val);
+        return num && num > 0 ? num : 16;
+    },
+
+    /**
      * Рендер <colgroup> — ширины колонок + виртуальный столбец-заполнитель.
      */
     _renderColgroup(columns) {
         const cols = columns.map(col => {
-            const width = this._getColWidthRem(col);
-            return `<col style="width: ${width}rem">`;
+            const width = this._getColWidthRaw(col);
+            return `<col style="width: ${width}">`;
         }).join('');
-
-        // Виртуальная колонка — растягивается на свободное место
         const fillerCol = `<col class="my-col-filler">`;
-
         return `<colgroup>${cols}${fillerCol}</colgroup>`;
     },
 
     /**
      * Получить ширину колонки в rem.
      */
-    _getColWidthRem(col) {
-        // Приоритет: width_rem → default_width_rem → default_width_px / 16 → default_width / 16
-        if (col.width_rem) return Number(col.width_rem);
-        if (col.default_width_rem) return Number(col.default_width_rem);
-        if (col.default_width_px) return Number(col.default_width_px) / 16;
-        if (col.default_width) return Number(col.default_width) / 16;
-        if (col.width_px) return Number(col.width_px) / 16;
-        return 9.375;   // 150px / 16
+    _getColWidthRaw(col) {
+        // col.default_width — объект {raw, value, unit, rem, px} из API
+        if (col.default_width && col.default_width.raw) {
+            return col.default_width.raw;
+        }
+        // Fallback — если строка без парсинга
+        if (typeof col.default_width === 'string') {
+            return col.default_width;
+        }
+        return '9.375rem';
     },
 
     /**
@@ -73,7 +82,7 @@ const TableRenderer = {
     _getVisibleColumns(schema, settings) {
         const visibleKeys = settings.visible || [];
         const orderKeys = settings.order || [];
-        const widths = settings.widths || {};
+        const widths = settings.widths || {};   // measure-строки: '16.5rem'
 
         const colMap = {};
         schema.columns.forEach(c => { colMap[c.key] = c; });
@@ -91,13 +100,14 @@ const TableRenderer = {
             visible: true,
             sortable: false,
             filterable: false,
-            width_rem: widths['row'] ? widths['row'] / 16 : 2.8125,  // 45px = 2.8125rem
+            default_width: this._toMeasure(widths['row']) || { raw: '2.8125rem' },
         });
 
         // Status
         if (visibleKeys.includes('status') && colMap['status']) {
             const col = { ...colMap['status'] };
-            if (widths['status']) col.width_rem = widths['status'] / 16;
+            const w = this._toMeasure(widths['status']);
+            if (w) col.default_width = w;
             result.push(col);
         }
 
@@ -108,12 +118,28 @@ const TableRenderer = {
             const col = colMap[key];
             if (col) {
                 const colCopy = { ...col };
-                if (widths[key]) colCopy.width_rem = widths[key] / 16;
+                const w = this._toMeasure(widths[key]);
+                if (w) colCopy.default_width = w;
                 result.push(colCopy);
             }
         }
 
         return result;
+    },
+
+    /**
+     * Привести значение из user_settings.widths к measure-структуре.
+     * Принимает строку ('16.5rem') или объект ({raw}).
+     */
+    _toMeasure(value) {
+        if (!value) return null;
+        if (typeof value === 'string') {
+            return { raw: value };
+        }
+        if (typeof value === 'object' && value.raw) {
+            return value;
+        }
+        return null;
     },
 
     /**

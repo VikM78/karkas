@@ -14,6 +14,9 @@ from .menu import MenuItem, MenuPermission, UserMenuSettings
 # Метаданные
 from .metadata import Table, TableColumn, ColumnType, ColumnValue, ValidationRule
 
+# Система
+from .system import AppSetting
+
 # Настройки пользователя
 from .user_settings import UserTableSetting
 
@@ -31,4 +34,5 @@ __all__ = [
     'ColumnValue',
     'ValidationRule',
     'UserTableSetting',
+    'AppSetting',
 ]

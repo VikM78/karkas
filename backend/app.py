@@ -60,6 +60,17 @@ def create_app():
     from backend.scripts.sync_metadata import register_commands as register_sync_metadata
     register_sync_metadata(app)
 
+    # ===== Контекст-процессор — глобальные настройки в шаблоны =====
+    @app.context_processor
+    def inject_settings():
+        try:
+            from backend.services.settings_service import get_base_font_size_px
+            return {
+                'base_font_size_px': get_base_font_size_px(),
+            }
+        except Exception:
+            return {'base_font_size_px': 16.0}
+
     # ===== Страницы =====
     @app.route('/login')
     def login_page():

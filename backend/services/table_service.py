@@ -13,6 +13,8 @@ from backend.models import db, Table, UserTableSetting
 from backend.services.crud_service import CrudService
 from backend.exceptions import NotFoundError
 from datetime import datetime
+from backend.services.measure import parse_measure, normalize_measure, is_normalized
+from backend.services.settings_service import get_base_font_size_px
 
 
 class TableService:
@@ -58,13 +60,12 @@ class TableService:
             ).first()
 
         # Дефолтные настройки (на основе метаданных)
+        base_font_px = get_base_font_size_px()
+
         default_settings = {
             'visible': [col.column_key for col in all_columns if col.is_visible],
             'widths': {
-                col.column_key: (
-                    float(col.default_width_px) if col.default_width_px
-                    else col.default_width
-                )
+                col.column_key: parse_measure(col.default_width, base_font_px)
                 for col in all_columns
             },
             'labels': {col.column_key: col.column_label for col in all_columns},
@@ -106,16 +107,27 @@ class TableService:
         if col.column_type:
             col_data['null_label'] = col.column_type.null_label
 
-        # px-размеры (v2)
-        col_data['default_width_px'] = (
-            float(col.default_width_px) if col.default_width_px else None
-        )
-        col_data['min_width_px'] = (
-            float(col.min_width_px) if col.min_width_px else None
-        )
-        col_data['max_width_px'] = (
-            float(col.max_width_px) if col.max_width_px else None
-        )
+        # Ленивая нормализация — если значение без единицы
+        changed = False
+        for field in ('default_width', 'min_width', 'max_width'):
+            value = getattr(col, field, None)
+            if value is not None and not is_normalized(value):
+                normalized = normalize_measure(value)
+                if normalized and normalized != value:
+                    setattr(col, field, normalized)
+                    changed = True
+
+        if changed:
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        # Парсинг measure → структура {raw, value, unit, rem, px}
+        base_font_px = get_base_font_size_px()
+        col_data['default_width'] = parse_measure(col.default_width, base_font_px)
+        col_data['min_width'] = parse_measure(col.min_width, base_font_px)
+        col_data['max_width'] = parse_measure(col.max_width, base_font_px)
 
         # Выравнивание (с fallback на тип)
         col_data['align_h'] = col.align_h or (
@@ -211,13 +223,11 @@ class TableService:
 
         # Дефолты из метаданных
         columns = table.columns.order_by('sort_order').all()
+        base_font_px = get_base_font_size_px()
         return {
             'visible': [col.column_key for col in columns if col.is_visible],
             'widths': {
-                col.column_key: (
-                    float(col.default_width_px) if col.default_width_px
-                    else col.default_width
-                )
+                col.column_key: parse_measure(col.default_width, base_font_px)
                 for col in columns
             },
             'labels': {col.column_key: col.column_label for col in columns},

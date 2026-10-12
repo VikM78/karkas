@@ -54,16 +54,15 @@ class TableColumn(BaseModel):
             'visible': self.is_visible,
             'sortable': self.is_sortable,
             'filterable': self.is_filterable,
-            'width': self.width or 'auto',
+            'default_width': self.default_width,
             'min_width': self.min_width,
             'max_width': self.max_width,
-            'default_width': self.default_width,
             'sort_order': self.sort_order,
             'fixed': self.is_fixed,
             'row_number': self.is_row_number,
             'editable': self.is_editable,
             'required': self.is_required,
-            'is_multiline': self.is_multiline,  # ← НОВОЕ
+            'is_multiline': self.is_multiline,
         }
         if include_values and self.column_type and self.column_type.type_key == 'status':
             data['values'] = [v.to_dict() for v in self.values.filter_by(is_active=True).all()]
