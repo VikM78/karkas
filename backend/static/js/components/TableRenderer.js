@@ -19,14 +19,14 @@ const TableRenderer = {
      * @param {Object} meta — пагинация (для номеров строк)
      */
     render(container, schema, data, settings, meta) {
-        // Сохранить текущую сортировку для рендера индикаторов
         this._currentSort = settings.sort || [];
-		this._currentFilters = settings.filters || {};
+        this._currentFilters = settings.filters || {};
 
         const columns = this._getVisibleColumns(schema, settings);
         const html = `
             <div class="my-table-wrap">
                 <table class="my-table" id="table-main">
+                    ${this._renderColgroup(columns)}
                     <thead>
                         ${this._renderHead(columns)}
                     </thead>
@@ -40,19 +40,47 @@ const TableRenderer = {
     },
 
     /**
+     * Рендер <colgroup> — ширины колонок + виртуальный столбец-заполнитель.
+     */
+    _renderColgroup(columns) {
+        const cols = columns.map(col => {
+            const width = this._getColWidthRem(col);
+            return `<col style="width: ${width}rem">`;
+        }).join('');
+
+        // Виртуальная колонка — растягивается на свободное место
+        const fillerCol = `<col class="my-col-filler">`;
+
+        return `<colgroup>${cols}${fillerCol}</colgroup>`;
+    },
+
+    /**
+     * Получить ширину колонки в rem.
+     */
+    _getColWidthRem(col) {
+        // Приоритет: width_rem → default_width_rem → default_width_px / 16 → default_width / 16
+        if (col.width_rem) return Number(col.width_rem);
+        if (col.default_width_rem) return Number(col.default_width_rem);
+        if (col.default_width_px) return Number(col.default_width_px) / 16;
+        if (col.default_width) return Number(col.default_width) / 16;
+        if (col.width_px) return Number(col.width_px) / 16;
+        return 9.375;   // 150px / 16
+    },
+
+    /**
      * Получить видимые столбцы в правильном порядке.
      */
     _getVisibleColumns(schema, settings) {
         const visibleKeys = settings.visible || [];
         const orderKeys = settings.order || [];
+        const widths = settings.widths || {};
 
-        // Карта столбцов по ключу
         const colMap = {};
         schema.columns.forEach(c => { colMap[c.key] = c; });
 
         const result = [];
 
-        // Виртуальный столбец "row" — всегда первый
+        // Виртуальный "row"
         result.push({
             key: 'row',
             label: '№',
@@ -63,21 +91,25 @@ const TableRenderer = {
             visible: true,
             sortable: false,
             filterable: false,
-            width: settings.widths?.row || 45,
+            width_rem: widths['row'] ? widths['row'] / 16 : 2.8125,  // 45px = 2.8125rem
         });
 
-        // Статус — всегда второй (если видим)
+        // Status
         if (visibleKeys.includes('status') && colMap['status']) {
-            result.push(colMap['status']);
+            const col = { ...colMap['status'] };
+            if (widths['status']) col.width_rem = widths['status'] / 16;
+            result.push(col);
         }
 
-        // Остальные — в порядке order, кроме row и status
+        // Остальные
         for (const key of orderKeys) {
             if (key === 'row' || key === 'status') continue;
             if (!visibleKeys.includes(key)) continue;
             const col = colMap[key];
             if (col) {
-                result.push(col);
+                const colCopy = { ...col };
+                if (widths[key]) colCopy.width_rem = widths[key] / 16;
+                result.push(colCopy);
             }
         }
 
@@ -91,6 +123,7 @@ const TableRenderer = {
         return `
             <tr>
                 ${columns.map(col => this._renderTh(col)).join('')}
+                <th class="my-col-filler-th"></th>
             </tr>
         `;
     },
@@ -186,8 +219,6 @@ const TableRenderer = {
         const statusFormatted = row.status_formatted;
         if (statusFormatted && statusFormatted.row_styles) {
             const rs = statusFormatted.row_styles;
-            // opacity убираем — применяется к содержимому td
-			//if (rs.opacity !== undefined) trStyles.opacity = rs.opacity;
             if (rs.fontStyle) trStyles.fontStyle = rs.fontStyle;
             if (rs.backgroundColor) trStyles.backgroundColor = rs.backgroundColor;
             if (rs.textDecoration) trStyles.textDecoration = rs.textDecoration;
@@ -204,7 +235,10 @@ const TableRenderer = {
 
         const tds = columns.map(col => this._renderTd(col, row, rowNumber)).join('');
 
-        return `<tr class="${trClasses.join(' ')}" ${styleAttr}>${tds}</tr>`;
+        // Виртуальная ячейка-заполнитель
+        const fillerTd = `<td class="my-col-filler-td"></td>`;
+
+        return `<tr class="${trClasses.join(' ')}" ${styleAttr}>${tds}${fillerTd}</tr>`;
     },
 
     /**

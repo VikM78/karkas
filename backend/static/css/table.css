@@ -41,8 +41,8 @@
 
 /* ===== БАЗОВАЯ ТАБЛИЦА ===== */
 .my-table {
-    width: auto;
-    min-width: 100%;
+    width: 100%;              
+    table-layout: fixed;      
     border-collapse: separate;
     border-spacing: var(--my-padding-null);
     margin: var(--my-padding-null);
@@ -73,8 +73,6 @@
     vertical-align: var(--my-valign-middle);
     border-right: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
     border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
-    /* Шапка не влияет на ширину колонки */
-    max-width: 0;
     overflow: hidden;
 }
 
@@ -461,3 +459,16 @@
     background: var(--my-resize-handle-color);
     opacity: var(--my-resize-handle-opacity);
 }
+
+/* ===== ВИРТУАЛЬНЫЙ СТОЛБЕЦ-ЗАПОЛНИТЕЛЬ ===== */
+.my-col-filler {
+    width: auto;
+}
+
+.my-table thead th.my-col-filler-th,
+.my-table tbody td.my-col-filler-td {
+    border-right: none;                  /* справа границы нет — это край */
+    background: transparent;
+}
+
+/* Наследуют hover и фон строки автоматически */
