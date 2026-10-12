@@ -11,10 +11,9 @@ class TableColumn(BaseModel):
     is_visible = db.Column(db.Boolean, default=True)
     is_sortable = db.Column(db.Boolean, default=True)
     is_filterable = db.Column(db.Boolean, default=True)
-    default_width = db.Column(db.Integer, default=150)
-    width = db.Column(db.String(20), default='auto')
-    min_width = db.Column(db.String(20))
-    max_width = db.Column(db.String(20))
+    default_width = db.Column(db.String, nullable=True, default='9.375rem')
+    min_width = db.Column(db.String, nullable=True)
+    max_width = db.Column(db.String, nullable=True)
     sort_order = db.Column(db.Integer, default=0)
     is_fixed = db.Column(db.Boolean, default=False)
     is_row_number = db.Column(db.Boolean, default=False)
@@ -23,9 +22,7 @@ class TableColumn(BaseModel):
     is_multiline = db.Column(db.Boolean, default=False)
 
     # v2
-    default_width_px = db.Column(db.Numeric(10, 2), nullable=True)
-    min_width_px = db.Column(db.Numeric(10, 2), nullable=True)
-    max_width_px = db.Column(db.Numeric(10, 2), nullable=True)
+
     align_h = db.Column(db.String(20), nullable=True)
     align_v = db.Column(db.String(20), nullable=True)
     max_lines = db.Column(db.Integer, nullable=True)
