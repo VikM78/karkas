@@ -21,6 +21,7 @@ const TableRenderer = {
     render(container, schema, data, settings, meta) {
         // Сохранить текущую сортировку для рендера индикаторов
         this._currentSort = settings.sort || [];
+		this._currentFilters = settings.filters || {};
 
         const columns = this._getVisibleColumns(schema, settings);
         const html = `
@@ -97,7 +98,7 @@ const TableRenderer = {
     /**
      * Рендер <th>.
      */
-    _renderTh(col) {
+        _renderTh(col) {
         const classes = [];
         if (col.is_virtual && col.key === 'row') classes.push('my-col-row-sticky');
         if (col.type === 'status') classes.push('my-col-status-th');
@@ -107,22 +108,41 @@ const TableRenderer = {
         const sortable = col.sortable === true && !col.is_virtual;
         const sortAttr = sortable ? `data-sortable="1" data-column="${col.key}"` : '';
 
-        // Статус — без заголовка
-        const labelHtml = col.type === 'status'
+        // Метка — только для не-status
+        const isStatus = col.type === 'status';
+        const labelHtml = isStatus
             ? ''
             : `<span class="my-col-label">${col.label}</span>`;
 
-        // Индикатор сортировки — если активна
-        const sortIndicator = this._renderSortIndicator(col.key);
+        // Иконка сортировки — только если активна
+        const sortIcon = this._renderSortIndicator(col.key);
+
+        // Иконка фильтра — только если фильтруемый
+        const filterIcon = col.filterable && !col.is_virtual
+            ? `<button class="my-col-btn my-filter-btn${this._isFiltered(col.key) ? ' active' : ''}" data-column="${col.key}" title="Фильтр"><i class="bi bi-funnel-fill"></i></button>`
+            : '';
+
+        // Для status — только иконки
+        const contentHtml = isStatus
+            ? `${sortIcon}${filterIcon}`
+            : `<span class="my-col-label">${col.label}</span>${sortIcon}${filterIcon}`;
 
         return `
             <th class="${classes.join(' ')} my-col-${col.type}" style="${style}" ${sortAttr}>
                 <div class="my-th-content">
-                    ${labelHtml}
-                    ${sortIndicator}
+                    ${contentHtml}
                 </div>
             </th>
         `;
+    },
+
+    /**
+     * Проверить, применён ли фильтр по столбцу.
+     */
+    _isFiltered(columnKey) {
+        if (!this._currentFilters) return false;
+        const values = this._currentFilters[columnKey];
+        return Array.isArray(values) && values.length > 0;
     },
 
     /**
@@ -134,7 +154,7 @@ const TableRenderer = {
         const active = this._currentSort.find(s => s.key === columnKey || s.column === columnKey);
         if (!active) return '';
 
-        const icon = active.direction === 'desc' ? 'bi-caret-down-fill' : 'bi-caret-up-fill';
+        const icon = active.direction === 'desc' ? 'bi-arrow-down' : 'bi-arrow-up';
         return `<i class="bi ${icon} my-sort-indicator"></i>`;
     },
 	

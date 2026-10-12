@@ -122,7 +122,11 @@ class Table {
         const ths = this.container.querySelectorAll('[data-sortable="1"]');
         ths.forEach(th => {
             th.style.cursor = 'pointer';
-            th.addEventListener('click', () => {
+            th.addEventListener('click', (e) => {
+                // Клик по кнопке фильтра не должен активировать сортировку
+                if (e.target.closest('.my-filter-btn')) {
+                    return;
+                }
                 const column = th.dataset.column;
                 if (column) {
                     this.toggleSort(column);

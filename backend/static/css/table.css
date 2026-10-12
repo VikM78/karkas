@@ -71,6 +71,9 @@
     vertical-align: var(--my-valign-middle);
     border-right: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
     border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
+    /* Шапка не влияет на ширину колонки */
+    max-width: 0;
+    overflow: hidden;
 }
 
 .my-table thead th:last-child {
@@ -123,6 +126,7 @@
     vertical-align: var(--my-cell-align-v, inherit);
     overflow: hidden;
     text-overflow: ellipsis;
+	white-space: nowrap;
     color: var(--my-cell-color, inherit);
     background: var(--my-cell-bg, inherit);
     font-style: var(--my-cell-font-style, inherit);
@@ -160,7 +164,7 @@
     opacity: var(--my-opacity-100);
 }
 
-.my-table tbody td.my-col-row-sticky::after {
+/* .my-table tbody td.my-col-row-sticky::after {
     content: '';
     position: absolute;
     top: var(--my-padding-null);
@@ -169,7 +173,7 @@
     width: var(--my-table-border-width);
     background: var(--my-table-border-color);
     pointer-events: none;
-}
+} */
 
 /* ===== КОЛОНКА СТАТУСА ===== */
 .my-table thead th.my-col-status-th {
@@ -215,10 +219,13 @@
     display: flex;
     align-items: var(--my-valign-middle);
     gap: var(--my-icon-gap);
+    min-width: 0;
+    justify-content: space-between;
 }
 
 .my-col-label {
     flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -231,11 +238,11 @@
     padding: var(--my-padding-null);
     background: transparent;
     border: none;
-    color: var(--my-text-muted);
+    color: var(--my-color-gray-400);          /* серый по умолчанию */
     cursor: pointer;
     font-size: var(--my-font-size-xs);
     line-height: 1;
-    opacity: var(--my-opacity-50);
+    opacity: var(--my-opacity-70);
     border-radius: var(--my-radius-sm);
     transition: opacity var(--my-duration-fast) var(--my-ease-out),
                 color var(--my-duration-fast) var(--my-ease-out),
@@ -249,9 +256,15 @@
     background: var(--my-bg-active);
 }
 
+/* Фильтр применён — синий */
 .my-col-btn.active {
     opacity: var(--my-opacity-100);
-    color: var(--my-color-primary);
+    color: var(--my-color-primary);           /* синий */
+}
+
+/* В столбце статуса — только иконки, без label */
+.my-col-status-th .my-th-content {
+    justify-content: flex-end;
 }
 
 .my-sort-indicator {
