@@ -476,17 +476,179 @@
 
 /* ===== ВЫПАДАШКА ФИЛЬТРА ===== */
 .my-filter-dropdown {
-    min-width: var(--my-filter-min-width);
-    max-width: var(--my-filter-max-width);
-    min-height: 200px;
-    max-height: var(--my-filter-max-height);
+    width: 280px;
+    min-width: 220px;
+    max-width: 500px;
+    max-height: min(70vh, 500px);
     background: var(--my-bg-filter);
-    border: var(--my-filter-border);
-    border-radius: var(--my-filter-radius);
-    box-shadow: var(--my-filter-shadow);
+    border: var(--my-table-border-width) var(--my-border-style) var(--my-border-default);
+    border-radius: var(--my-radius-sm);
+    box-shadow: var(--my-shadow-dropdown);
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    resize: both;
+    font-size: var(--my-font-size-sm);
+}
+
+.my-filter-sort {
+    display: flex;
+    flex-direction: column;
+    padding: var(--my-padding-xs) 0;
+    flex-shrink: 0;
+}
+
+.my-filter-sort-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--my-gap-xs);
+    padding: var(--my-space-1) var(--my-space-3);
+    background: transparent;
+    border: none;
+    color: var(--my-text-primary);
+    font-size: var(--my-font-size-sm);
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-filter-sort-btn:hover {
+    background: var(--my-bg-hover);
+}
+
+.my-filter-sort-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.my-filter-sort-reset {
+    color: var(--my-text-muted);
+}
+
+.my-filter-sort-active {
+    color: var(--my-color-primary);
+    margin-left: auto;
+}
+
+.my-filter-divider {
+    height: var(--my-table-border-width);
+    background: var(--my-border-light);
+    margin: var(--my-space-1) 0;
+    flex-shrink: 0;
+}
+
+.my-filter-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.my-filter-clear-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--my-gap-xs);
+    padding: var(--my-space-1) var(--my-space-3);
+    background: transparent;
+    border: none;
+    color: var(--my-text-muted);
+    font-size: var(--my-font-size-sm);
+    text-align: left;
+    cursor: pointer;
+    border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-border-light);
+    flex-shrink: 0;
+}
+
+.my-filter-clear-filter:hover {
+    background: var(--my-bg-hover);
+    color: var(--my-text-primary);
+}
+
+.my-filter-search {
+    padding: var(--my-padding-xs) var(--my-padding-sm);
+    border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-border-light);
+    flex-shrink: 0;
+}
+
+.my-filter-search-input {
+    width: 100%;
+    height: var(--my-filter-search-height);
+    padding: var(--my-space-1) var(--my-space-2);
+    font-size: var(--my-font-size-sm);
+    border: var(--my-table-border-width) var(--my-border-style) var(--my-border-input);
+    border-radius: var(--my-radius-sm);
+    background: var(--my-bg-input);
+}
+
+.my-filter-search-input:focus {
+    outline: none;
+    border-color: var(--my-border-focus);
+}
+
+.my-filter-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: var(--my-padding-xs) 0;
+}
+
+.my-filter-item {
+    display: flex;
+    align-items: center;
+    gap: var(--my-gap-xs);
+    padding: var(--my-space-1) var(--my-space-3);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.my-filter-item:hover {
+    background: var(--my-filter-item-hover-bg);
+}
+
+.my-filter-item-all {
+    border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-border-light);
+    padding-bottom: var(--my-space-1);
+    margin-bottom: var(--my-space-1);
+}
+
+.my-filter-check,
+.my-filter-check-all {
+    width: var(--my-form-check-size);
+    height: var(--my-form-check-size);
+    margin: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.my-filter-item-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-filter-footer {
+    display: flex;
+    gap: var(--my-gap-sm);
+    padding: var(--my-padding-sm);
+    border-top: var(--my-table-border-width) var(--my-border-style) var(--my-border-light);
+    background: var(--my-bg-secondary);
+    flex-shrink: 0;
+}
+
+.my-filter-loading {
+    padding: var(--my-padding-lg);
+    text-align: center;
+}
+
+.my-filter-error {
+    padding: var(--my-padding-md);
+    color: var(--my-text-danger);
+    font-size: var(--my-font-size-sm);
 }
 
 .my-filter-body {

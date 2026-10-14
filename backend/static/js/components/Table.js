@@ -121,16 +121,16 @@ class Table {
     _bindFilterHandlers() {
         if (typeof TableFilters === 'undefined') return;
 
-        // Если ещё не инициализированы — инициализируем
-        if (!TableFilters._ctx) {
-            TableFilters.init({
-                tableKey: this.tableKey,
-                onApply: (columnKey, values) => this.setFilter(columnKey, values),
-                getFilters: () => this.params.filters,
-            });
-        }
+        // Пересоздаём контекст — tableKey может быть разным
+        TableFilters.init({
+            tableKey: this.tableKey,
+            onApplyFilter: (columnKey, values) => this.setFilter(columnKey, values),
+            onApplySort: (columnKey, direction) => this.setSort(columnKey, direction),
+            onResetSort: (columnKey) => this.resetSort(columnKey),
+            getFilters: () => this.params.filters,
+            getSort: () => this.params.sort,
+        });
 
-        // Перепривязать кнопки
         TableFilters.rebind();
     }
 
@@ -201,6 +201,36 @@ class Table {
             this.render();
         } catch (error) {
             console.error('[Table] Ошибка сортировки:', error);
+        }
+    }
+	
+    /**
+     * Установить сортировку по столбцу.
+     */
+    async setSort(columnKey, direction) {
+        this.params.sort = [{ key: columnKey, direction: direction || 'asc' }];
+        this.params.page = 1;
+        this._showLoader();
+        try {
+            await this.loadData();
+            this.render();
+        } catch (error) {
+            console.error('[Table] Ошибка сортировки:', error);
+        }
+    }
+
+    /**
+     * Сбросить сортировку по столбцу.
+     */
+    async resetSort(columnKey) {
+        this.params.sort = this.params.sort.filter(s => s.key !== columnKey);
+        this.params.page = 1;
+        this._showLoader();
+        try {
+            await this.loadData();
+            this.render();
+        } catch (error) {
+            console.error('[Table] Ошибка сброса сортировки:', error);
         }
     }
 

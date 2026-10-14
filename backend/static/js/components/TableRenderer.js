@@ -126,6 +126,15 @@ const TableRenderer = {
 
         return result;
     },
+	
+    /**
+     * Проверить, применён ли фильтр по столбцу.
+     */
+    _isFiltered(columnKey) {
+        if (!this._currentFilters) return false;
+        const values = this._currentFilters[columnKey];
+        return Array.isArray(values) && values.length > 0;
+    },
 
     /**
      * Привести значение из user_settings.widths к measure-структуре.
