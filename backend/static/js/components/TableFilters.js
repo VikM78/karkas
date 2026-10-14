@@ -110,7 +110,10 @@ const TableFilters = {
         const current = filters[columnKey] || [];
         const allValues = [];
         if (data.has_empty) allValues.push('__null__');
-        (data.values || []).forEach(v => allValues.push(v));
+        (data.values || []).forEach(v => {
+            const valueKey = typeof v === 'object' ? v.value : v;
+            allValues.push(valueKey);
+        });
 
         const selected = current.length > 0 ? current : allValues;
 
@@ -143,16 +146,21 @@ const TableFilters = {
         }
 
         values.forEach(v => {
-            const checked = selected.includes(v) ? 'checked' : '';
-            const meta = labels[v] || {};
-            const label = meta.label || v;
+            // v — объект {value, label} или строка (для обратной совместимости)
+            const valueKey = typeof v === 'object' ? v.value : v;
+            const valueLabel = typeof v === 'object' ? (v.label || v.value) : v;
+
+            const checked = selected.includes(valueKey) ? 'checked' : '';
+            const meta = labels[valueKey] || {};
+            // Если есть meta.label — используем его (для status), иначе — label значения
+            const label = meta.label || valueLabel;
             const icon = meta.icon
                 ? `<i class="bi ${meta.icon}" style="color: ${meta.color || 'inherit'}; margin-right: 6px;"></i>`
                 : '';
 
             items.push(`
-                <label class="my-filter-item" data-search="${this._escape(String(label).toLowerCase())}" data-value="${this._escapeAttr(v)}">
-                    <input type="checkbox" class="my-filter-check" value="${this._escapeAttr(v)}" ${checked}>
+                <label class="my-filter-item" data-search="${this._escape(String(label).toLowerCase())}" data-value="${this._escapeAttr(valueKey)}">
+                    <input type="checkbox" class="my-filter-check" value="${this._escapeAttr(valueKey)}" ${checked}>
                     ${icon}
                     <span class="my-filter-item-label">${this._escape(label)}</span>
                 </label>

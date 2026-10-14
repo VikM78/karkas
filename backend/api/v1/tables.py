@@ -218,20 +218,42 @@ def get_distinct_values(table_key, column):
     # Разделяем NULL и не-NULL
     has_empty = any(v is None for v in values)
 
-    # Сериализуем значения (datetime/date → ISO)
-    from datetime import datetime, date
+    # Определяем тип столбца для форматирования
+    from datetime import datetime, date, time as time_type
 
-    def serialize_value(v):
+    def format_value(v):
+        """Вернуть {value: техническое, label: человеческое}."""
         if isinstance(v, datetime):
-            return v.isoformat()
+            return {
+                'value': v.isoformat(),
+                'label': v.strftime('%d.%m.%Y %H:%M'),
+            }
         if isinstance(v, date):
-            return v.isoformat()
-        return v
+            return {
+                'value': v.isoformat(),
+                'label': v.strftime('%d.%m.%Y'),
+            }
+        if isinstance(v, time_type):
+            return {
+                'value': v.isoformat(),
+                'label': v.strftime('%H:%M:%S'),
+            }
+        if isinstance(v, bool):
+            return {
+                'value': 'true' if v else 'false',
+                'label': 'Да' if v else 'Нет',
+            }
 
-    non_null_values = sorted(
-        [serialize_value(v) for v in values if v is not None],
-        key=lambda x: str(x)
-    )
+        # Строки, числа — как есть
+        return {
+            'value': v,
+            'label': str(v),
+        }
+
+    non_null_items = [format_value(v) for v in values if v is not None]
+
+    # Сортируем по value
+    non_null_items.sort(key=lambda x: str(x['value']))
 
     # Метка для NULL — из типа столбца
     null_label = None
@@ -252,11 +274,11 @@ def get_distinct_values(table_key, column):
                 }
 
     return jsonify({
-        'values': non_null_values,
+        'values': non_null_items,   # теперь массив объектов {value, label}
         'has_empty': has_empty,
         'null_label': null_label,
         'labels': labels_map,
-        'total': len(non_null_values) + (1 if has_empty else 0),
+        'total': len(non_null_items) + (1 if has_empty else 0),
     })
 
 
