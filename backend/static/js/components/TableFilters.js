@@ -185,9 +185,13 @@ const TableFilters = {
                     <input type="text" class="my-filter-search-input" placeholder="Поиск...">
                 </div>
                 <div class="my-filter-list">
-                    <label class="my-filter-item my-filter-item-all">
+                    <label class="my-filter-item my-filter-item-all my-filter-check-all-wrapper">
                         <input type="checkbox" class="my-filter-check-all" checked>
-                        <span class="my-filter-item-label"><b class="my-filter-select-all-label">(Выбрать все)</b></span>
+                        <span class="my-filter-item-label"><b>(Выбрать все)</b></span>
+                    </label>
+                    <label class="my-filter-item my-filter-item-search-all" style="display: none;">
+                        <input type="checkbox" class="my-filter-check-search-all" checked>
+                        <span class="my-filter-item-label"><b>(Выделить все результаты поиска)</b></span>
                     </label>
                     ${items.join('')}
                 </div>
@@ -203,23 +207,33 @@ const TableFilters = {
 
     _bindDropdownHandlers(dropdown, columnKey, data, allValues) {
         const checkAll = dropdown.querySelector('.my-filter-check-all');
+        const checkAllWrapper = dropdown.querySelector('.my-filter-check-all-wrapper');
+        const checkSearchAll = dropdown.querySelector('.my-filter-check-search-all');
+        const checkSearchAllWrapper = dropdown.querySelector('.my-filter-item-search-all');
         const searchInput = dropdown.querySelector('.my-filter-search-input');
-        const selectAllLabel = dropdown.querySelector('.my-filter-select-all-label');
 
-        // Управление «Выбрать все» / «Выделить результаты поиска»
+        // (Выбрать все) — отметить/снять все
         if (checkAll) {
             checkAll.addEventListener('change', () => {
-                const searchQuery = (searchInput?.value || '').trim().toLowerCase();
+                dropdown.querySelectorAll('.my-filter-check').forEach(cb => {
+                    cb.checked = checkAll.checked;
+                });
+                this._updateCheckAll(dropdown);
+            });
+        }
 
-                if (searchQuery) {
-                    // Режим «Выделить результаты поиска»
-                    this._toggleSearchResults(dropdown, checkAll.checked, searchQuery);
-                } else {
-                    // Режим «Выбрать все»
-                    dropdown.querySelectorAll('.my-filter-check').forEach(cb => {
-                        cb.checked = checkAll.checked;
-                    });
-                }
+        // (Выделить все результаты поиска) — отметить/снять видимые
+        if (checkSearchAll) {
+            checkSearchAll.addEventListener('change', () => {
+                const q = (searchInput?.value || '').trim().toLowerCase();
+                dropdown.querySelectorAll('.my-filter-item[data-search]').forEach(item => {
+                    if (item.style.display === 'none') return;
+                    const s = item.dataset.search || '';
+                    if (!q || s.includes(q)) {
+                        const cb = item.querySelector('.my-filter-check');
+                        if (cb) cb.checked = checkSearchAll.checked;
+                    }
+                });
                 this._updateCheckAll(dropdown);
             });
         }
@@ -238,19 +252,40 @@ const TableFilters = {
 
                 dropdown.querySelectorAll('.my-filter-item[data-search]').forEach(item => {
                     const s = item.dataset.search || '';
-                    item.style.display = !q || s.includes(q) ? '' : 'none';
+                    const visible = !q || s.includes(q);
+                    item.style.display = visible ? '' : 'none';
                 });
 
-                // Меняем подпись и состояние чекбокса
-                if (selectAllLabel) {
-                    selectAllLabel.textContent = q ? '(Выделить результаты поиска)' : '(Выбрать все)';
-                }
+                if (q) {
+                    // Режим поиска — «Выбрать все» скрыт, «Выделить результаты» показан
+                    if (checkAllWrapper) checkAllWrapper.style.display = 'none';
+                    if (checkSearchAllWrapper) checkSearchAllWrapper.style.display = '';
 
-                // Если поиск не пустой — отмечаем все найденные (по умолчанию)
-                if (q && checkAll) {
-                    this._toggleSearchResults(dropdown, true, q);
-                    checkAll.checked = true;
-                    checkAll.indeterminate = false;
+                    // Сбросить все галки
+                    dropdown.querySelectorAll('.my-filter-check').forEach(cb => {
+                        cb.checked = false;
+                    });
+
+                    // Отметить только видимые
+                    dropdown.querySelectorAll('.my-filter-item[data-search]').forEach(item => {
+                        if (item.style.display !== 'none') {
+                            const cb = item.querySelector('.my-filter-check');
+                            if (cb) cb.checked = true;
+                        }
+                    });
+
+                    if (checkSearchAll) checkSearchAll.checked = true;
+                } else {
+                    // Поиск очищен — вернуть «Выбрать все»
+                    if (checkAllWrapper) checkAllWrapper.style.display = '';
+                    if (checkSearchAllWrapper) checkSearchAllWrapper.style.display = 'none';
+
+                    // Отметить все
+                    dropdown.querySelectorAll('.my-filter-check').forEach(cb => {
+                        cb.checked = true;
+                    });
+
+                    if (checkAll) checkAll.checked = true;
                 }
 
                 this._updateCheckAll(dropdown);
@@ -318,27 +353,31 @@ const TableFilters = {
         });
     },
 
-    _updateCheckAll(dropdown) {
+        _updateCheckAll(dropdown) {
         const checkAll = dropdown.querySelector('.my-filter-check-all');
-        if (!checkAll) return;
-
+        const checkSearchAll = dropdown.querySelector('.my-filter-check-search-all');
         const searchInput = dropdown.querySelector('.my-filter-search-input');
         const q = (searchInput?.value || '').trim().toLowerCase();
 
         if (q) {
-            // Режим поиска — считаем только видимые
-            const visible = Array.from(dropdown.querySelectorAll('.my-filter-item[data-search]'))
-                .filter(item => item.style.display !== 'none');
-            const total = visible.length;
-            const checked = visible.filter(item => item.querySelector('.my-filter-check')?.checked).length;
+            // Режим поиска — обновляем «Выделить все результаты»
+            if (checkSearchAll) {
+                const visible = Array.from(dropdown.querySelectorAll('.my-filter-item[data-search]'))
+                    .filter(item => item.style.display !== 'none');
+                const total = visible.length;
+                const checked = visible.filter(item => item.querySelector('.my-filter-check')?.checked).length;
 
-            checkAll.checked = total > 0 && checked === total;
-            checkAll.indeterminate = checked > 0 && checked < total;
+                checkSearchAll.checked = total > 0 && checked === total;
+                checkSearchAll.indeterminate = checked > 0 && checked < total;
+            }
         } else {
-            const all = dropdown.querySelectorAll('.my-filter-check');
-            const checked = Array.from(all).filter(cb => cb.checked);
-            checkAll.checked = checked.length === all.length && all.length > 0;
-            checkAll.indeterminate = checked.length > 0 && checked.length < all.length;
+            // Обычный режим — «Выбрать все»
+            if (checkAll) {
+                const all = dropdown.querySelectorAll('.my-filter-check');
+                const checked = Array.from(all).filter(cb => cb.checked);
+                checkAll.checked = checked.length === all.length && all.length > 0;
+                checkAll.indeterminate = checked.length > 0 && checked.length < all.length;
+            }
         }
     },
 
@@ -351,12 +390,16 @@ const TableFilters = {
     },
 
     _apply(columnKey, selected, totalCount) {
+        console.log('[Filter] apply', { columnKey, selected, totalCount });
         let values = selected;
         if (values.length >= totalCount) {
-            values = []; // все выбраны — фильтр не нужен
+            values = [];
         }
-        if (this._ctx.onApplyFilter) {
+        console.log('[Filter] values after check', values);
+        if (this._ctx && this._ctx.onApplyFilter) {
             this._ctx.onApplyFilter(columnKey, values);
+        } else {
+            console.warn('[Filter] onApplyFilter не задан', this._ctx);
         }
     },
 
