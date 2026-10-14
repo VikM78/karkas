@@ -94,8 +94,8 @@ class Table {
     }
 
     render() {
-        // Текущая сортировка для рендера индикаторов
         this.settings.sort = this.params.sort;
+        this.settings.filters = this.params.filters;
 
         TableRenderer.render(
             this.container,
@@ -105,14 +105,54 @@ class Table {
             this.meta
         );
 
-        // Обработчики сортировки
         this._bindSortHandlers();
+        this._bindFilterHandlers();
 
         if (this.paginationEl) {
             this._renderPagination();
         }
 
         this._updatePageTitle();
+    }
+
+    /**
+     * Привязать обработчики фильтров.
+     */
+    _bindFilterHandlers() {
+        if (typeof TableFilters === 'undefined') return;
+
+        // Если ещё не инициализированы — инициализируем
+        if (!TableFilters._ctx) {
+            TableFilters.init({
+                tableKey: this.tableKey,
+                onApply: (columnKey, values) => this.setFilter(columnKey, values),
+                getFilters: () => this.params.filters,
+            });
+        }
+
+        // Перепривязать кнопки
+        TableFilters.rebind();
+    }
+
+    /**
+     * Установить фильтр по столбцу.
+     */
+    async setFilter(columnKey, values) {
+        if (values && values.length > 0) {
+            this.params.filters[columnKey] = values;
+        } else {
+            delete this.params.filters[columnKey];
+        }
+
+        this.params.page = 1;
+
+        this._showLoader();
+        try {
+            await this.loadData();
+            this.render();
+        } catch (error) {
+            console.error('[Table] Ошибка фильтра:', error);
+        }
     }
 
     /**
