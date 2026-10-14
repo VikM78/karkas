@@ -217,7 +217,21 @@ def get_distinct_values(table_key, column):
 
     # Разделяем NULL и не-NULL
     has_empty = any(v is None for v in values)
-    non_null_values = sorted([v for v in values if v is not None], key=lambda x: str(x))
+
+    # Сериализуем значения (datetime/date → ISO)
+    from datetime import datetime, date
+
+    def serialize_value(v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        if isinstance(v, date):
+            return v.isoformat()
+        return v
+
+    non_null_values = sorted(
+        [serialize_value(v) for v in values if v is not None],
+        key=lambda x: str(x)
+    )
 
     # Метка для NULL — из типа столбца
     null_label = None
