@@ -156,7 +156,79 @@ class Table {
                 e.preventDefault();
                 e.stopPropagation();
             });
+			
+            handle.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this._autoFitColumn(handle.dataset.column);
+            });			
         });
+    }
+
+    /**
+     * Автоподгонка ширины колонки под содержимое.
+     * Двойной клик по col-resize handle.
+     */
+    async _autoFitColumn(colKey) {
+        if (!colKey) return;
+
+        const colMeta = this._getColumnMeta(colKey);
+        const minPx = this._measureToPx(colMeta?.min_width, 40);
+        const maxPx = this._measureToPx(colMeta?.max_width, 2000);
+
+        const table = this.container.querySelector('table');
+        if (!table) return;
+
+        // Найти индекс колонки в <colgroup>
+        const th = this.container.querySelector(`th[data-col-key="${colKey}"]`);
+        if (!th) return;
+        const colIndex = parseInt(th.dataset.colIndex, 10);
+        if (isNaN(colIndex)) return;
+
+        // Создать временный <col> для измерения
+        const measureDiv = document.createElement('div');
+        measureDiv.style.position = 'absolute';
+        measureDiv.style.visibility = 'hidden';
+        measureDiv.style.whiteSpace = 'nowrap';
+        measureDiv.style.font = getComputedStyle(th).font;
+        measureDiv.style.padding = '0 20px';
+        document.body.appendChild(measureDiv);
+
+        let maxWidth = minPx;
+
+        // Замерить содержимое <td> колонки
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const cell = cells[colIndex];
+            if (!cell) return;
+
+            const text = cell.textContent.trim();
+            measureDiv.textContent = text;
+            const w = measureDiv.offsetWidth;
+            if (w > maxWidth) maxWidth = w;
+        });
+
+        // Заголовок
+        measureDiv.textContent = th.textContent.trim();
+        const thW = measureDiv.offsetWidth;
+        if (thW > maxWidth) maxWidth = thW;
+
+        document.body.removeChild(measureDiv);
+
+        if (maxWidth < minPx) maxWidth = minPx;
+        if (maxWidth > maxPx) maxWidth = maxPx;
+
+        // Применить
+        const colgroup = this.container.querySelector('colgroup');
+        const cols = colgroup.querySelectorAll('col');
+        const colEl = cols[colIndex];
+        if (colEl) {
+            colEl.style.width = maxWidth + 'px';
+        }
+
+        // Сохранить
+        await this._onColumnResize(colKey, maxWidth);
     }
 
     /**
@@ -313,9 +385,84 @@ class Table {
                 e.preventDefault();
                 e.stopPropagation();
             });
+
+            // Двойной клик — раскрыть по высоте
+            handle.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this._expandRowByHeight(handle);
+            });
         });
     }
 
+    /**
+     * Двойной клик по row-resize — раскрыть строку по высоте.
+     * Для всех multiline-ячеек в строке снимаем line-clamp и растягиваем tr.
+     */
+    async _expandRowByHeight(handle) {
+        const rowId = handle.dataset.rowId;
+        if (!rowId) return;
+
+        const tr = handle.closest('tr');
+        if (!tr) return;
+
+        const cells = tr.querySelectorAll('.my-col-multiline');
+        if (!cells.length) return;
+
+        // Проверяем: уже раскрыто?
+        const isExpanded = cells[0].dataset.expanded === 'true';
+
+        if (isExpanded) {
+            // Сворачиваем — возвращаем line-clamp
+            cells.forEach(cell => {
+                cell.dataset.expanded = 'false';
+                cell.style.webkitLineClamp = '';
+                cell.style.lineClamp = '';
+                cell.style.maxHeight = '';
+            });
+
+            // Сброс inline height/minHeight
+            tr.style.height = '';
+            tr.style.minHeight = '';
+
+            // Удалить запись из row_heights
+            if (this.settings.row_heights && this.settings.row_heights[rowId]) {
+                delete this.settings.row_heights[rowId];
+                await this._saveSettings();
+            }
+        } else {
+            // Раскрываем — снимаем clamp
+            cells.forEach(cell => {
+                cell.dataset.expanded = 'true';
+                cell.style.webkitLineClamp = 'unset';
+                cell.style.lineClamp = 'unset';
+                cell.style.maxHeight = 'none';
+            });
+
+            // Ждём перерисовки
+            await new Promise(r => requestAnimationFrame(r));
+            await new Promise(r => requestAnimationFrame(r));
+
+            // Замеряем высоту
+            const newHeight = tr.getBoundingClientRect().height;
+
+            // ФИКСИРУЕМ высоту — чтобы при ресайзе столбца не прыгала
+            tr.style.height = newHeight + 'px';
+            tr.style.minHeight = newHeight + 'px';
+
+            const baseFontPx = this._getBaseFontPx();
+            const heightRem = Math.round((newHeight / baseFontPx) * 1000) / 1000;
+            const measureStr = heightRem + 'rem';
+
+            if (!this.settings.row_heights) this.settings.row_heights = {};
+            this.settings.row_heights[rowId] = measureStr;
+            await this._saveSettings();
+        }
+    }
+
+    /**
+     * Начать ресайз строки.
+     */
     /**
      * Начать ресайз строки.
      */
@@ -327,41 +474,92 @@ class Table {
         if (!tr) return;
 
         const startY = e.clientY;
+        const startX = e.clientX;
         const startHeight = tr.getBoundingClientRect().height;
 
-        // Минимум/максимум из CSS
         const minPx = this._getCssRemPx('--my-table-row-min-height', 28);
         const maxPx = this._getCssRemPx('--my-table-row-max-height', 400);
 
-        document.body.classList.add('row-resizing');
-        handle.classList.add('dragging');
+        let isDragging = false;
 
         const onMove = (moveEvent) => {
             const dy = moveEvent.clientY - startY;
+            const dx = moveEvent.clientX - startX;
+
+            // Порог движения — 3px
+            if (!isDragging) {
+                if (Math.abs(dy) < 3 && Math.abs(dx) < 3) return;
+
+                isDragging = true;
+                document.body.classList.add('row-resizing');
+                handle.classList.add('dragging');
+
+                // Сброс expanded — только при начале drag
+                tr.querySelectorAll('.my-col-multiline[data-expanded="true"]').forEach(cell => {
+                    cell.dataset.expanded = 'false';
+                    cell.style.webkitLineClamp = '';
+                    cell.style.lineClamp = '';
+                    cell.style.maxHeight = '';
+                });
+            }
+
             let newHeight = startHeight + dy;
 
             if (newHeight < minPx) newHeight = minPx;
             if (newHeight > maxPx) newHeight = maxPx;
 
-            // Применяем к tr
             tr.style.height = newHeight + 'px';
+            this._updateMultilineClamp(tr, newHeight);
         };
 
         const onUp = (upEvent) => {
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
-            document.body.classList.remove('row-resizing');
-            handle.classList.remove('dragging');
 
-            upEvent.stopPropagation();
-            upEvent.preventDefault();
+            if (isDragging) {
+                document.body.classList.remove('row-resizing');
+                handle.classList.remove('dragging');
 
-            const finalHeight = tr.getBoundingClientRect().height;
-            this._onRowResize(rowId, finalHeight);
+                upEvent.stopPropagation();
+                upEvent.preventDefault();
+
+                const finalHeight = tr.getBoundingClientRect().height;
+                this._onRowResize(rowId, finalHeight);
+            }
         };
 
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
+    }
+
+    /**
+     * Обновить -webkit-line-clamp для multiline-ячеек внутри <tr>.
+     * Обрезка по высоте строки.
+     */
+    _updateMultilineClamp(tr, rowHeightPx) {
+        const cells = tr.querySelectorAll('.my-col-multiline');
+
+        // padding из CSS
+        const td = tr.querySelector('td');
+        const cs = getComputedStyle(td);
+        const padTop = parseFloat(cs.paddingTop) || 0;
+        const padBottom = parseFloat(cs.paddingBottom) || 0;
+
+        // line-height (в px)
+        const span = cells[0];
+        if (!span) return;
+        const spanCs = getComputedStyle(span);
+        const lineHeightPx = parseFloat(spanCs.lineHeight) || 21;
+
+        const available = rowHeightPx - padTop - padBottom;
+        const maxLines = Math.max(1, Math.floor(available / lineHeightPx));
+
+        cells.forEach(cell => {
+            if (cell.dataset.expanded === 'true') return;   // раскрытые не трогаем
+            cell.style.webkitLineClamp = maxLines;
+            cell.style.lineClamp = maxLines;
+            cell.style.maxHeight = (maxLines * lineHeightPx) + 'px';
+        });
     }
 
     /**
