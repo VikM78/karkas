@@ -482,20 +482,39 @@ body.col-resizing * {
 }
 
 /* ===== РЕСАЙЗ СТРОК ===== */
+/* ===== RESIZE HANDLE СТРОКИ ===== */
 .my-row-resize-handle {
     position: absolute;
-    bottom: calc(-1 * var(--my-resize-handle-width) / 2);
-    left: var(--my-padding-null);
-    right: var(--my-padding-null);
-    height: var(--my-resize-handle-width);
+    bottom: -3px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 6px;
     cursor: row-resize;
+    z-index: calc(var(--my-table-sticky-z-index) + 5);
     background: transparent;
-    z-index: var(--my-z-base);
+    user-select: none;
 }
 
 .my-row-resize-handle:hover {
-    background: var(--my-resize-handle-color);
-    opacity: var(--my-resize-handle-opacity);
+    background: var(--my-color-primary);
+    opacity: 0.4;
+}
+
+.my-row-resize-handle.dragging {
+    background: var(--my-color-primary);
+    opacity: 0.7;
+}
+
+/* Во время row-drag */
+body.row-resizing {
+    cursor: row-resize !important;
+    user-select: none !important;
+}
+
+body.row-resizing * {
+    cursor: row-resize !important;
+    user-select: none !important;
 }
 
 /* ===== ВИРТУАЛЬНЫЙ СТОЛБЕЦ-ЗАПОЛНИТЕЛЬ ===== */

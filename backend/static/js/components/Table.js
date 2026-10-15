@@ -43,6 +43,7 @@ class Table {
                     ? userSettings.order
                     : defaults.order,
                 widths: Object.assign({}, defaults.widths, userSettings.widths || {}),
+                row_heights: userSettings.row_heights || {},
                 labels: Object.assign({}, defaults.labels, userSettings.labels || {}),
                 sort: userSettings.sort || defaults.sort || [],
                 filters: userSettings.filters || {},
@@ -108,6 +109,7 @@ class Table {
         this._bindSortHandlers();
         this._bindFilterHandlers();
         this._bindResizeHandlers();
+		this._bindRowResizeHandlers();
 
         if (this.paginationEl) {
             this._renderPagination();
@@ -280,6 +282,7 @@ class Table {
                 visible: this.settings.visible || [],
                 order: this.settings.order || [],
                 widths: this.settings.widths || {},
+                row_heights: this.settings.row_heights || {},
                 labels: this.settings.labels || {},
                 sort: this.params.sort,
                 filters: this.params.filters,
@@ -290,6 +293,96 @@ class Table {
         } catch (e) {
             console.error('[Table] Ошибка сохранения настроек:', e);
         }
+    }	
+	
+    /**
+     * Привязать обработчики ресайза строк.
+     */
+    _bindRowResizeHandlers() {
+        const handles = this.container.querySelectorAll('.my-row-resize-handle');
+        if (!handles.length) return;
+
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this._startRowResize(e, handle);
+            });
+
+            handle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+    }
+
+    /**
+     * Начать ресайз строки.
+     */
+    _startRowResize(e, handle) {
+        const rowId = handle.dataset.rowId;
+        if (!rowId) return;
+
+        const tr = handle.closest('tr');
+        if (!tr) return;
+
+        const startY = e.clientY;
+        const startHeight = tr.getBoundingClientRect().height;
+
+        // Минимум/максимум
+        const minPx = 28;      // 1.75rem
+        const maxPx = 400;     // 25rem
+
+        document.body.classList.add('row-resizing');
+        handle.classList.add('dragging');
+
+        const onMove = (moveEvent) => {
+            const dy = moveEvent.clientY - startY;
+            let newHeight = startHeight + dy;
+
+            if (newHeight < minPx) newHeight = minPx;
+            if (newHeight > maxPx) newHeight = maxPx;
+
+            // Применяем к tr
+            tr.style.height = newHeight + 'px';
+        };
+
+        const onUp = (upEvent) => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.body.classList.remove('row-resizing');
+            handle.classList.remove('dragging');
+
+            upEvent.stopPropagation();
+            upEvent.preventDefault();
+
+            const finalHeight = tr.getBoundingClientRect().height;
+            this._onRowResize(rowId, finalHeight);
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    }
+
+    /**
+     * После ресайза строки — сохранить.
+     */
+    async _onRowResize(rowId, heightPx) {
+        this._justResized = true;
+        setTimeout(() => { this._justResized = false; }, 50);
+
+        // px → rem
+        const baseFontPx = this._getBaseFontPx();
+        const heightRem = heightPx / baseFontPx;
+        const rounded = Math.round(heightRem * 1000) / 1000;
+        const measureStr = rounded + 'rem';
+
+        // Обновляем локально
+        if (!this.settings.row_heights) this.settings.row_heights = {};
+        this.settings.row_heights[rowId] = measureStr;
+
+        // Сохраняем
+        await this._saveSettings();
     }	
 
     /**

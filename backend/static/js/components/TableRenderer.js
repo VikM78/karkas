@@ -19,8 +19,10 @@ const TableRenderer = {
      * @param {Object} meta — пагинация (для номеров строк)
      */
     render(container, schema, data, settings, meta) {
+        // Сохранить сортировку, фильтры, высоты
         this._currentSort = settings.sort || [];
         this._currentFilters = settings.filters || {};
+        this._currentRowHeights = settings.row_heights || {};
 
         const columns = this._getVisibleColumns(schema, settings);
         const html = `
@@ -269,6 +271,16 @@ const TableRenderer = {
             trClasses.push('my-row-deleted');
         }
 
+        // Высота строки из user_settings.row_heights
+        if (row.id !== undefined && this._currentRowHeights && this._currentRowHeights[row.id]) {
+            const h = this._currentRowHeights[row.id];
+            if (typeof h === 'string') {
+                trStyles.height = h;
+            } else if (typeof h === 'object' && h.raw) {
+                trStyles.height = h.raw;
+            }
+        }
+
         const styleAttr = Object.keys(trStyles).length
             ? `style="${Object.entries(trStyles).map(([k, v]) => `${this._kebab(k)}: ${v}`).join(';')}"`
             : '';
@@ -304,9 +316,13 @@ const TableRenderer = {
             style.push(`width: ${col.width}px`);
         }
 
-        // Виртуальный "row"
+        // Виртуальный "row" — с handle для ресайза строки
         if (col.is_virtual && col.key === 'row') {
-            return `<td class="${classes.join(' ')}" style="${style.join(';')}">${rowNumber}</td>`;
+            const rowId = row.id;
+            const handle = rowId !== undefined
+                ? `<div class="my-row-resize-handle" data-row-id="${rowId}"></div>`
+                : '';
+            return `<td class="${classes.join(' ')}" style="${style.join('; ')}">${rowNumber}${handle}</td>`;
         }
 
         // Значение
