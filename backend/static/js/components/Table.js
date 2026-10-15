@@ -148,6 +148,12 @@ class Table {
                 e.stopPropagation();
                 this._startResize(e, handle);
             });
+
+            // Блокируем click на handle (чтобы не сработал на th)
+            handle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
         });
     }
 
@@ -188,11 +194,15 @@ class Table {
             colEl.style.width = newWidth + 'px';
         };
 
-        const onUp = () => {
+        const onUp = (upEvent) => {
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
             document.body.classList.remove('col-resizing');
             handle.classList.remove('dragging');
+
+            // Блокируем возможный click-на-th
+            upEvent.stopPropagation();
+            upEvent.preventDefault();
 
             const finalWidth = colEl.getBoundingClientRect().width;
             this._onColumnResize(colKey, finalWidth);
@@ -241,6 +251,10 @@ class Table {
      * После ресайза — сохранить новую ширину.
      */
     async _onColumnResize(colKey, widthPx) {
+        // Флаг — чтобы следующий click не сработал как сортировка
+        this._justResized = true;
+        setTimeout(() => { this._justResized = false; }, 50);
+
         // Конвертируем px → rem
         const baseFontPx = this._getBaseFontPx();
         const widthRem = widthPx / baseFontPx;
@@ -307,8 +321,17 @@ class Table {
         ths.forEach(th => {
             th.style.cursor = 'pointer';
             th.addEventListener('click', (e) => {
-                // Клик по кнопке фильтра не должен активировать сортировку
+                // Клик по кнопке фильтра — не сортировка
                 if (e.target.closest('.my-filter-btn')) {
+                    return;
+                }
+                // Клик по resize handle — не сортировка
+                if (e.target.closest('.my-col-resize-handle')) {
+                    return;
+                }
+                // Только что был ресайз — не сортировка
+                if (this._justResized) {
+                    this._justResized = false;
                     return;
                 }
                 const column = th.dataset.column;
