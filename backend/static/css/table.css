@@ -80,6 +80,44 @@
     border-right: none;
 }
 
+/* ===== RESIZE HANDLE СТОЛБЦА ===== */
+.my-table thead th {
+    position: sticky;      /* уже есть */
+}
+
+.my-col-resize-handle {
+    position: absolute;
+    top: 0;
+    right: -3px;           /* половина ширины handle */
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: calc(var(--my-table-header-z-index) + 5);
+    background: transparent;
+    user-select: none;
+}
+
+.my-col-resize-handle:hover {
+    background: var(--my-color-primary);
+    opacity: 0.4;
+}
+
+.my-col-resize-handle.dragging {
+    background: var(--my-color-primary);
+    opacity: 0.7;
+}
+
+/* Во время drag — отключить выделение */
+body.col-resizing {
+    cursor: col-resize !important;
+    user-select: none !important;
+}
+
+body.col-resizing * {
+    cursor: col-resize !important;
+    user-select: none !important;
+}
+
 /* ===== ТЕЛО ===== */
 .my-table tbody tr {
     height: var(--my-table-row-height);

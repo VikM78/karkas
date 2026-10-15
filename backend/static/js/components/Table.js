@@ -107,6 +107,7 @@ class Table {
 
         this._bindSortHandlers();
         this._bindFilterHandlers();
+        this._bindResizeHandlers();
 
         if (this.paginationEl) {
             this._renderPagination();
@@ -133,6 +134,149 @@ class Table {
 
         TableFilters.rebind();
     }
+	
+    /**
+     * Привязать обработчики ресайза столбцов.
+     */
+    _bindResizeHandlers() {
+        const handles = this.container.querySelectorAll('.my-col-resize-handle');
+        if (!handles.length) return;
+
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this._startResize(e, handle);
+            });
+        });
+    }
+
+    /**
+     * Начать ресайз столбца.
+     */
+    _startResize(e, handle) {
+        const colIndex = parseInt(handle.dataset.index, 10);
+        const colKey = handle.dataset.column;
+        if (isNaN(colIndex) || !colKey) return;
+
+        const colgroup = this.container.querySelector('colgroup');
+        if (!colgroup) return;
+
+        const cols = colgroup.querySelectorAll('col');
+        const colEl = cols[colIndex];
+        if (!colEl) return;
+
+        const startX = e.clientX;
+        const startWidth = colEl.getBoundingClientRect().width;
+
+        // Минимум/максимум из метаданных
+        const colMeta = this._getColumnMeta(colKey);
+        const minPx = this._measureToPx(colMeta?.min_width, 40);
+        const maxPx = this._measureToPx(colMeta?.max_width, 2000);
+
+        // Показать, что идёт drag
+        document.body.classList.add('col-resizing');
+        handle.classList.add('dragging');
+
+        const onMove = (moveEvent) => {
+            const dx = moveEvent.clientX - startX;
+            let newWidth = startWidth + dx;
+
+            if (newWidth < minPx) newWidth = minPx;
+            if (newWidth > maxPx) newWidth = maxPx;
+
+            colEl.style.width = newWidth + 'px';
+        };
+
+        const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.body.classList.remove('col-resizing');
+            handle.classList.remove('dragging');
+
+            const finalWidth = colEl.getBoundingClientRect().width;
+            this._onColumnResize(colKey, finalWidth);
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    }
+
+    /**
+     * Получить метаданные столбца.
+     */
+    _getColumnMeta(colKey) {
+        if (!this.schema || !this.schema.columns) return null;
+        return this.schema.columns.find(c => c.key === colKey);
+    }
+
+    /**
+     * Перевести measure → px.
+     */
+    _measureToPx(measure, fallback) {
+        if (!measure || !measure.value) return fallback;
+
+        const value = measure.value;
+        const unit = measure.unit || 'px';
+
+        if (unit === 'px') return value;
+        if (unit === 'rem') return value * this._getBaseFontPx();
+        if (unit === 'ch') return value * this._getBaseFontPx() * 0.55;
+        if (unit === 'em') return value * this._getBaseFontPx();
+
+        return fallback;
+    }
+
+    /**
+     * Получить базовый размер шрифта.
+     */
+    _getBaseFontPx() {
+        const val = getComputedStyle(document.documentElement)
+            .getPropertyValue('--my-base-font-size-px');
+        const num = parseFloat(val);
+        return num && num > 0 ? num : 16;
+    }
+
+    /**
+     * После ресайза — сохранить новую ширину.
+     */
+    async _onColumnResize(colKey, widthPx) {
+        // Конвертируем px → rem
+        const baseFontPx = this._getBaseFontPx();
+        const widthRem = widthPx / baseFontPx;
+
+        // Округляем до 3 знаков
+        const rounded = Math.round(widthRem * 1000) / 1000;
+        const measureStr = rounded + 'rem';
+
+        // Обновляем локальные настройки
+        if (!this.settings.widths) this.settings.widths = {};
+        this.settings.widths[colKey] = measureStr;
+
+        // Сохраняем на сервер
+        await this._saveSettings();
+    }
+
+    /**
+     * Сохранить настройки на сервер.
+     */
+    async _saveSettings() {
+        try {
+            const settings = {
+                visible: this.settings.visible || [],
+                order: this.settings.order || [],
+                widths: this.settings.widths || {},
+                labels: this.settings.labels || {},
+                sort: this.params.sort,
+                filters: this.params.filters,
+                include_deleted: this.params.include_deleted || false,
+            };
+
+            await TablesApi.saveSettings(this.tableKey, settings);
+        } catch (e) {
+            console.error('[Table] Ошибка сохранения настроек:', e);
+        }
+    }	
 
     /**
      * Установить фильтр по столбцу.

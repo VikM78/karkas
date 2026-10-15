@@ -82,7 +82,7 @@ const TableRenderer = {
     _getVisibleColumns(schema, settings) {
         const visibleKeys = settings.visible || [];
         const orderKeys = settings.order || [];
-        const widths = settings.widths || {};   // measure-строки: '16.5rem'
+        const widths = settings.widths || {};
 
         const colMap = {};
         schema.columns.forEach(c => { colMap[c.key] = c; });
@@ -101,6 +101,7 @@ const TableRenderer = {
             sortable: false,
             filterable: false,
             default_width: this._toMeasure(widths['row']) || { raw: '2.8125rem' },
+            _index: 0,
         });
 
         // Status
@@ -108,6 +109,7 @@ const TableRenderer = {
             const col = { ...colMap['status'] };
             const w = this._toMeasure(widths['status']);
             if (w) col.default_width = w;
+            col._index = result.length;
             result.push(col);
         }
 
@@ -120,6 +122,7 @@ const TableRenderer = {
                 const colCopy = { ...col };
                 const w = this._toMeasure(widths[key]);
                 if (w) colCopy.default_width = w;
+                colCopy._index = result.length;
                 result.push(colCopy);
             }
         }
@@ -166,40 +169,42 @@ const TableRenderer = {
     /**
      * Рендер <th>.
      */
-        _renderTh(col) {
+    _renderTh(col) {
         const classes = [];
         if (col.is_virtual && col.key === 'row') classes.push('my-col-row-sticky');
         if (col.type === 'status') classes.push('my-col-status-th');
 
-        const style = col.width ? `width: ${col.width}px;` : '';
+        const style = '';
 
         const sortable = col.sortable === true && !col.is_virtual;
         const sortAttr = sortable ? `data-sortable="1" data-column="${col.key}"` : '';
 
-        // Метка — только для не-status
         const isStatus = col.type === 'status';
-        const labelHtml = isStatus
-            ? ''
-            : `<span class="my-col-label">${col.label}</span>`;
 
-        // Иконка сортировки — только если активна
         const sortIcon = this._renderSortIndicator(col.key);
 
-        // Иконка фильтра — только если фильтруемый
         const filterIcon = col.filterable && !col.is_virtual
             ? `<button class="my-col-btn my-filter-btn${this._isFiltered(col.key) ? ' active' : ''}" data-column="${col.key}" title="Фильтр"><i class="bi bi-funnel-fill"></i></button>`
             : '';
 
-        // Для status — только иконки
         const contentHtml = isStatus
             ? `${sortIcon}${filterIcon}`
             : `<span class="my-col-label">${col.label}</span>${sortIcon}${filterIcon}`;
 
+        // Resize handle — не для виртуальных
+        const resizeHandle = !col.is_virtual
+            ? `<div class="my-col-resize-handle" data-column="${col.key}" data-index="${col._index}"></div>`
+            : '';
+
+        // Атрибут для идентификации колонки
+        const colAttr = `data-col-key="${col.key}" data-col-index="${col._index}"`;
+
         return `
-            <th class="${classes.join(' ')} my-col-${col.type}" style="${style}" ${sortAttr}>
+            <th class="${classes.join(' ')} my-col-${col.type}" style="${style}" ${sortAttr} ${colAttr}>
                 <div class="my-th-content">
                     ${contentHtml}
                 </div>
+                ${resizeHandle}
             </th>
         `;
     },
