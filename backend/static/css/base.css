@@ -33,7 +33,8 @@ body {
 
 /* ===== СКРОЛЛБАР ===== */
 ::-webkit-scrollbar {
-    width: var(--my-scrollbar-width);
+    width: var(--my-scrollbar-width);      /* вертикальная */
+	height: var(--my-scrollbar-width);     /* ← горизонтальная */
 }
 ::-webkit-scrollbar-track {
     background: var(--my-scrollbar-track);
