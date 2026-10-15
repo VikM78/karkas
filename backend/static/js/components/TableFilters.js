@@ -75,7 +75,10 @@ const TableFilters = {
     },
 
     _positionDropdown(dropdown, btnEl) {
-        const rect = btnEl.getBoundingClientRect();
+        const th = btnEl.closest('th');
+        const anchor = th || btnEl;
+        const rect = anchor.getBoundingClientRect();
+
         dropdown.style.position = 'absolute';
         dropdown.style.top = (rect.bottom + window.scrollY + 4) + 'px';
         dropdown.style.left = (rect.left + window.scrollX) + 'px';

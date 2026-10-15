@@ -476,10 +476,18 @@
 
 /* ===== ВЫПАДАШКА ФИЛЬТРА ===== */
 .my-filter-dropdown {
+    --my-filter-row-height: 28px;
+    --my-filter-rows: 10;
+    --my-filter-extra: 200px;
+
     width: 280px;
     min-width: 220px;
-    max-width: 500px;
-    max-height: min(70vh, 500px);
+    max-width: 90vw;            /* ← по экрану, не 500px */
+
+    height: calc(var(--my-filter-rows) * var(--my-filter-row-height) + var(--my-filter-extra));
+    min-height: 200px;
+    max-height: 90vh;           /* ← по экрану */
+
     background: var(--my-bg-filter);
     border: var(--my-table-border-width) var(--my-border-style) var(--my-border-default);
     border-radius: var(--my-radius-sm);
@@ -603,6 +611,9 @@
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
+    /* min-width: 0 — убрано, чтобы не сжимать */
+    width: max-content;           /* ← ширина по содержимому */
+    min-width: 100%;              /* ← но не меньше родителя */
 }
 
 .my-filter-item:hover {
@@ -622,13 +633,16 @@
     margin: 0;
     flex-shrink: 0;
     cursor: pointer;
+	/*white-space: nowrap;*/
 }
 
 .my-filter-item-label {
-    flex: 1;
+    /*flex: 1;
     min-width: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis;*/
+	flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .my-filter-footer {
@@ -682,7 +696,9 @@
 .my-filter-list {
     flex: 1;
     min-height: 0;
+    min-width: 0;
     overflow-y: auto;
+    overflow-x: auto;
     padding: var(--my-padding-xs) 0;
 }
 
