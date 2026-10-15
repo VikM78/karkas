@@ -475,8 +475,8 @@
     --my-size-placeholder-max-width: 31.25rem;
     --my-size-login-card-max-width: 25rem;
     --my-size-table-row-height: 2.2rem;
-    --my-size-table-row-min: 2rem;
-    --my-size-table-row-max: 18.75rem;
+    --my-size-table-row-min: 1.75rem;
+    --my-size-table-row-max: 25rem;
     --my-size-table-header-height: 2.5rem;
 
 

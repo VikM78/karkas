@@ -329,9 +329,9 @@ class Table {
         const startY = e.clientY;
         const startHeight = tr.getBoundingClientRect().height;
 
-        // Минимум/максимум
-        const minPx = 28;      // 1.75rem
-        const maxPx = 400;     // 25rem
+        // Минимум/максимум из CSS
+        const minPx = this._getCssRemPx('--my-table-row-min-height', 28);
+        const maxPx = this._getCssRemPx('--my-table-row-max-height', 400);
 
         document.body.classList.add('row-resizing');
         handle.classList.add('dragging');
@@ -362,6 +362,28 @@ class Table {
 
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
+    }
+
+    /**
+     * Прочитать CSS-переменную в rem → вернуть в px.
+     * Если в px — вернуть как есть.
+     */
+    _getCssRemPx(varName, fallback) {
+        const val = getComputedStyle(document.documentElement)
+            .getPropertyValue(varName).trim();
+        if (!val) return fallback;
+
+        // Парсим '1.75rem' или '28px'
+        const m = val.match(/^([0-9.]+)\s*(rem|px)?$/);
+        if (!m) return fallback;
+
+        const num = parseFloat(m[1]);
+        const unit = m[2] || 'px';
+
+        if (unit === 'rem') {
+            return num * this._getBaseFontPx();
+        }
+        return num;
     }
 
     /**
