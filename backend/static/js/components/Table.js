@@ -166,69 +166,172 @@ class Table {
     }
 
     /**
-     * Автоподгонка ширины колонки под содержимое.
      * Двойной клик по col-resize handle.
+     * Первый: расширить так, чтобы весь multiline-текст влез
+     *         в текущее число строк (N).
+     * Второй: вернуть исходную ширину.
      */
     async _autoFitColumn(colKey) {
         if (!colKey) return;
 
-        const colMeta = this._getColumnMeta(colKey);
-        const minPx = this._measureToPx(colMeta?.min_width, 40);
-        const maxPx = this._measureToPx(colMeta?.max_width, 2000);
+        if (!this._autoFitState) this._autoFitState = {};
 
         const table = this.container.querySelector('table');
         if (!table) return;
 
-        // Найти индекс колонки в <colgroup>
         const th = this.container.querySelector(`th[data-col-key="${colKey}"]`);
         if (!th) return;
         const colIndex = parseInt(th.dataset.colIndex, 10);
         if (isNaN(colIndex)) return;
 
-        // Создать временный <col> для измерения
-        const measureDiv = document.createElement('div');
-        measureDiv.style.position = 'absolute';
-        measureDiv.style.visibility = 'hidden';
-        measureDiv.style.whiteSpace = 'nowrap';
-        measureDiv.style.font = getComputedStyle(th).font;
-        measureDiv.style.padding = '0 20px';
-        document.body.appendChild(measureDiv);
+        const colgroup = this.container.querySelector('colgroup');
+        if (!colgroup) return;
+        const cols = colgroup.querySelectorAll('col');
+        const colEl = cols[colIndex];
+        if (!colEl) return;
 
-        let maxWidth = minPx;
+        const colMeta = this._getColumnMeta(colKey);
+        const minPx = this._measureToPx(colMeta?.min_width, 40);
+        const maxPx = colMeta?.max_width
+            ? this._measureToPx(colMeta.max_width, 5000)
+            : Math.min(window.innerWidth * 0.9, 5000);
 
-        // Замерить содержимое <td> колонки
+        // Проверка: уже раскрыто?
+        const wasExpanded = this._autoFitState[colKey];
+
+        if (wasExpanded) {
+            // ── Второй клик — возврат ──
+            colEl.style.width = wasExpanded.originalWidth + 'px';
+
+            // Вернуть clamp
+            const colCells = this._getMultilineCellsInColumn(table, colIndex);
+            colCells.forEach(cell => {
+                cell.dataset.expanded = 'false';
+                cell.style.webkitLineClamp = '';
+                cell.style.lineClamp = '';
+                cell.style.maxHeight = '';
+                cell.style.whiteSpace = '';
+                cell.style.wordBreak = '';
+            });
+
+            delete this._autoFitState[colKey];
+
+            await this._onColumnResize(colKey, wasExpanded.originalWidth);
+            return;
+        }
+
+        // ── Первый клик — раскрыть ──
+        const originalWidth = colEl.getBoundingClientRect().width;
+
+        const colCells = this._getMultilineCellsInColumn(table, colIndex);
+        if (!colCells.length) return;
+
+        // 1. Определяем N — текущее видимое число строк
+        //    (до снятия clamp)
+        const currentLines = this._getCurrentLineCountInColumn(table, colIndex);
+        if (!currentLines) return;
+
+        // 2. Снимаем clamp и замеряем M — при текущей ширине
+        colCells.forEach(cell => {
+            cell.dataset.expanded = 'true';
+            cell.style.webkitLineClamp = 'unset';
+            cell.style.lineClamp = 'unset';
+            cell.style.maxHeight = 'none';
+            cell.style.whiteSpace = 'normal';
+            cell.style.wordBreak = 'break-word';
+        });
+
+        // Ждём перерисовки
+        await new Promise(r => requestAnimationFrame(r));
+        await new Promise(r => requestAnimationFrame(r));
+
+        const lineHeightPx = this._getLineHeightPx(colCells[0]);
+
+        // Замеряем M — максимальное число строк среди всех ячеек колонки
+        let M = 1;
+        colCells.forEach(span => {
+            const h = span.scrollHeight;
+            const lines = Math.max(1, Math.round(h / lineHeightPx));
+            if (lines > M) M = lines;
+        });
+
+        // 3. Формула W_new = W × M / N × 1.15
+        const N = currentLines;
+        let newWidth = originalWidth * (M / N) * 1.15;
+
+        // Ограничения
+        if (newWidth < minPx) newWidth = minPx;
+        if (newWidth > maxPx) newWidth = maxPx;
+
+        newWidth = Math.round(newWidth);
+
+        // Применяем
+        colEl.style.width = newWidth + 'px';
+
+        // Сохраняем состояние
+        this._autoFitState[colKey] = { originalWidth };
+
+        await this._onColumnResize(colKey, newWidth);
+    }
+
+    /**
+     * Получить multiline-ячейки колонки по индексу.
+     */
+    _getMultilineCellsInColumn(table, colIndex) {
+        const result = [];
         const rows = table.querySelectorAll('tbody tr');
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             const cell = cells[colIndex];
             if (!cell) return;
+            cell.querySelectorAll('.my-col-multiline').forEach(span => {
+                result.push(span);
+            });
+        });
+        return result;
+    }
 
-            const text = cell.textContent.trim();
-            measureDiv.textContent = text;
-            const w = measureDiv.offsetWidth;
-            if (w > maxWidth) maxWidth = w;
+    /**
+     * Текущее видимое число строк multiline (max по колонке).
+     * Считается до снятия clamp — по высоте ячейки.
+     */
+    _getCurrentLineCountInColumn(table, colIndex) {
+        const rows = table.querySelectorAll('tbody tr');
+        let maxLines = 0;
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const cell = cells[colIndex];
+            if (!cell) return;
+
+            const span = cell.querySelector('.my-col-multiline');
+            if (!span) return;
+
+            const cellHeight = cell.getBoundingClientRect().height;
+            const cs = getComputedStyle(cell);
+            const padTop = parseFloat(cs.paddingTop) || 0;
+            const padBottom = parseFloat(cs.paddingBottom) || 0;
+
+            const lineHeightPx = this._getLineHeightPx(span);
+            const available = cellHeight - padTop - padBottom;
+            const lines = Math.max(1, Math.floor(available / lineHeightPx));
+
+            if (lines > maxLines) maxLines = lines;
         });
 
-        // Заголовок
-        measureDiv.textContent = th.textContent.trim();
-        const thW = measureDiv.offsetWidth;
-        if (thW > maxWidth) maxWidth = thW;
+        return maxLines;
+    }
 
-        document.body.removeChild(measureDiv);
-
-        if (maxWidth < minPx) maxWidth = minPx;
-        if (maxWidth > maxPx) maxWidth = maxPx;
-
-        // Применить
-        const colgroup = this.container.querySelector('colgroup');
-        const cols = colgroup.querySelectorAll('col');
-        const colEl = cols[colIndex];
-        if (colEl) {
-            colEl.style.width = maxWidth + 'px';
-        }
-
-        // Сохранить
-        await this._onColumnResize(colKey, maxWidth);
+    /**
+     * Line-height в px.
+     */
+    _getLineHeightPx(el) {
+        if (!el) return 21;
+        const cs = getComputedStyle(el);
+        const lh = parseFloat(cs.lineHeight);
+        if (lh) return lh;
+        const fs = parseFloat(cs.fontSize) || 14;
+        return fs * 1.5;
     }
 
     /**
