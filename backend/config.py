@@ -2,6 +2,7 @@
 import os
 import base64
 from pathlib import Path
+from datetime import timedelta
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -75,8 +76,12 @@ class Config:
 
     # ===== JWT =====
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key')
-    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
-    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800))
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(
+        seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 86400))
+    )
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(
+        seconds=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800))
+    )
 
     # ===== CORS =====
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:5000').split(',')
