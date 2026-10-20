@@ -77,10 +77,10 @@ class Config:
     # ===== JWT =====
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
-        seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 86400))
+        seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 1800))   # 30 минут
     )
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(
-        seconds=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800))
+        seconds=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800))   # 7 дней
     )
 
     # ===== CORS =====

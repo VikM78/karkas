@@ -488,6 +488,7 @@ class Table {
         if (!colEl) return;
 
         const startX = e.clientX;
+        const startY = e.clientY;
         const startWidth = colEl.getBoundingClientRect().width;
 
         // Минимум/максимум из метаданных
@@ -495,12 +496,37 @@ class Table {
         const minPx = this._measureToPx(colMeta?.min_width, 40);
         const maxPx = this._measureToPx(colMeta?.max_width, 2000);
 
-        // Показать, что идёт drag
-        document.body.classList.add('col-resizing');
-        handle.classList.add('dragging');
+        let isDragging = false;
 
         const onMove = (moveEvent) => {
             const dx = moveEvent.clientX - startX;
+            const dy = moveEvent.clientY - startY;
+
+            // Порог движения — 3px
+            if (!isDragging) {
+                if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+
+                isDragging = true;
+                document.body.classList.add('col-resizing');
+                handle.classList.add('dragging');
+
+                // Сброс expanded для multiline этого столбца
+                const table = this.container.querySelector('table');
+                if (table) {
+                    const cells = table.querySelectorAll(
+                        `tbody tr td:nth-child(${colIndex + 1}) .my-col-multiline[data-expanded="true"]`
+                    );
+                    cells.forEach(cell => {
+                        cell.dataset.expanded = 'false';
+                        cell.style.webkitLineClamp = '';
+                        cell.style.lineClamp = '';
+                        cell.style.maxHeight = '';
+                        cell.style.whiteSpace = '';
+                        cell.style.wordBreak = '';
+                    });
+                }
+            }
+
             let newWidth = startWidth + dx;
 
             if (newWidth < minPx) newWidth = minPx;
@@ -512,15 +538,17 @@ class Table {
         const onUp = (upEvent) => {
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
-            document.body.classList.remove('col-resizing');
-            handle.classList.remove('dragging');
 
-            // Блокируем возможный click-на-th
-            upEvent.stopPropagation();
-            upEvent.preventDefault();
+            if (isDragging) {
+                document.body.classList.remove('col-resizing');
+                handle.classList.remove('dragging');
 
-            const finalWidth = colEl.getBoundingClientRect().width;
-            this._onColumnResize(colKey, finalWidth);
+                upEvent.stopPropagation();
+                upEvent.preventDefault();
+
+                const finalWidth = colEl.getBoundingClientRect().width;
+                this._onColumnResize(colKey, finalWidth);
+            }
         };
 
         document.addEventListener('mousemove', onMove);

@@ -1,10 +1,12 @@
 # start_my_file backend/api/v1/auth.py
 from flask import Blueprint, request, jsonify, redirect, url_for
 from flask_jwt_extended import (
-    create_access_token, 
-    set_access_cookies, 
-    jwt_required, 
-    get_jwt_identity, 
+    create_access_token,
+    create_refresh_token,
+    set_access_cookies,
+    set_refresh_cookies,
+    jwt_required,
+    get_jwt_identity,
     unset_jwt_cookies,
     verify_jwt_in_request
 )
@@ -34,8 +36,9 @@ def login():
     user.last_login = db.func.now()
     db.session.commit()
 
-    # Создаём JWT-токен
+    # Создаём JWT-токены (access + refresh)
     access_token = create_access_token(identity=str(user.id))
+    refresh_token = create_refresh_token(identity=str(user.id))
 
     response = jsonify({
         'success': True,
@@ -44,9 +47,25 @@ def login():
     })
 
     set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
 
     return response
 
+@bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    """
+    Обновить access-токен по refresh-токену.
+    Фронт вызывает при истечении access.
+    """
+    user_id = get_jwt_identity()
+
+    access_token = create_access_token(identity=str(user_id))
+
+    response = jsonify({'refreshed': True})
+    set_access_cookies(response, access_token)
+
+    return response, 200
 
 @bp.route('/logout', methods=['POST'])
 def logout():
