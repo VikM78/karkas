@@ -15,6 +15,9 @@ const TablesApi = {
      * Обёртка над fetch с обработкой ошибок.
      */
     async _request(url, options = {}) {
+        // Авто-refresh перед запросом (если скоро истечёт)
+        await this._ensureFreshToken();
+
         const response = await fetch(url, {
             credentials: 'include',
             headers: {
@@ -24,17 +27,44 @@ const TablesApi = {
             ...options,
         });
 
-        // Пустой ответ (204)
-        if (response.status === 204) {
-            return null;
+        // 401 — попробовать refresh один раз
+        if (response.status === 401) {
+            const refreshed = await this._tryRefresh();
+
+            if (refreshed) {
+                // Повторить запрос
+                const retry = await fetch(url, {
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(options.headers || {}),
+                    },
+                    ...options,
+                });
+
+                return this._parseResponse(retry);
+            }
+
+            // Refresh не удался — редирект на login
+            this._redirectToLogin();
+            const error = new Error('Unauthorized');
+            error.status = 401;
+            throw error;
         }
+
+        return this._parseResponse(response);
+    },
+
+    /**
+     * Разобрать ответ: JSON или ошибка.
+     */
+    async _parseResponse(response) {
+        if (response.status === 204) return null;
 
         let data = null;
         try {
             data = await response.json();
-        } catch (e) {
-            // Не JSON
-        }
+        } catch (e) {}
 
         if (!response.ok) {
             const error = new Error(
@@ -48,6 +78,91 @@ const TablesApi = {
         }
 
         return data;
+    },
+
+    /**
+     * Проверить: если access истекает в течение 2 минут — refresh.
+     */
+    async _ensureFreshToken() {
+        const exp = this._getAccessExp();
+        if (!exp) return;
+
+        const now = Math.floor(Date.now() / 1000);
+        const timeLeft = exp - now;
+
+        if (timeLeft < 120) {
+            await this._tryRefresh();
+        }
+    },
+
+    /**
+     * Получить exp access-токена из куки (декодировать JWT payload).
+     */
+    _getAccessExp() {
+        try {
+            const cookies = document.cookie.split('; ');
+            const cookie = cookies.find(c => c.startsWith('access_token_cookie='));
+            if (!cookie) return null;
+
+            const token = cookie.split('=').slice(1).join('=');   // на случай '=' в токене
+            const parts = token.split('.');
+            if (parts.length !== 3) return null;
+
+            // Base64url → JSON
+            const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(base64));
+            return payload.exp || null;
+        } catch (e) {
+            console.warn('[API] Не удалось декодировать access exp:', e);
+            return null;
+        }
+    },
+
+    /**
+     * Попробовать refresh access-токена.
+     */
+    async _tryRefresh() {
+        // Уже идёт refresh — не дублировать
+        if (window._refreshing && window._refreshPromise) {
+            return await window._refreshPromise;
+        }
+
+        window._refreshing = true;
+        window._refreshPromise = (async () => {
+            try {
+                const response = await fetch('/api/v1/auth/refresh', {
+                    method: 'POST',
+                    credentials: 'include',
+                });
+                return response.ok;
+            } catch (e) {
+                console.warn('[API] Refresh failed:', e);
+                return false;
+            } finally {
+                window._refreshing = false;
+                window._refreshPromise = null;
+            }
+        })();
+
+        return await window._refreshPromise;
+    },
+
+    /**
+     * Редирект на login (один раз).
+     */
+    _redirectToLogin() {
+        if (window._redirectingToLogin) return;
+        window._redirectingToLogin = true;
+
+        // Сохранить текущий путь для возврата после логина
+        try {
+            const returnPath = window.location.pathname + window.location.search;
+            if (returnPath !== '/login' && !returnPath.startsWith('/login')) {
+                sessionStorage.setItem('karkas_return_to', returnPath);
+            }
+        } catch (e) {}
+
+        window.location.href = '/login';
     },
 
     /**

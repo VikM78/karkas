@@ -40,31 +40,36 @@ def login():
     access_token = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
 
+    from flask_jwt_extended import decode_token
+    decoded = decode_token(access_token)
+    access_exp = decoded.get('exp')
+
     response = jsonify({
         'success': True,
         'user': user.to_dict(),
-        'redirect': '/'
+        'redirect': '/',
+        'access_exp': access_exp,
     })
 
     set_access_cookies(response, access_token)
     set_refresh_cookies(response, refresh_token)
-
     return response
 
 @bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh():
-    """
-    Обновить access-токен по refresh-токену.
-    Фронт вызывает при истечении access.
-    """
     user_id = get_jwt_identity()
-
     access_token = create_access_token(identity=str(user_id))
 
-    response = jsonify({'refreshed': True})
-    set_access_cookies(response, access_token)
+    from flask_jwt_extended import decode_token
+    decoded = decode_token(access_token)
+    access_exp = decoded.get('exp')
 
+    response = jsonify({
+        'refreshed': True,
+        'access_exp': access_exp,
+    })
+    set_access_cookies(response, access_token)
     return response, 200
 
 @bp.route('/logout', methods=['POST'])
