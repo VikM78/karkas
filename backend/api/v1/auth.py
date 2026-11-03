@@ -91,7 +91,11 @@ def get_current_user():
         if not user:
             return jsonify({'error': 'Пользователь не найден'}), 404
 
-        return jsonify(user.to_dict())
+        from flask_jwt_extended import get_jwt
+        claims = get_jwt()
+
+        data = user.to_dict()
+        data['token_exp'] = claims.get('exp')
+        return jsonify(data)
     except Exception:
         return jsonify({'error': 'Не авторизован'}), 401
-# end_my_file backend/api/v1/auth.py

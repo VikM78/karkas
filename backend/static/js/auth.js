@@ -11,7 +11,11 @@ const AUTH = {
         try {
             const response = await fetch('/api/v1/auth/me', { credentials: 'include' });
             if (response.ok) {
-                return await response.json();
+                const user = await response.json();
+                if (user.token_exp) {
+                    sessionStorage.setItem('karkas_access_exp', String(user.token_exp));
+                }
+                return user;
             }
             return null;
         } catch (error) {
@@ -35,6 +39,10 @@ const AUTH = {
         } catch (error) {
             console.error('Ошибка выхода:', error);
         }
+        try {
+            sessionStorage.removeItem('karkas_access_exp');
+            sessionStorage.removeItem('karkas_return_to');
+        } catch (e) {}
         window.location.href = '/login';
     },
 

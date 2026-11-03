@@ -100,20 +100,9 @@ const TablesApi = {
      */
     _getAccessExp() {
         try {
-            const cookies = document.cookie.split('; ');
-            const cookie = cookies.find(c => c.startsWith('access_token_cookie='));
-            if (!cookie) return null;
-
-            const token = cookie.split('=').slice(1).join('=');   // на случай '=' в токене
-            const parts = token.split('.');
-            if (parts.length !== 3) return null;
-
-            // Base64url → JSON
-            const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(atob(base64));
-            return payload.exp || null;
+            const exp = sessionStorage.getItem('karkas_access_exp');
+            return exp ? parseInt(exp, 10) : null;
         } catch (e) {
-            console.warn('[API] Не удалось декодировать access exp:', e);
             return null;
         }
     },
@@ -122,7 +111,6 @@ const TablesApi = {
      * Попробовать refresh access-токена.
      */
     async _tryRefresh() {
-        // Уже идёт refresh — не дублировать
         if (window._refreshing && window._refreshPromise) {
             return await window._refreshPromise;
         }
@@ -134,7 +122,15 @@ const TablesApi = {
                     method: 'POST',
                     credentials: 'include',
                 });
-                return response.ok;
+
+                if (!response.ok) return false;
+
+                const data = await response.json();
+                if (data.access_exp) {
+                    sessionStorage.setItem('karkas_access_exp', String(data.access_exp));
+                }
+
+                return true;
             } catch (e) {
                 console.warn('[API] Refresh failed:', e);
                 return false;

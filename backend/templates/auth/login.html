@@ -93,9 +93,12 @@
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    window.location.href = data.redirect || '/';
-                } else {
+				if (response.ok) {
+					if (data.access_exp) {
+						sessionStorage.setItem('karkas_access_exp', String(data.access_exp));
+					}
+					window.location.href = data.redirect || '/';
+				} else {
                     errorEl.textContent = data.error || 'Ошибка входа';
                     errorEl.classList.add('show');
                     btn.disabled = false;
