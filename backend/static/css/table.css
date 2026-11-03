@@ -522,10 +522,18 @@ body.row-resizing * {
     width: auto;
 }
 
-.my-table thead th.my-col-filler-th,
+/* Filler — та же шапка, что у остальных th, но без правой границы */
+.my-table thead th.my-col-filler-th {
+    background: var(--my-table-header-bg);
+    border-right: none;
+    border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
+}
+
+/* Filler-ячейка — тот же фон, что у tr, без правой границы */
 .my-table tbody td.my-col-filler-td {
-    border-right: none;                  /* справа границы нет — это край */
-    background: transparent;
+    background: inherit;
+    border-right: none;
+    border-bottom: var(--my-table-border-width) var(--my-border-style) var(--my-table-border-color);
 }
 
 /* Наследуют hover и фон строки автоматически */
