@@ -6,6 +6,10 @@ const AUTH = {
     HOVER_DELAY: 300,
     hideTimeout: null,
     isHovering: false,
+	
+	// Idle-таймаут
+    IDLE_TIMEOUT_MS: 30 * 60 * 1000,   // 30 минут
+    _idleTimer: null,
 
     async check() {
         try {
@@ -34,6 +38,7 @@ const AUTH = {
     },
 
     async logout() {
+        this._stopIdleTimer();
         try {
             await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' });
         } catch (error) {
@@ -41,7 +46,7 @@ const AUTH = {
         }
         try {
             sessionStorage.removeItem('karkas_access_exp');
-            sessionStorage.removeItem('karkas_return_to');
+            // return_to НЕ удаляем — используется после логина для возврата
         } catch (e) {}
         window.location.href = '/login';
     },
@@ -137,5 +142,31 @@ const AUTH = {
                 this._clearTimeouts();
             }
         });
+    },
+
+    initIdleTimeout() {
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        const reset = () => this._resetIdleTimer();
+
+        events.forEach(evt => {
+            document.addEventListener(evt, reset, { passive: true });
+        });
+
+        this._resetIdleTimer();
+    },
+
+    _resetIdleTimer() {
+        if (this._idleTimer) clearTimeout(this._idleTimer);
+        this._idleTimer = setTimeout(() => {
+            console.log('[Auth] Idle timeout — logout');
+            this.logout();
+        }, this.IDLE_TIMEOUT_MS);
+    },
+
+    _stopIdleTimer() {
+        if (this._idleTimer) {
+            clearTimeout(this._idleTimer);
+            this._idleTimer = null;
+        }
     }
 };

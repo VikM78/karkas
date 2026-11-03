@@ -97,7 +97,15 @@
 					if (data.access_exp) {
 						sessionStorage.setItem('karkas_access_exp', String(data.access_exp));
 					}
-					window.location.href = data.redirect || '/';
+					let returnTo = '/';
+					try {
+						const saved = sessionStorage.getItem('karkas_return_to');
+						if (saved) {
+							returnTo = saved;
+							sessionStorage.removeItem('karkas_return_to');
+						}
+					} catch (e) {}
+					window.location.href = returnTo || data.redirect || '/';
 				} else {
                     errorEl.textContent = data.error || 'Ошибка входа';
                     errorEl.classList.add('show');

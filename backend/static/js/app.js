@@ -14,6 +14,7 @@ if (!window._appInitialized) {
         AUTH.updateUI(user);
         AUTH.initHover();
         AUTH.initLogout();
+		AUTH.initIdleTimeout();
 
         await MENU.init();
 
