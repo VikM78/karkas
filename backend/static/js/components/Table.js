@@ -18,6 +18,7 @@ class Table {
             include_deleted: false,
         };
 
+        this._modal = null;        // ← добавить
         this._initialized = false;
     }
 
@@ -61,6 +62,17 @@ class Table {
 
             await this.loadData();
             this.render();
+
+            // Инициализация CRUD-модалки
+            if (typeof TableModal !== 'undefined') {
+                this._modal = new TableModal({
+                    tableKey: this.tableKey,
+                    schema: this.schema,
+                    onSave: () => this.reload(),
+                });
+            } else {
+                console.warn('[Table] TableModal не загружен');
+            }
 
             this._initialized = true;
             console.log('[Table] ' + this.tableKey + ' готова');
@@ -109,13 +121,60 @@ class Table {
         this._bindSortHandlers();
         this._bindFilterHandlers();
         this._bindResizeHandlers();
-		this._bindRowResizeHandlers();
+        this._bindRowResizeHandlers();
+        this._bindToolbarButtons();
 
         if (this.paginationEl) {
             this._renderPagination();
         }
 
         this._updatePageTitle();
+    }
+
+    /**
+     * Заполнить toolbar в header (кнопки действий).
+     */
+    _bindToolbarButtons() {
+        const toolbar = document.getElementById('dynamicToolbarRight');
+        if (!toolbar) return;
+
+        // Кнопка «Добавить»
+        toolbar.innerHTML = `
+            <button type="button" class="my-btn my-btn-primary my-btn-sm" id="btn-table-add">
+                <i class="bi bi-plus-lg"></i>
+                <span>Добавить</span>
+            </button>
+        `;
+
+        const addBtn = toolbar.querySelector('#btn-table-add');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => this.openCreate());
+        }
+    }
+
+    /**
+     * Открыть модалку «Добавить».
+     */
+    openCreate() {
+        if (!this._modal) {
+            console.warn('[Table] TableModal не инициализирован');
+            return;
+        }
+        this._modal.openCreate();
+    }
+
+    /**
+     * Перезагрузить данные (после сохранения).
+     */
+    async reload() {
+        this._showLoader();
+        try {
+            await this.loadData();
+            this.render();
+        } catch (error) {
+            console.error('[Table] Ошибка перезагрузки:', error);
+            this._showError(error.message);
+        }
     }
 
     /**
